@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>System Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13b6ec",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#101d22",
+                        "surface-dark": "#1c292e",
+                        "surface-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem", 
+                        "lg": "2rem", 
+                        "xl": "3rem", 
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hide for cleaner look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* Swiss Design inspired refined typography */
+        .swiss-tracking {
+            letter-spacing: -0.02em;
+        }
+        .swiss-label {
+            letter-spacing: 0.08em;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen font-display text-slate-900 dark:text-white antialiased transition-colors duration-200">
+<!-- Mobile Container -->
+<div class="mx-auto max-w-md w-full min-h-screen flex flex-col relative overflow-hidden">
+<!-- Header -->
+<header class="flex items-center justify-between px-6 py-4 pt-10 sticky top-0 z-10 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md">
+<button class="flex items-center justify-center size-10 -ml-2 rounded-full active:bg-gray-200 dark:active:bg-gray-800 transition-colors text-slate-900 dark:text-white">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold swiss-tracking">System Settings</h1>
+<div class="size-10"></div> <!-- Spacer for optical center -->
+</header>
+<!-- Content Scroll Area -->
+<main class="flex-1 overflow-y-auto px-5 pb-12 no-scrollbar">
+<!-- Section 1: Security -->
+<div class="mt-4 mb-2">
+<p class="text-xs font-medium text-gray-500 dark:text-gray-400 px-4 mb-2 uppercase swiss-label">Security</p>
+<div class="bg-surface-light dark:bg-surface-dark rounded overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800">
+<!-- Item: Biometric -->
+<div class="flex items-center justify-between p-4 group active:bg-gray-50 dark:active:bg-[#233036] transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center size-10 rounded-full bg-blue-50 dark:bg-[#283539] text-primary dark:text-primary">
+<span class="material-symbols-outlined text-[20px]">face</span>
+</div>
+<span class="text-[15px] font-medium">Biometric Unlock</span>
+</div>
+<label class="relative flex h-[28px] w-[48px] cursor-pointer items-center rounded-full border-none bg-gray-200 dark:bg-[#344247] p-1 has-[:checked]:justify-end has-[:checked]:bg-primary transition-colors duration-200">
+<div class="h-[20px] w-[20px] rounded-full bg-white shadow-sm"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+<div class="h-px w-full bg-gray-100 dark:bg-[#283539] ml-[68px]"></div>
+<!-- Item: Auto-Lock -->
+<div class="flex items-center justify-between p-4 group active:bg-gray-50 dark:active:bg-[#233036] transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center size-10 rounded-full bg-blue-50 dark:bg-[#283539] text-primary dark:text-primary">
+<span class="material-symbols-outlined text-[20px]">timer</span>
+</div>
+<span class="text-[15px] font-medium">Auto-Lock Timer</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-sm text-gray-400 dark:text-gray-500">Immediate</span>
+<span class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[20px]">chevron_right</span>
+</div>
+</div>
+<div class="h-px w-full bg-gray-100 dark:bg-[#283539] ml-[68px]"></div>
+<!-- Item: Master Password -->
+<div class="flex items-center justify-between p-4 group active:bg-gray-50 dark:active:bg-[#233036] transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center size-10 rounded-full bg-blue-50 dark:bg-[#283539] text-primary dark:text-primary">
+<span class="material-symbols-outlined text-[20px]">lock_reset</span>
+</div>
+<span class="text-[15px] font-medium">Master Password</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[20px]">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 2: Backup & Data -->
+<div class="mt-8 mb-2">
+<p class="text-xs font-medium text-gray-500 dark:text-gray-400 px-4 mb-2 uppercase swiss-label">Backup &amp; Data</p>
+<div class="bg-surface-light dark:bg-surface-dark rounded overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800">
+<!-- Item: Cloud Sync -->
+<div class="flex items-center justify-between p-4 group active:bg-gray-50 dark:active:bg-[#233036] transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center size-10 rounded-full bg-blue-50 dark:bg-[#283539] text-primary dark:text-primary">
+<span class="material-symbols-outlined text-[20px]">cloud_sync</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[15px] font-medium">Cloud Sync</span>
+<span class="text-[11px] text-gray-400 dark:text-gray-500 uppercase tracking-wider">Encrypted</span>
+</div>
+</div>
+<label class="relative flex h-[28px] w-[48px] cursor-pointer items-center rounded-full border-none bg-gray-200 dark:bg-[#344247] p-1 has-[:checked]:justify-end has-[:checked]:bg-primary transition-colors duration-200">
+<div class="h-[20px] w-[20px] rounded-full bg-white shadow-sm"></div>
+<input class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+<div class="h-px w-full bg-gray-100 dark:bg-[#283539] ml-[68px]"></div>
+<!-- Item: Export -->
+<div class="flex items-center justify-between p-4 group active:bg-gray-50 dark:active:bg-[#233036] transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center size-10 rounded-full bg-blue-50 dark:bg-[#283539] text-primary dark:text-primary">
+<span class="material-symbols-outlined text-[20px]">output</span>
+</div>
+<span class="text-[15px] font-medium">Export Seed Vault</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[20px]">chevron_right</span>
+</div>
+</div>
+<div class="h-px w-full bg-gray-100 dark:bg-[#283539] ml-[68px]"></div>
+<!-- Item: Clear Cache -->
+<div class="flex items-center justify-between p-4 group active:bg-gray-50 dark:active:bg-[#233036] transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center size-10 rounded-full bg-blue-50 dark:bg-[#283539] text-primary dark:text-primary">
+<span class="material-symbols-outlined text-[20px]">cleaning_services</span>
+</div>
+<span class="text-[15px] font-medium">Clear Local Cache</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[20px]">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 3: Appearance -->
+<div class="mt-8 mb-2">
+<p class="text-xs font-medium text-gray-500 dark:text-gray-400 px-4 mb-2 uppercase swiss-label">Appearance</p>
+<div class="bg-surface-light dark:bg-surface-dark rounded overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800">
+<!-- Item: Theme -->
+<div class="flex items-center justify-between p-4 group active:bg-gray-50 dark:active:bg-[#233036] transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center size-10 rounded-full bg-blue-50 dark:bg-[#283539] text-primary dark:text-primary">
+<span class="material-symbols-outlined text-[20px]">contrast</span>
+</div>
+<span class="text-[15px] font-medium">Theme</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-sm text-gray-400 dark:text-gray-500">Dark</span>
+<span class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[20px]">chevron_right</span>
+</div>
+</div>
+<div class="h-px w-full bg-gray-100 dark:bg-[#283539] ml-[68px]"></div>
+<!-- Item: Haptics -->
+<div class="flex items-center justify-between p-4 group active:bg-gray-50 dark:active:bg-[#233036] transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center size-10 rounded-full bg-blue-50 dark:bg-[#283539] text-primary dark:text-primary">
+<span class="material-symbols-outlined text-[20px]">vibration</span>
+</div>
+<span class="text-[15px] font-medium">Haptic Feedback</span>
+</div>
+<label class="relative flex h-[28px] w-[48px] cursor-pointer items-center rounded-full border-none bg-gray-200 dark:bg-[#344247] p-1 has-[:checked]:justify-end has-[:checked]:bg-primary transition-colors duration-200">
+<div class="h-[20px] w-[20px] rounded-full bg-white shadow-sm"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<div class="mt-8 mb-4 text-center">
+<div class="inline-flex items-center justify-center p-2">
+<span class="material-symbols-outlined text-gray-500 dark:text-gray-600 text-[16px] mr-2">verified_user</span>
+<p class="text-[11px] uppercase tracking-widest text-gray-400 dark:text-gray-600 font-medium">Vault Secure System v2.1</p>
+</div>
+</div>
+</main>
+</div>
+</body></html>

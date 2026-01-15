@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add Secret Step 2</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13b6ec",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#101d22",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for clean UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased selection:bg-primary/30">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto shadow-2xl border-x border-white/5">
+<!-- Top Navigation -->
+<header class="flex items-center justify-between p-4 pb-2 sticky top-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md">
+<button class="group flex size-10 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[24px] text-slate-900 dark:text-white transition-transform group-hover:-translate-x-0.5">arrow_back</span>
+</button>
+<h2 class="text-base font-bold tracking-tight opacity-0 sm:opacity-100 transition-opacity">New Vault</h2>
+<div class="flex items-center justify-end">
+<span class="rounded-full bg-black/5 dark:bg-white/5 px-3 py-1 text-xs font-bold tracking-wide text-slate-600 dark:text-[#9db2b9]">Step 2/3</span>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 px-5 pb-32 pt-2">
+<!-- Headline -->
+<div class="mb-8">
+<h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">Secure your phrase</h1>
+<p class="text-base text-slate-500 dark:text-slate-400 font-normal leading-relaxed">
+                    Enter your 12-word recovery phrase in the correct order to verify your backup.
+                </p>
+</div>
+<!-- The Grid -->
+<div class="grid grid-cols-3 gap-3">
+<!-- Cell 1 (Filled) -->
+<div class="group relative flex h-[72px] flex-col items-center justify-center rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 transition-all duration-200">
+<span class="absolute left-2.5 top-2 text-[10px] font-bold text-slate-400 dark:text-white/30 font-display tracking-widest">01</span>
+<input class="w-full bg-transparent p-0 text-center font-mono text-[13px] font-medium text-slate-900 dark:text-white focus:ring-0 border-none outline-none" readonly="" type="text" value="witch"/>
+<div class="absolute inset-0 rounded-lg ring-1 ring-primary/0 transition-all group-hover:ring-primary/30 pointer-events-none"></div>
+</div>
+<!-- Cell 2 (Filled) -->
+<div class="group relative flex h-[72px] flex-col items-center justify-center rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 transition-all duration-200">
+<span class="absolute left-2.5 top-2 text-[10px] font-bold text-slate-400 dark:text-white/30 font-display tracking-widest">02</span>
+<input class="w-full bg-transparent p-0 text-center font-mono text-[13px] font-medium text-slate-900 dark:text-white focus:ring-0 border-none outline-none" readonly="" type="text" value="wagon"/>
+</div>
+<!-- Cell 3 (Filled) -->
+<div class="group relative flex h-[72px] flex-col items-center justify-center rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 transition-all duration-200">
+<span class="absolute left-2.5 top-2 text-[10px] font-bold text-slate-400 dark:text-white/30 font-display tracking-widest">03</span>
+<input class="w-full bg-transparent p-0 text-center font-mono text-[13px] font-medium text-slate-900 dark:text-white focus:ring-0 border-none outline-none" readonly="" type="text" value="fizzle"/>
+</div>
+<!-- Cell 4 (Filled) -->
+<div class="group relative flex h-[72px] flex-col items-center justify-center rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 transition-all duration-200">
+<span class="absolute left-2.5 top-2 text-[10px] font-bold text-slate-400 dark:text-white/30 font-display tracking-widest">04</span>
+<input class="w-full bg-transparent p-0 text-center font-mono text-[13px] font-medium text-slate-900 dark:text-white focus:ring-0 border-none outline-none" readonly="" type="text" value="plump"/>
+</div>
+<!-- Cell 5 (Active / Focused) -->
+<div class="relative flex h-[72px] flex-col items-center justify-center rounded-lg border border-primary bg-primary/[0.03] shadow-[0_0_15px_-3px_rgba(19,182,236,0.3)] transition-all duration-200 z-10">
+<span class="absolute left-2.5 top-2 text-[10px] font-bold text-primary font-display tracking-widest">05</span>
+<input autofocus="" class="w-full bg-transparent p-0 text-center font-mono text-[13px] font-medium text-slate-900 dark:text-white focus:ring-0 border-none outline-none placeholder:text-slate-300 dark:placeholder:text-white/10 caret-primary" placeholder="Type..." type="text"/>
+<!-- Blinking cursor simulation if needed, but input caret handles it natively -->
+</div>
+<!-- Cell 6 (Empty) -->
+<div class="group relative flex h-[72px] flex-col items-center justify-center rounded-lg border border-slate-200 dark:border-white/10 bg-transparent transition-all duration-200 hover:border-slate-300 dark:hover:border-white/20">
+<span class="absolute left-2.5 top-2 text-[10px] font-bold text-slate-300 dark:text-white/20 font-display tracking-widest">06</span>
+<input class="w-full bg-transparent p-0 text-center font-mono text-[13px] font-medium text-slate-900 dark:text-white focus:ring-0 border-none outline-none disabled:cursor-not-allowed" disabled="" type="text"/>
+</div>
+<!-- Cell 7 (Empty) -->
+<div class="group relative flex h-[72px] flex-col items-center justify-center rounded-lg border border-slate-200 dark:border-white/10 bg-transparent transition-all duration-200">
+<span class="absolute left-2.5 top-2 text-[10px] font-bold text-slate-300 dark:text-white/20 font-display tracking-widest">07</span>
+</div>
+<!-- Cell 8 (Empty) -->
+<div class="group relative flex h-[72px] flex-col items-center justify-center rounded-lg border border-slate-200 dark:border-white/10 bg-transparent transition-all duration-200">
+<span class="absolute left-2.5 top-2 text-[10px] font-bold text-slate-300 dark:text-white/20 font-display tracking-widest">08</span>
+</div>
+<!-- Cell 9 (Empty) -->
+<div class="group relative flex h-[72px] flex-col items-center justify-center rounded-lg border border-slate-200 dark:border-white/10 bg-transparent transition-all duration-200">
+<span class="absolute left-2.5 top-2 text-[10px] font-bold text-slate-300 dark:text-white/20 font-display tracking-widest">09</span>
+</div>
+<!-- Cell 10 (Empty) -->
+<div class="group relative flex h-[72px] flex-col items-center justify-center rounded-lg border border-slate-200 dark:border-white/10 bg-transparent transition-all duration-200">
+<span class="absolute left-2.5 top-2 text-[10px] font-bold text-slate-300 dark:text-white/20 font-display tracking-widest">10</span>
+</div>
+<!-- Cell 11 (Empty) -->
+<div class="group relative flex h-[72px] flex-col items-center justify-center rounded-lg border border-slate-200 dark:border-white/10 bg-transparent transition-all duration-200">
+<span class="absolute left-2.5 top-2 text-[10px] font-bold text-slate-300 dark:text-white/20 font-display tracking-widest">11</span>
+</div>
+<!-- Cell 12 (Empty) -->
+<div class="group relative flex h-[72px] flex-col items-center justify-center rounded-lg border border-slate-200 dark:border-white/10 bg-transparent transition-all duration-200">
+<span class="absolute left-2.5 top-2 text-[10px] font-bold text-slate-300 dark:text-white/20 font-display tracking-widest">12</span>
+</div>
+</div>
+<!-- Contextual Help / Status -->
+<div class="mt-6 flex items-center justify-center gap-2 text-xs text-slate-400 dark:text-white/40">
+<span class="material-symbols-outlined text-[16px]">lock</span>
+<span>End-to-end encrypted locally</span>
+</div>
+</main>
+<!-- Footer / Action Area -->
+<footer class="fixed bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-background-light via-background-light to-transparent dark:from-background-dark dark:via-background-dark dark:to-transparent z-40 max-w-md mx-auto">
+<button class="group relative flex h-14 w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-primary text-background-dark shadow-lg shadow-primary/25 transition-all hover:bg-[#3ac6f5] active:scale-[0.98]">
+<!-- Button content -->
+<span class="relative z-10 text-[17px] font-bold tracking-tight">Verify Phrase</span>
+<span class="material-symbols-outlined relative z-10 ml-2 text-[20px] transition-transform group-hover:translate-x-1">arrow_forward</span>
+</button>
+</footer>
+</div>
+</body></html>

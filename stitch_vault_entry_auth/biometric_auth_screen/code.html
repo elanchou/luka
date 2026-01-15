@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Biometric Auth Screen</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13b6ec",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#101d22",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased overflow-hidden selection:bg-primary/30">
+<div class="relative flex h-screen w-full flex-col justify-between items-center overflow-hidden">
+<!-- Abstract Background Glow -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none"></div>
+<!-- Spacer for top content if needed later, currently empty to force center alignment of main content -->
+<div class="flex-none h-24"></div>
+<!-- Main Content: Fingerprint & Status -->
+<div class="flex flex-col items-center justify-center gap-8 relative z-10">
+<!-- Fingerprint Container -->
+<div class="relative group cursor-pointer">
+<!-- Glowing effect behind icon -->
+<div class="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse-slow"></div>
+<!-- Icon container -->
+<div class="relative flex items-center justify-center w-32 h-32 rounded-full border border-primary/10 bg-background-dark/50 backdrop-blur-sm transition-all duration-500 hover:border-primary/50 hover:shadow-[0_0_30px_rgba(19,182,236,0.3)]">
+<span class="material-symbols-outlined text-primary text-[64px] !font-light drop-shadow-[0_0_8px_rgba(19,182,236,0.6)]">
+                        fingerprint
+                    </span>
+</div>
+<!-- Scanning line effect (simulated with gradient) -->
+<div class="absolute inset-0 rounded-full overflow-hidden opacity-30 pointer-events-none">
+<div class="w-full h-full bg-gradient-to-b from-transparent via-primary/20 to-transparent translate-y-[-100%] animate-[slide_2s_ease-in-out_infinite]"></div>
+</div>
+</div>
+<!-- Status Text -->
+<div class="flex flex-col items-center gap-2">
+<h1 class="text-xl font-normal tracking-wide text-white/90">Authenticating...</h1>
+<p class="text-sm font-light text-slate-400">Please scan your fingerprint</p>
+</div>
+</div>
+<!-- Footer Action: Enter PIN -->
+<div class="flex-none pb-12 w-full flex justify-center z-10">
+<button class="group flex flex-col items-center gap-1 p-4 transition-opacity active:opacity-70">
+<span class="text-sm font-medium tracking-widest uppercase text-slate-400 group-hover:text-primary transition-colors">Enter PIN</span>
+<span class="h-[1px] w-0 bg-primary transition-all duration-300 group-hover:w-full"></span>
+</button>
+</div>
+</div>
+<!-- Custom Keyframe for the scan line animation which isn't standard in Tailwind -->
+<style>
+        @keyframes slide {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+    </style>
+</body></html>

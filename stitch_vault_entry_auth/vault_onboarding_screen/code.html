@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vault Onboarding</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13b6ec",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#101d22",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-white transition-colors duration-200">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-hidden max-w-md mx-auto selection:bg-primary selection:text-black">
+<!-- Decorative Background Grid (Subtle Swiss Design Element) -->
+<div class="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05]" style="background-image: linear-gradient(#999 1px, transparent 1px), linear-gradient(90deg, #999 1px, transparent 1px); background-size: 40px 40px;">
+</div>
+<!-- Top Section: Branding -->
+<header class="flex-none pt-12 px-6 pb-4">
+<h1 class="text-4xl font-bold tracking-tighter leading-none dark:text-white text-slate-900">
+                VAULT<span class="text-primary">.</span>
+</h1>
+</header>
+<!-- Middle Section: Illustration & Value Prop -->
+<main class="flex-1 flex flex-col justify-center px-6 relative z-10">
+<!-- Abstract Illustration Container -->
+<div class="w-full aspect-square mb-8 relative flex items-center justify-center">
+<!-- Thin line geometric illustration -->
+<div class="w-full h-full bg-center bg-contain bg-no-repeat opacity-90" data-alt="Minimalist abstract geometric thin line illustration representing digital security and encryption in cyan and white" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC0iMiInTafrCQTjIdfqqv2cIU3Jco95EecVsvQdLBZtN70bk9gMQ21Pwn-YU2eirEvwkonYFHgWpj2MHB11VA9icZScQSF16txCjcP3obIhe8Ekeja61q7M8zjrJWq7hmZBL9fggQVxb6o5aGSbAA3N7qar347PHJkVV3lYZhTy5gq71b_cDt0zPNVlD99k2qApBu-fxeq9Z_yKqctQKhvvT6nZtoouaN0C7lUavRmAYI2rVD1gcPTJ9X7m8texEDrOo31iYOSRxc"); mask-image: linear-gradient(to bottom, black 80%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);'>
+</div>
+<!-- Overlay Gradient for better text integration if needed -->
+<div class="absolute inset-0 bg-gradient-to-t from-background-light dark:from-background-dark to-transparent h-24 bottom-0 w-full"></div>
+</div>
+<!-- Value Proposition -->
+<div class="space-y-2 mb-8">
+<h2 class="text-2xl font-bold leading-tight tracking-tight">
+                    Secure Your Legacy
+                </h2>
+<p class="text-slate-500 dark:text-gray-400 text-base font-normal leading-relaxed max-w-[90%]">
+                    Zero-knowledge encryption for your digital assets. Your keys remain on your device, always.
+                </p>
+</div>
+</main>
+<!-- Bottom Section: Actions -->
+<footer class="flex-none px-6 pb-8 pt-4 space-y-4 z-20">
+<!-- Primary Button: Create New Vault -->
+<button class="group relative w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-14 px-5 bg-primary text-[#101d22] transition-transform active:scale-[0.98]">
+<span class="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+<span class="material-symbols-outlined text-[20px] mr-2 font-medium">add_circle</span>
+<span class="text-base font-bold leading-normal tracking-[0.02em] uppercase">Create New Vault</span>
+</button>
+<!-- Secondary Button: Import -->
+<button class="group w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-14 px-5 border border-slate-300 dark:border-white/20 bg-transparent text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-colors active:scale-[0.98]">
+<span class="material-symbols-outlined text-[20px] mr-2 text-slate-500 dark:text-gray-400 group-hover:text-primary transition-colors">history</span>
+<span class="text-base font-bold leading-normal tracking-[0.02em] uppercase">Import Recovery Phrase</span>
+</button>
+<!-- Subtle Version/Footer Text -->
+<div class="pt-4 text-center">
+<p class="text-xs text-slate-400 dark:text-gray-600 font-mono tracking-wider uppercase">
+                    Your keys, your crypto.
+                </p>
+<p class="text-[10px] text-slate-300 dark:text-gray-700 mt-1">
+                    v1.0.2 • Encrypted
+                </p>
+</div>
+</footer>
+</div>
+</body></html>

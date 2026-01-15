@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Activity Log</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13b6ec",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#101d22",
+                        "surface-dark": "#18282e", 
+                        "success": "#00d68f",
+                        "danger": "#ff3b30",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for clean look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* Glassmorphism utility */
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-slate-100 min-h-screen flex flex-col overflow-hidden selection:bg-primary selection:text-white">
+<!-- Header -->
+<header class="flex-none px-6 pt-12 pb-4 flex items-center justify-between z-10 sticky top-0 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md">
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-slate-200 dark:bg-surface-dark hover:bg-slate-300 dark:hover:bg-slate-800 transition-colors group">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors text-[20px]">arrow_back</span>
+</button>
+<h1 class="text-xl font-bold tracking-tight">Activity Log</h1>
+<div class="w-10"></div> <!-- Spacer for optical centering -->
+</header>
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto no-scrollbar relative flex flex-col">
+<!-- Filters -->
+<div class="px-6 py-4 flex-none">
+<div class="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+<button class="flex h-9 items-center justify-center px-5 rounded-full bg-primary text-white shadow-lg shadow-primary/20 transition-transform active:scale-95">
+<span class="text-sm font-medium tracking-wide">All</span>
+</button>
+<button class="flex h-9 items-center justify-center px-5 rounded-full bg-slate-200 dark:bg-surface-dark text-slate-600 dark:text-slate-400 border border-transparent hover:border-slate-300 dark:hover:border-slate-700 transition-colors active:scale-95">
+<span class="text-sm font-medium tracking-wide">Security</span>
+</button>
+<button class="flex h-9 items-center justify-center px-5 rounded-full bg-slate-200 dark:bg-surface-dark text-slate-600 dark:text-slate-400 border border-transparent hover:border-slate-300 dark:hover:border-slate-700 transition-colors active:scale-95">
+<span class="text-sm font-medium tracking-wide">Access</span>
+</button>
+<button class="flex h-9 items-center justify-center px-5 rounded-full bg-slate-200 dark:bg-surface-dark text-slate-600 dark:text-slate-400 border border-transparent hover:border-slate-300 dark:hover:border-slate-700 transition-colors active:scale-95">
+<span class="text-sm font-medium tracking-wide">Transfers</span>
+</button>
+</div>
+</div>
+<!-- Timeline -->
+<div class="px-6 pb-8 flex flex-col">
+<!-- Date Divider -->
+<div class="flex items-center gap-4 py-4">
+<span class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Today</span>
+<div class="h-px bg-slate-200 dark:bg-slate-800 flex-1"></div>
+</div>
+<!-- Timeline Item 1 -->
+<div class="grid grid-cols-[24px_1fr] gap-x-4 relative group">
+<!-- Line & Dot -->
+<div class="flex flex-col items-center h-full">
+<div class="w-[2px] h-3 bg-slate-200 dark:bg-slate-800"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-success shadow-[0_0_8px_rgba(0,214,143,0.6)] z-10 ring-4 ring-background-light dark:ring-background-dark"></div>
+<div class="w-[1px] bg-slate-200 dark:bg-slate-800 h-full grow opacity-50"></div>
+</div>
+<!-- Content -->
+<div class="pb-8 pt-0.5">
+<div class="flex justify-between items-baseline mb-1">
+<h3 class="text-base font-bold text-slate-800 dark:text-white leading-tight">New Secret Added</h3>
+<span class="text-xs font-mono text-slate-400 dark:text-slate-500 tabular-nums tracking-tight">14:02</span>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 font-light">Ethereum Main Wallet</p>
+</div>
+</div>
+<!-- Timeline Item 2 -->
+<div class="grid grid-cols-[24px_1fr] gap-x-4 relative group">
+<div class="flex flex-col items-center h-full">
+<div class="w-[1px] bg-slate-200 dark:bg-slate-800 h-full absolute top-0 bottom-0 opacity-50"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-success z-10 mt-2 ring-4 ring-background-light dark:ring-background-dark"></div>
+</div>
+<div class="pb-8 pt-0.5">
+<div class="flex justify-between items-baseline mb-1">
+<h3 class="text-base font-bold text-slate-800 dark:text-white leading-tight">Vault Accessed</h3>
+<span class="text-xs font-mono text-slate-400 dark:text-slate-500 tabular-nums tracking-tight">09:15</span>
+</div>
+<div class="flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 font-light">
+<span class="material-symbols-outlined text-[14px]">face</span>
+<span>FaceID Verified</span>
+</div>
+</div>
+</div>
+<!-- Date Divider -->
+<div class="flex items-center gap-4 py-4 pt-2">
+<span class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Yesterday</span>
+<div class="h-px bg-slate-200 dark:bg-slate-800 flex-1"></div>
+</div>
+<!-- Timeline Item 3 -->
+<div class="grid grid-cols-[24px_1fr] gap-x-4 relative group">
+<div class="flex flex-col items-center h-full">
+<div class="w-[1px] bg-slate-200 dark:bg-slate-800 h-3 opacity-50"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-primary z-10 ring-4 ring-background-light dark:ring-background-dark"></div>
+<div class="w-[1px] bg-slate-200 dark:bg-slate-800 h-full grow opacity-50"></div>
+</div>
+<div class="pb-8 pt-0.5">
+<div class="flex justify-between items-baseline mb-1">
+<h3 class="text-base font-bold text-slate-800 dark:text-white leading-tight">Backup Created</h3>
+<span class="text-xs font-mono text-slate-400 dark:text-slate-500 tabular-nums tracking-tight">22:45</span>
+</div>
+<div class="flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 font-light">
+<span class="material-symbols-outlined text-[14px]">cloud_sync</span>
+<span>Cloud Sync</span>
+</div>
+</div>
+</div>
+<!-- Timeline Item 4 -->
+<div class="grid grid-cols-[24px_1fr] gap-x-4 relative group">
+<div class="flex flex-col items-center h-full">
+<div class="w-[1px] bg-slate-200 dark:bg-slate-800 h-full absolute top-0 bottom-0 opacity-50"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-danger z-10 mt-2 ring-4 ring-background-light dark:ring-background-dark"></div>
+</div>
+<div class="pb-8 pt-0.5">
+<div class="flex justify-between items-baseline mb-1">
+<h3 class="text-base font-bold text-slate-800 dark:text-white leading-tight">Failed Attempt</h3>
+<span class="text-xs font-mono text-slate-400 dark:text-slate-500 tabular-nums tracking-tight">18:30</span>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 font-light">Incorrect PIN • 3rd try</p>
+</div>
+</div>
+<!-- Timeline Item 5 -->
+<div class="grid grid-cols-[24px_1fr] gap-x-4 relative group">
+<div class="flex flex-col items-center h-full">
+<div class="w-[1px] bg-slate-200 dark:bg-slate-800 h-full absolute top-0 bottom-0 opacity-50"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-success z-10 mt-2 ring-4 ring-background-light dark:ring-background-dark"></div>
+</div>
+<div class="pb-8 pt-0.5">
+<div class="flex justify-between items-baseline mb-1">
+<h3 class="text-base font-bold text-slate-800 dark:text-white leading-tight">Vault Accessed</h3>
+<span class="text-xs font-mono text-slate-400 dark:text-slate-500 tabular-nums tracking-tight">08:12</span>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 font-light">Passcode Verified</p>
+</div>
+</div>
+<!-- End of Log -->
+<div class="flex flex-col items-center justify-center pt-8 pb-12 gap-3 opacity-60">
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-600 text-2xl">encrypted</span>
+<p class="text-xs font-medium text-slate-400 dark:text-slate-600 uppercase tracking-widest">End of encrypted log</p>
+</div>
+</div>
+</main>
+<!-- Bottom Fade (Visual polish) -->
+<div class="fixed bottom-0 left-0 w-full h-8 bg-gradient-to-t from-background-light dark:from-background-dark to-transparent pointer-events-none z-20"></div>
+</body></html>

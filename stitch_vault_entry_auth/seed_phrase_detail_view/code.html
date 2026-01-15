@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Seed Phrase Detail View</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13b6ec",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#101d22",
+                        "surface-dark": "#16262c",
+                        "surface-highlight": "#1f363d",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>/* Custom utilities for that extra polished feel */
+.glass-panel {
+    background: rgba(22, 38, 44, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05)
+    }
+.noise-bg {
+    position: relative
+    }
+.noise-bg::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuAF1G3J_j35Fx2geNcdLCPLqFfqxhBWg-hR19jlzZkg-rygeayvw7xOF_mbipHNrWS6T8Jb3NuiKE68_-MjpqO6Wdb3mWvdExXv_gnzEFAVWHkTnVJ7oBYzsCKVwl_YPUy1nh-5ScqoIOCovknFw6bGeHXXEIuqpgGKweSRxJi_lZmD1eZ9actg7M9M3ogEQ4wwG4qZ49XsIm0SL4V_XINaAMI5sE07x7WXi0xIHN2YYL9--CqYvT9S2UgDCqO0pmKsncvJM-CeMvI);
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 0
+    }</style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased selection:bg-primary selection:text-background-dark overflow-x-hidden">
+<div class="relative min-h-screen flex flex-col max-w-md mx-auto shadow-2xl noise-bg bg-background-light dark:bg-background-dark">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-50 flex items-center justify-between p-5 pb-2 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-black/5 dark:border-white/5">
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors group">
+<span class="material-symbols-outlined text-slate-900 dark:text-white group-hover:text-primary transition-colors" style="font-size: 24px;">arrow_back_ios_new</span>
+</button>
+<div class="flex items-center gap-1 opacity-60">
+<span class="material-symbols-outlined text-[16px] text-primary">lock</span>
+<span class="text-xs font-bold tracking-widest uppercase text-slate-500 dark:text-slate-400">Secure Vault</span>
+</div>
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-slate-900 dark:text-white" style="font-size: 24px;">more_horiz</span>
+</button>
+</header>
+<main class="flex-1 flex flex-col relative z-10 p-5">
+<!-- HeadlineText & MetaText -->
+<div class="mb-8 text-center space-y-2">
+<div class="inline-flex items-center justify-center size-16 rounded-2xl bg-gradient-to-br from-surface-dark to-surface-highlight border border-white/10 mb-4 shadow-lg shadow-black/20">
+<span class="material-symbols-outlined text-primary" style="font-size: 32px;">account_balance_wallet</span>
+</div>
+<h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight">Ledger Main</h1>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium tracking-wide">Created on Nov 12, 2023</p>
+</div>
+<!-- DescriptionList (Grid of Seeds) -->
+<!-- Using a glass-panel effect for the container to give it depth -->
+<div class="glass-panel rounded-xl p-1 mb-6 border border-white/10 relative overflow-hidden">
+<!-- Decorative top gradient line -->
+<div class="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
+<div class="grid grid-cols-2 gap-px bg-black/5 dark:bg-white/5">
+<!-- Word 01 -->
+<div class="bg-white dark:bg-surface-dark p-4 flex items-baseline gap-3 group hover:bg-slate-50 dark:hover:bg-surface-highlight transition-colors">
+<span class="text-primary/70 font-mono text-xs font-bold w-6">01</span>
+<span class="text-slate-800 dark:text-white font-semibold text-lg tracking-tight">abandon</span>
+</div>
+<!-- Word 02 -->
+<div class="bg-white dark:bg-surface-dark p-4 flex items-baseline gap-3 group hover:bg-slate-50 dark:hover:bg-surface-highlight transition-colors">
+<span class="text-primary/70 font-mono text-xs font-bold w-6">02</span>
+<span class="text-slate-800 dark:text-white font-semibold text-lg tracking-tight">ability</span>
+</div>
+<!-- Word 03 -->
+<div class="bg-white dark:bg-surface-dark p-4 flex items-baseline gap-3 group hover:bg-slate-50 dark:hover:bg-surface-highlight transition-colors">
+<span class="text-primary/70 font-mono text-xs font-bold w-6">03</span>
+<span class="text-slate-800 dark:text-white font-semibold text-lg tracking-tight">able</span>
+</div>
+<!-- Word 04 -->
+<div class="bg-white dark:bg-surface-dark p-4 flex items-baseline gap-3 group hover:bg-slate-50 dark:hover:bg-surface-highlight transition-colors">
+<span class="text-primary/70 font-mono text-xs font-bold w-6">04</span>
+<span class="text-slate-800 dark:text-white font-semibold text-lg tracking-tight">about</span>
+</div>
+<!-- Word 05 -->
+<div class="bg-white dark:bg-surface-dark p-4 flex items-baseline gap-3 group hover:bg-slate-50 dark:hover:bg-surface-highlight transition-colors">
+<span class="text-primary/70 font-mono text-xs font-bold w-6">05</span>
+<span class="text-slate-800 dark:text-white font-semibold text-lg tracking-tight">above</span>
+</div>
+<!-- Word 06 -->
+<div class="bg-white dark:bg-surface-dark p-4 flex items-baseline gap-3 group hover:bg-slate-50 dark:hover:bg-surface-highlight transition-colors">
+<span class="text-primary/70 font-mono text-xs font-bold w-6">06</span>
+<span class="text-slate-800 dark:text-white font-semibold text-lg tracking-tight">absent</span>
+</div>
+<!-- Word 07 -->
+<div class="bg-white dark:bg-surface-dark p-4 flex items-baseline gap-3 group hover:bg-slate-50 dark:hover:bg-surface-highlight transition-colors">
+<span class="text-primary/70 font-mono text-xs font-bold w-6">07</span>
+<span class="text-slate-800 dark:text-white font-semibold text-lg tracking-tight">absorb</span>
+</div>
+<!-- Word 08 -->
+<div class="bg-white dark:bg-surface-dark p-4 flex items-baseline gap-3 group hover:bg-slate-50 dark:hover:bg-surface-highlight transition-colors">
+<span class="text-primary/70 font-mono text-xs font-bold w-6">08</span>
+<span class="text-slate-800 dark:text-white font-semibold text-lg tracking-tight">abstract</span>
+</div>
+<!-- Word 09 -->
+<div class="bg-white dark:bg-surface-dark p-4 flex items-baseline gap-3 group hover:bg-slate-50 dark:hover:bg-surface-highlight transition-colors">
+<span class="text-primary/70 font-mono text-xs font-bold w-6">09</span>
+<span class="text-slate-800 dark:text-white font-semibold text-lg tracking-tight">absurd</span>
+</div>
+<!-- Word 10 -->
+<div class="bg-white dark:bg-surface-dark p-4 flex items-baseline gap-3 group hover:bg-slate-50 dark:hover:bg-surface-highlight transition-colors">
+<span class="text-primary/70 font-mono text-xs font-bold w-6">10</span>
+<span class="text-slate-800 dark:text-white font-semibold text-lg tracking-tight">abuse</span>
+</div>
+<!-- Word 11 -->
+<div class="bg-white dark:bg-surface-dark p-4 flex items-baseline gap-3 group hover:bg-slate-50 dark:hover:bg-surface-highlight transition-colors">
+<span class="text-primary/70 font-mono text-xs font-bold w-6">11</span>
+<span class="text-slate-800 dark:text-white font-semibold text-lg tracking-tight">access</span>
+</div>
+<!-- Word 12 -->
+<div class="bg-white dark:bg-surface-dark p-4 flex items-baseline gap-3 group hover:bg-slate-50 dark:hover:bg-surface-highlight transition-colors">
+<span class="text-primary/70 font-mono text-xs font-bold w-6">12</span>
+<span class="text-slate-800 dark:text-white font-semibold text-lg tracking-tight">accident</span>
+</div>
+</div>
+</div>
+<!-- Warning / Info Box -->
+<div class="flex items-start gap-3 p-4 rounded-lg bg-orange-500/10 border border-orange-500/20 mb-8">
+<span class="material-symbols-outlined text-orange-500 shrink-0" style="font-size: 20px;">warning</span>
+<p class="text-xs text-orange-200/80 leading-relaxed font-body">
+                    Never share these words with anyone. Anyone with this phrase can access your wallet.
+                </p>
+</div>
+<!-- SingleButton (Push to bottom) -->
+<div class="mt-auto pt-4">
+<div class="flex flex-col items-center gap-4">
+<!-- Biometric Hint -->
+<div class="flex items-center gap-2 text-slate-500 dark:text-slate-400 opacity-0 animate-[fadeIn_0.5s_ease-in_forwards]">
+<span class="material-symbols-outlined" style="font-size: 20px;">face</span>
+<span class="text-xs font-medium uppercase tracking-wider">Face ID Verified</span>
+</div>
+<button class="relative w-full overflow-hidden rounded-lg h-14 bg-surface-dark border border-primary/30 group active:scale-[0.98] transition-transform duration-150">
+<!-- Progress fill simulation -->
+<div class="absolute inset-0 bg-primary/10 w-full origin-left transform scale-x-100 transition-transform duration-[2000ms] ease-linear"></div>
+<div class="relative z-10 flex items-center justify-center gap-3 h-full">
+<span class="material-symbols-outlined text-primary" style="font-size: 24px;">visibility_off</span>
+<span class="text-primary text-sm font-bold tracking-[0.15em] uppercase">Hold to Hide</span>
+</div>
+</button>
+<p class="text-[10px] text-slate-600 dark:text-slate-500 text-center uppercase tracking-widest font-mono">
+                        Session expires in 28s
+                    </p>
+</div>
+</div>
+</main>
+</div>
+<!-- Background visual effect simulating a "Vault" environment -->
+<div class="fixed inset-0 pointer-events-none z-[-1] overflow-hidden">
+<div class="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-primary/5 blur-[120px] rounded-full"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-blue-900/10 blur-[100px] rounded-full"></div>
+</div>
+</body></html>
