@@ -8,6 +8,7 @@ import '../providers/vault_provider.dart';
 import '../widgets/gradient_background.dart';
 import '../widgets/vault_button.dart';
 import '../widgets/vault_text_field.dart';
+import '../widgets/vault_brand.dart';
 
 class MasterPasswordInputScreen extends StatefulWidget {
   const MasterPasswordInputScreen({super.key});
@@ -86,13 +87,12 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Logo/Icon
-                  const Icon(
-                    PhosphorIconsRegular.cubeFocus,
-                    size: 80,
-                    color: primaryColor,
+                  // Logo/Brand
+                  const VaultBrand(
+                    fontSize: 48,
+                    mainAxisAlignment: MainAxisAlignment.center,
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 48),
 
                   // Title
                   Text(
@@ -152,9 +152,9 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.1),
+                        color: Colors.red.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.red.withOpacity(0.3)),
+                        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
                       ),
                       child: Row(
                         children: [

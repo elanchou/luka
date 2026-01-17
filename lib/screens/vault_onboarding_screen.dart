@@ -4,6 +4,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../widgets/gradient_background.dart';
 import '../widgets/vault_button.dart';
 import '../widgets/vault_outline_button.dart';
+import '../widgets/vault_brand.dart';
 
 class VaultOnboardingScreen extends StatelessWidget {
   const VaultOnboardingScreen({super.key});
@@ -23,7 +24,7 @@ class VaultOnboardingScreen extends StatelessWidget {
           Positioned.fill(
             child: CustomPaint(
               painter: GridPainter(
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 spacing: 40.0,
               ),
             ),
@@ -35,29 +36,7 @@ class VaultOnboardingScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      Text(
-                        'VAULT',
-                        style: GoogleFonts.spaceGrotesk(
-                          fontSize: 36,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: -1.0,
-                          height: 1.0,
-                        ),
-                      ),
-                      Text(
-                        '.',
-                        style: GoogleFonts.spaceGrotesk(
-                          fontSize: 36,
-                          fontWeight: FontWeight.bold,
-                          color: primaryColor,
-                          height: 1.0,
-                        ),
-                      ),
-                    ],
-                  ),
+                  const VaultBrand(fontSize: 36),
                   Expanded(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -74,7 +53,7 @@ class VaultOnboardingScreen extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: primaryColor.withOpacity(0.3),
+                                    color: primaryColor.withValues(alpha: 0.3),
                                     width: 1,
                                   ),
                                 ),
@@ -85,7 +64,7 @@ class VaultOnboardingScreen extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: Colors.white.withOpacity(0.2),
+                                    color: Colors.white.withValues(alpha: 0.2),
                                     width: 1,
                                   ),
                                 ),
@@ -97,7 +76,7 @@ class VaultOnboardingScreen extends StatelessWidget {
                                   height: 100,
                                   decoration: BoxDecoration(
                                     border: Border.all(
-                                      color: primaryColor.withOpacity(0.5),
+                                      color: primaryColor.withValues(alpha: 0.5),
                                       width: 1,
                                     ),
                                   ),
@@ -106,7 +85,7 @@ class VaultOnboardingScreen extends StatelessWidget {
                               Icon(
                                 PhosphorIconsBold.lock,
                                 size: 48,
-                                color: primaryColor.withOpacity(0.8),
+                                color: primaryColor.withValues(alpha: 0.8),
                               ),
                             ],
                           ),
@@ -138,7 +117,7 @@ class VaultOnboardingScreen extends StatelessWidget {
                   const SizedBox(height: 24),
                   VaultButton(
                     text: 'Create New Vault',
-                    icon: const Icon(PhosphorIconsBold.plusCircle),
+                    icon: PhosphorIconsBold.plusCircle,
                     onTap: () {
                       Navigator.pushNamed(context, '/set-master-password');
                     },

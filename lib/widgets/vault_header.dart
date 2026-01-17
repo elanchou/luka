@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'vault_brand.dart';
 
 class VaultHeader extends StatelessWidget {
-  final String title;
+  final String? title;
   final bool showUserIcon;
 
   const VaultHeader({
     super.key,
-    this.title = 'VAULT',
+    this.title,
     this.showUserIcon = true,
   });
 
@@ -17,15 +18,18 @@ class VaultHeader extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          title,
-          style: GoogleFonts.spaceGrotesk(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            letterSpacing: 4.0,
+        if (title == null || title == 'VAULT')
+          const VaultBrand(fontSize: 24)
+        else
+          Text(
+            title!,
+            style: GoogleFonts.spaceGrotesk(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: 4.0,
+            ),
           ),
-        ),
         if (showUserIcon)
           Container(
             width: 40,

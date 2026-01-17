@@ -151,7 +151,7 @@ class _SetupMasterPasswordScreenState extends State<SetupMasterPasswordScreen> {
                             color: const Color(0xFF1a2c32),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: primaryColor.withOpacity(0.2),
+                              color: primaryColor.withValues(alpha: 0.2),
                             ),
                           ),
                           child: Row(
@@ -260,7 +260,7 @@ class _SetupMasterPasswordScreenState extends State<SetupMasterPasswordScreen> {
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? primaryColor.withOpacity(0.1)
+                                      ? primaryColor.withValues(alpha: 0.1)
                                       : const Color(0xFF1a2c32),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
@@ -317,10 +317,10 @@ class _SetupMasterPasswordScreenState extends State<SetupMasterPasswordScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.orange.withOpacity(0.1),
+                            color: Colors.orange.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: Colors.orange.withOpacity(0.3),
+                              color: Colors.orange.withValues(alpha: 0.3),
                             ),
                           ),
                           child: Row(
@@ -349,10 +349,10 @@ class _SetupMasterPasswordScreenState extends State<SetupMasterPasswordScreen> {
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: Colors.red.withOpacity(0.1),
+                              color: Colors.red.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: Colors.red.withOpacity(0.3),
+                                color: Colors.red.withValues(alpha: 0.3),
                               ),
                             ),
                             child: Row(
@@ -392,10 +392,10 @@ class _SetupMasterPasswordScreenState extends State<SetupMasterPasswordScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.1),
+                            color: Colors.red.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: Colors.red.withOpacity(0.3),
+                              color: Colors.red.withValues(alpha: 0.3),
                             ),
                           ),
                           child: Row(

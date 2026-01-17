@@ -360,15 +360,8 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
                           ? _verifyPhrase
                           : null,
                       icon: _isVerifying
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            )
-                          : const Icon(PhosphorIconsBold.shieldCheck, size: 20),
+                          ? null
+                          : PhosphorIconsBold.shieldCheck,
                     ),
                   ),
                 ),

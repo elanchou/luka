@@ -182,10 +182,10 @@ class _ChangeMasterPasswordScreenState extends State<ChangeMasterPasswordScreen>
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.orange.withOpacity(0.1),
+                              color: Colors.orange.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: Colors.orange.withOpacity(0.3),
+                                color: Colors.orange.withValues(alpha: 0.3),
                               ),
                             ),
                             child: Row(
@@ -313,7 +313,7 @@ class _ChangeMasterPasswordScreenState extends State<ChangeMasterPasswordScreen>
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
                                     color: isSelected
-                                        ? primaryColor.withOpacity(0.1)
+                                        ? primaryColor.withValues(alpha: 0.1)
                                         : const Color(0xFF1a2c32),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
@@ -369,9 +369,9 @@ class _ChangeMasterPasswordScreenState extends State<ChangeMasterPasswordScreen>
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: Colors.red.withOpacity(0.1),
+                                color: Colors.red.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.red.withOpacity(0.3)),
+                                border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
                               ),
                               child: Row(
                                 children: [

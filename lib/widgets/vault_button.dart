@@ -4,8 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 class VaultButton extends StatelessWidget {
   final String text;
   final VoidCallback? onTap;
-  final IconData? iconData;
-  final Widget? icon;
+  final IconData? icon;
   final Color? backgroundColor;
   final Color? textColor;
   final double? width;
@@ -18,7 +17,6 @@ class VaultButton extends StatelessWidget {
     super.key,
     required this.text,
     this.onTap,
-    this.iconData,
     this.icon,
     this.backgroundColor,
     this.textColor,
@@ -27,10 +25,7 @@ class VaultButton extends StatelessWidget {
     this.borderRadius = 12.0,
     this.isFullWidth = true,
     this.isLoading = false,
-  }) : assert(
-         iconData == null || icon == null,
-         'Cannot provide both iconData and icon widget',
-       );
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -41,13 +36,6 @@ class VaultButton extends StatelessWidget {
     final bgColor = backgroundColor ?? defaultPrimaryColor;
     final txtColor = textColor ?? defaultBackgroundDark;
     final isDisabled = onTap == null;
-
-    Widget? iconWidget;
-    if (icon != null) {
-      iconWidget = icon;
-    } else if (iconData != null) {
-      iconWidget = Icon(iconData, color: txtColor, size: 20);
-    }
 
     Widget buttonContent = isLoading
         ? SizedBox(
@@ -62,8 +50,8 @@ class VaultButton extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (iconWidget != null) ...[
-                iconWidget,
+              if (icon != null) ...[
+                Icon(icon, color: txtColor, size: 20),
                 const SizedBox(width: 8),
               ],
               Flexible(
@@ -82,13 +70,13 @@ class VaultButton extends StatelessWidget {
           );
 
     return Material(
-      color: isDisabled 
-          ? bgColor.withOpacity(0.3) 
+      color: isDisabled
+          ? bgColor.withValues(alpha: 0.3)
           : bgColor,
       borderRadius: BorderRadius.circular(borderRadius),
       clipBehavior: Clip.antiAlias,
       elevation: isDisabled ? 0 : 4,
-      shadowColor: bgColor.withOpacity(0.25),
+      shadowColor: bgColor.withValues(alpha: 0.25),
       child: InkWell(
         onTap: isLoading || isDisabled ? null : onTap,
         child: Container(
