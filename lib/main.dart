@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'providers/vault_provider.dart';
+import 'services/network_monitor_service.dart';
+import 'screens/network_blocked_screen.dart';
 import 'screens/app_splash_screen.dart';
 import 'screens/vault_onboarding_screen.dart';
 import 'screens/main_vault_dashboard.dart';
@@ -24,11 +26,14 @@ void main() async {
   ]);
 
   final vaultProvider = VaultProvider();
+  final networkMonitor = NetworkMonitorService();
+  await networkMonitor.init();
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: vaultProvider),
+        ChangeNotifierProvider.value(value: networkMonitor),
       ],
       child: const VaultApp(),
     ),
@@ -50,6 +55,19 @@ class VaultApp extends StatelessWidget {
         textTheme: GoogleFonts.spaceGroteskTextTheme(ThemeData.dark().textTheme),
         useMaterial3: true,
       ),
+      builder: (context, child) {
+        return Consumer<NetworkMonitorService>(
+          builder: (context, network, _) {
+            return Stack(
+              children: [
+                if (child != null) child,
+                if (network.isConnected)
+                  const NetworkBlockedScreen(),
+              ],
+            );
+          },
+        );
+      },
       initialRoute: '/',
       routes: {
         '/': (context) => const AppSplashScreen(),

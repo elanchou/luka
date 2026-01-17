@@ -21,6 +21,7 @@ dependencies:
   bip39: ^1.0.6
   crypto: ^3.0.3
   phosphor_flutter: ^2.1.0
+  connectivity_plus: ^7.0.0
 
 dev_dependencies:
   flutter_test:

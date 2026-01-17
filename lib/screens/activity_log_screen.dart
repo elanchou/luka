@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../widgets/gradient_background.dart';
-import '../widgets/vault_header.dart';
 
 class ActivityLogScreen extends StatelessWidget {
   const ActivityLogScreen({super.key});
@@ -11,12 +9,12 @@ class ActivityLogScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const backgroundDark = Color(0xFF101d22);
-    return const Scaffold(
+    return Scaffold(
       backgroundColor: backgroundDark,
       body: Stack(
         children: [
-          GradientBackground(),
-          ActivityLogBody(),
+          const GradientBackground(),
+          const ActivityLogBody(),
         ],
       ),
     );
@@ -38,15 +36,41 @@ class _ActivityLogBodyState extends State<ActivityLogBody> {
   Widget build(BuildContext context) {
     const primaryColor = Color(0xFF13b6ec);
     const successColor = Color(0xFF00d68f);
-    const dangerColor = Color(0xFFff4d4d);
+    const dangerColor = Color(0xFFff3b30);
 
     return SafeArea(
       child: Column(
         children: [
           // Header
-          const Padding(
-            padding: EdgeInsets.fromLTRB(20, 16, 20, 16),
-            child: VaultHeader(title: 'Activity Log', showUserIcon: false),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // If we are in a tab view, we might not want the back button.
+                // We can check if we can pop, or just hide it if it's the root of the tab.
+                // For now, let's keep the design but maybe make the back button optional or functional only if not in tab.
+                // Assuming this is used in MainDashboard which replaces the route stack or is the root,
+                // "Back" might not make sense if it's a tab.
+                // Let's assume for the TabBar implementation, we don't want the back button.
+                // But the original design had it. I'll make it conditionally visible or just keep it for now.
+                // Actually, if I switch tabs, I don't "pop".
+                // I'll hide the back button if it's used in the tab context (implied by this refactor).
+
+                // Let's just keep the header simple.
+                const SizedBox(width: 24), // Placeholder for alignment if back button removed
+
+                Text(
+                  'Activity Log',
+                  style: GoogleFonts.spaceGrotesk(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 24), // Spacer for centering
+              ],
+            ),
           ),
 
           // Filters
@@ -54,40 +78,31 @@ class _ActivityLogBodyState extends State<ActivityLogBody> {
             height: 48,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 24),
               itemCount: _filters.length,
               itemBuilder: (context, index) {
                 final isSelected = _selectedFilterIndex == index;
                 return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: InkWell(
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      setState(() => _selectedFilterIndex = index);
-                    },
-                    borderRadius: BorderRadius.circular(20),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: isSelected ? primaryColor.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.03),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: isSelected ? primaryColor.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.05),
-                        ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          _filters[index],
-                          style: GoogleFonts.spaceGrotesk(
-                            fontSize: 13,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                            color: isSelected ? primaryColor : Colors.grey[500],
-                            letterSpacing: 0.5,
-                          ),
-                        ),
+                  padding: const EdgeInsets.only(right: 12),
+                  child: ActionChip(
+                    label: Text(
+                      _filters[index],
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: isSelected ? Colors.white : Colors.grey[400],
                       ),
                     ),
+                    backgroundColor: isSelected ? primaryColor : Colors.white.withOpacity(0.05),
+                    side: BorderSide.none,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _selectedFilterIndex = index;
+                      });
+                    },
                   ),
                 );
               },
@@ -150,22 +165,22 @@ class _ActivityLogBodyState extends State<ActivityLogBody> {
                   children: [
                     Icon(
                       PhosphorIconsBold.shieldCheck,
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: Colors.white.withOpacity(0.3),
                       size: 24,
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'END OF ENCRYPTED LOG',
                       style: GoogleFonts.spaceGrotesk(
-                        fontSize: 10,
+                        fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white.withValues(alpha: 0.2),
-                        letterSpacing: 2.0,
+                        color: Colors.white.withOpacity(0.3),
+                        letterSpacing: 1.5,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 48),
+                const SizedBox(height: 32),
               ],
             ),
           ),
@@ -189,17 +204,17 @@ class _DateDivider extends StatelessWidget {
           Text(
             label,
             style: GoogleFonts.spaceGrotesk(
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: FontWeight.bold,
               color: Colors.grey[600],
-              letterSpacing: 2.0,
+              letterSpacing: 1.5,
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Container(
               height: 1,
-              color: Colors.white.withValues(alpha: 0.05),
+              color: Colors.white.withOpacity(0.1),
             ),
           ),
         ],
@@ -247,7 +262,7 @@ class _TimelineItem extends StatelessWidget {
                     bottom: 0,
                     child: Container(
                       width: 1,
-                      color: Colors.white.withValues(alpha: 0.05),
+                      color: Colors.white.withOpacity(0.1),
                     ),
                   ),
                 if (!isFirst)
@@ -256,7 +271,7 @@ class _TimelineItem extends StatelessWidget {
                     height: 12,
                     child: Container(
                       width: 1,
-                      color: Colors.white.withValues(alpha: 0.05),
+                      color: Colors.white.withOpacity(0.1),
                     ),
                   ),
                 Container(
@@ -268,8 +283,8 @@ class _TimelineItem extends StatelessWidget {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: color.withValues(alpha: 0.3),
-                        blurRadius: 10,
+                        color: color.withOpacity(0.4),
+                        blurRadius: 8,
                       ),
                     ],
                     border: Border.all(
@@ -303,8 +318,8 @@ class _TimelineItem extends StatelessWidget {
                       Text(
                         time,
                         style: GoogleFonts.spaceMono(
-                          fontSize: 11,
-                          color: Colors.grey[600],
+                          fontSize: 12,
+                          color: Colors.grey[500],
                         ),
                       ),
                     ],
@@ -316,16 +331,16 @@ class _TimelineItem extends StatelessWidget {
                         Icon(
                           icon,
                           size: 14,
-                          color: Colors.grey[500],
+                          color: Colors.grey[400],
                         ),
                         const SizedBox(width: 6),
                       ],
                       Text(
                         description,
                         style: GoogleFonts.notoSans(
-                          fontSize: 13,
-                          color: Colors.grey[500],
-                          height: 1.4,
+                          fontSize: 14,
+                          color: Colors.grey[400],
+                          fontWeight: FontWeight.w300,
                         ),
                       ),
                     ],
