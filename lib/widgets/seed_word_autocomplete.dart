@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'dart:ui';
 import '../utils/constants.dart';
 
@@ -47,7 +48,7 @@ class _SeedWordAutocompleteState extends State<SeedWordAutocomplete> {
 
   void _onTextChanged() {
     final text = widget.controller.text.toLowerCase().trim();
-    
+
     if (text.isEmpty) {
       setState(() {
         _suggestions = [];
@@ -116,14 +117,14 @@ class _SeedWordAutocompleteState extends State<SeedWordAutocomplete> {
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.surfaceDark.withOpacity(0.95),
+            color: AppColors.surfaceDark.withValues(alpha: 0.95),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -135,12 +136,12 @@ class _SeedWordAutocompleteState extends State<SeedWordAutocomplete> {
             itemCount: _suggestions.length,
             separatorBuilder: (context, index) => Divider(
               height: 1,
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
             ),
             itemBuilder: (context, index) {
               final word = _suggestions[index];
               final currentText = widget.controller.text.toLowerCase();
-              
+
               return InkWell(
                 onTap: () {
                   widget.controller.text = word;
@@ -158,7 +159,7 @@ class _SeedWordAutocompleteState extends State<SeedWordAutocomplete> {
                         width: 24,
                         height: 24,
                         decoration: BoxDecoration(
-                          color: AppColors.primaryColor.withOpacity(0.1),
+                          color: AppColors.primaryColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Center(
@@ -197,9 +198,9 @@ class _SeedWordAutocompleteState extends State<SeedWordAutocomplete> {
                         ),
                       ),
                       Icon(
-                        Icons.arrow_forward,
+                        PhosphorIconsBold.caretRight,
                         size: 14,
-                        color: Colors.white.withOpacity(0.3),
+                        color: Colors.white.withValues(alpha: 0.3),
                       ),
                     ],
                   ),
@@ -221,16 +222,16 @@ class _SeedWordAutocompleteState extends State<SeedWordAutocomplete> {
       link: _layerLink,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.03),
+          color: Colors.white.withValues(alpha: 0.03),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: widget.focusNode.hasFocus
-                ? AppColors.primaryColor.withOpacity(0.5)
+                ? AppColors.primaryColor.withValues(alpha: 0.5)
                 : (hasText && isValid)
-                    ? AppColors.successColor.withOpacity(0.3)
+                    ? AppColors.successColor.withValues(alpha: 0.3)
                     : (hasText && !isValid)
-                        ? AppColors.dangerColor.withOpacity(0.3)
-                        : Colors.white.withOpacity(0.1),
+                        ? AppColors.dangerColor.withValues(alpha: 0.3)
+                        : Colors.white.withValues(alpha: 0.1),
             width: 1.5,
           ),
         ),
@@ -240,7 +241,7 @@ class _SeedWordAutocompleteState extends State<SeedWordAutocomplete> {
               width: 40,
               height: 48,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.02),
+                color: Colors.white.withValues(alpha: 0.02),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(12),
                   bottomLeft: Radius.circular(12),
@@ -288,11 +289,11 @@ class _SeedWordAutocompleteState extends State<SeedWordAutocomplete> {
               Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: Icon(
-                  isValid ? Icons.check_circle : Icons.error,
+                  isValid ? PhosphorIconsBold.checkCircle : PhosphorIconsBold.warningCircle,
                   size: 18,
-                  color: isValid 
-                      ? AppColors.successColor 
-                      : AppColors.dangerColor.withOpacity(0.5),
+                  color: isValid
+                      ? AppColors.successColor
+                      : AppColors.dangerColor.withValues(alpha: 0.5),
                 ),
               ),
           ],
@@ -301,3 +302,4 @@ class _SeedWordAutocompleteState extends State<SeedWordAutocomplete> {
     );
   }
 }
+

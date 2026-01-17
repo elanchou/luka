@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import '../services/master_key_service.dart';
 import '../services/encryption_service.dart';
@@ -21,7 +22,7 @@ class _ChangeMasterPasswordScreenState extends State<ChangeMasterPasswordScreen>
   final _confirmPasswordController = TextEditingController();
   final _masterKeyService = MasterKeyService();
   final _encryptionService = EncryptionService();
-  
+
   SecurityLevel _selectedLevel = SecurityLevel.standard;
   bool _isLoading = false;
   bool _isLoadingLevel = true;
@@ -106,7 +107,7 @@ class _ChangeMasterPasswordScreenState extends State<ChangeMasterPasswordScreen>
       if (mounted) {
         final vaultProvider = Provider.of<VaultProvider>(context, listen: false);
         await vaultProvider.reinitialize(newPassword);
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -148,7 +149,7 @@ class _ChangeMasterPasswordScreenState extends State<ChangeMasterPasswordScreen>
                   child: Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        icon: const Icon(PhosphorIconsBold.arrowLeft, color: Colors.white),
                         onPressed: () => Navigator.pop(context),
                       ),
                       const SizedBox(width: 8),
@@ -190,7 +191,7 @@ class _ChangeMasterPasswordScreenState extends State<ChangeMasterPasswordScreen>
                             child: Row(
                               children: [
                                 Icon(
-                                  Icons.warning_amber_rounded,
+                                  PhosphorIconsBold.warning,
                                   color: Colors.orange[300],
                                   size: 24,
                                 ),
@@ -326,8 +327,8 @@ class _ChangeMasterPasswordScreenState extends State<ChangeMasterPasswordScreen>
                                     children: [
                                       Icon(
                                         isSelected
-                                            ? Icons.radio_button_checked
-                                            : Icons.radio_button_unchecked,
+                                            ? PhosphorIconsBold.checkCircle
+                                            : PhosphorIconsBold.circle,
                                         color: isSelected
                                             ? primaryColor
                                             : Colors.grey[600],
@@ -374,7 +375,7 @@ class _ChangeMasterPasswordScreenState extends State<ChangeMasterPasswordScreen>
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.error_outline, color: Colors.red, size: 20),
+                                  const Icon(PhosphorIconsBold.warningCircle, color: Colors.red, size: 20),
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
@@ -417,3 +418,4 @@ class _ChangeMasterPasswordScreenState extends State<ChangeMasterPasswordScreen>
     );
   }
 }
+

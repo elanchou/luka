@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../widgets/gradient_background.dart';
 import '../widgets/vault_button.dart';
 import '../widgets/vault_text_field.dart';
@@ -46,7 +47,6 @@ class _AddSecretStep1State extends State<AddSecretStep1> {
     const primaryColor = Color(0xFF13b6ec);
     const backgroundDark = Color(0xFF101d22);
     const labelColor = Color(0xFF5f747a);
-    const inputBorderColor = Color(0xFF283539);
 
     return Scaffold(
       backgroundColor: backgroundDark,
@@ -94,7 +94,7 @@ class _AddSecretStep1State extends State<AddSecretStep1> {
                           controller: _networkController,
                           label: 'NETWORK',
                           placeholder: 'e.g. Ethereum',
-                          suffixIcon: Icons.hub_outlined,
+                          suffixIcon: PhosphorIconsBold.globe,
                         ),
                       ],
                     ),
@@ -106,7 +106,7 @@ class _AddSecretStep1State extends State<AddSecretStep1> {
                   padding: const EdgeInsets.fromLTRB(32, 0, 32, 40),
                   child: VaultButton(
                     text: 'NEXT',
-                    icon: const Icon(Icons.arrow_forward),
+                    icon: const Icon(PhosphorIconsBold.arrowRight),
                     onTap: _nextStep,
                     backgroundColor: primaryColor,
                     textColor: backgroundDark,
@@ -120,3 +120,4 @@ class _AddSecretStep1State extends State<AddSecretStep1> {
     );
   }
 }
+

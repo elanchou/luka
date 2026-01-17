@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:provider/provider.dart';
 import '../providers/vault_provider.dart';
@@ -139,7 +140,7 @@ class _ExportProgressScreenState extends State<ExportProgressScreen> with Single
         titleWidget: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.enhanced_encryption, color: primaryColor, size: 20),
+            const Icon(PhosphorIconsBold.shieldCheck, color: primaryColor, size: 20),
             const SizedBox(width: 8),
             Text(
               'SECURE EXPORT',
@@ -365,7 +366,7 @@ class _ExportProgressScreenState extends State<ExportProgressScreen> with Single
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                   child: VaultOutlineButton(
                     text: 'Cancel Export',
-                    icon: Icons.cancel_outlined,
+                    icon: PhosphorIconsBold.xCircle,
                     onTap: () => Navigator.pop(context),
                     borderColor: Colors.white.withOpacity(0.1),
                     textColor: Colors.white,
@@ -401,3 +402,4 @@ class LogEntry {
 
   LogEntry(this.message, this.type);
 }
+

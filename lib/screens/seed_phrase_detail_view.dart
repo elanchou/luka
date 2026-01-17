@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'dart:ui';
 import 'package:intl/intl.dart';
 import '../models/secret_model.dart';
@@ -42,7 +43,7 @@ class SeedPhraseDetailView extends StatelessWidget {
         titleWidget: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.lock, size: 14, color: primaryColor),
+            Icon(PhosphorIconsBold.lock, size: 14, color: primaryColor),
             const SizedBox(width: 6),
             Text(
               'SECURE VAULT',
@@ -57,7 +58,7 @@ class SeedPhraseDetailView extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.delete_outline, size: 24),
+            icon: const Icon(PhosphorIconsBold.trash, size: 24),
             color: Colors.white.withOpacity(0.5),
             onPressed: () async {
               final confirm = await showDialog<bool>(
@@ -115,8 +116,8 @@ class SeedPhraseDetailView extends StatelessWidget {
                           ),
                           child: Icon(
                             secret.type == SecretType.seedPhrase
-                                ? Icons.account_balance_wallet_outlined
-                                : Icons.vpn_key_outlined,
+                                ? PhosphorIconsBold.wallet
+                                : PhosphorIconsBold.key,
                             size: 32,
                             color: primaryColor,
                           ),
@@ -256,7 +257,7 @@ class SeedPhraseDetailView extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Icon(
-                                Icons.warning_amber_rounded,
+                                PhosphorIconsBold.warning,
                                 color: Colors.orange[500],
                                 size: 20,
                               ),
@@ -281,7 +282,7 @@ class SeedPhraseDetailView extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.face, size: 16, color: Colors.grey),
+                            const Icon(PhosphorIconsBold.userFocus, size: 16, color: Colors.grey),
                             const SizedBox(width: 8),
                             Text(
                               'FACE ID VERIFIED',
@@ -317,7 +318,7 @@ class SeedPhraseDetailView extends StatelessWidget {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     const Icon(
-                                      Icons.visibility_off_outlined,
+                                      PhosphorIconsBold.eyeSlash,
                                       color: primaryColor,
                                       size: 20,
                                     ),
@@ -358,3 +359,4 @@ class SeedPhraseDetailView extends StatelessWidget {
     );
   }
 }
+

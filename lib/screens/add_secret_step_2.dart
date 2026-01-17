@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:bip39/src/wordlists/english.dart';
 import '../providers/vault_provider.dart';
 import '../models/secret_model.dart';
@@ -178,7 +179,7 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -229,16 +230,16 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.03),
+                          color: Colors.white.withValues(alpha: 0.03),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.1),
+                            color: Colors.white.withValues(alpha: 0.1),
                           ),
                         ),
                         child: Row(
                           children: [
                             Icon(
-                              Icons.checklist_rounded,
+                              PhosphorIconsBold.listChecks,
                               color: primaryColor,
                               size: 20,
                             ),
@@ -260,9 +261,9 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
                                     borderRadius: BorderRadius.circular(4),
                                     child: LinearProgressIndicator(
                                       value: validCount / 12,
-                                      backgroundColor: Colors.white.withOpacity(0.1),
+                                      backgroundColor: Colors.white.withValues(alpha: 0.1),
                                       valueColor: AlwaysStoppedAnimation<Color>(
-                                        validCount == 12 
+                                        validCount == 12
                                             ? const Color(0xFF00d68f)
                                             : primaryColor,
                                       ),
@@ -307,17 +308,17 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: primaryColor.withOpacity(0.05),
+                          color: primaryColor.withValues(alpha: 0.05),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: primaryColor.withOpacity(0.2),
+                            color: primaryColor.withValues(alpha: 0.2),
                           ),
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Icon(
-                              Icons.lightbulb_outline,
+                              PhosphorIconsBold.lightbulb,
                               color: primaryColor,
                               size: 20,
                             ),
@@ -327,7 +328,7 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
                                 'Tip: Words are auto-suggested as you type. Select from the dropdown to quickly fill in each word.',
                                 style: GoogleFonts.spaceGrotesk(
                                   fontSize: 13,
-                                  color: Colors.white.withOpacity(0.8),
+                                  color: Colors.white.withValues(alpha: 0.8),
                                   height: 1.4,
                                 ),
                               ),
@@ -344,10 +345,10 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: backgroundDark.withOpacity(0.95),
+                    color: backgroundDark.withValues(alpha: 0.95),
                     border: Border(
                       top: BorderSide(
-                        color: Colors.white.withOpacity(0.05),
+                        color: Colors.white.withValues(alpha: 0.05),
                       ),
                     ),
                   ),
@@ -355,10 +356,10 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
                     top: false,
                     child: VaultButton(
                       text: _isVerifying ? 'Verifying...' : 'Verify & Save',
-                      onTap: validCount == 12 && !_isVerifying 
-                          ? _verifyPhrase 
+                      onTap: validCount == 12 && !_isVerifying
+                          ? _verifyPhrase
                           : null,
-                      icon: _isVerifying 
+                      icon: _isVerifying
                           ? const SizedBox(
                               width: 20,
                               height: 20,
@@ -367,7 +368,7 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
                                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
-                          : const Icon(Icons.verified_user, size: 20),
+                          : const Icon(PhosphorIconsBold.shieldCheck, size: 20),
                     ),
                   ),
                 ),

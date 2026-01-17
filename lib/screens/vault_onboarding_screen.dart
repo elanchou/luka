@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../widgets/gradient_background.dart';
 import '../widgets/vault_button.dart';
 import '../widgets/vault_outline_button.dart';
@@ -104,7 +104,7 @@ class VaultOnboardingScreen extends StatelessWidget {
                                 ),
                               ),
                               Icon(
-                                Icons.lock_outline,
+                                PhosphorIconsBold.lock,
                                 size: 48,
                                 color: primaryColor.withOpacity(0.8),
                               ),
@@ -138,7 +138,7 @@ class VaultOnboardingScreen extends StatelessWidget {
                   const SizedBox(height: 24),
                   VaultButton(
                     text: 'Create New Vault',
-                    icon: const Icon(Icons.add_circle_outline),
+                    icon: const Icon(PhosphorIconsBold.plusCircle),
                     onTap: () {
                       Navigator.pushNamed(context, '/set-master-password');
                     },
@@ -148,7 +148,7 @@ class VaultOnboardingScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   VaultOutlineButton(
                     text: 'Import Recovery Phrase',
-                    icon: Icons.history,
+                    icon: PhosphorIconsBold.clockCounterClockwise,
                     onTap: () {
                       // Import flow
                     },

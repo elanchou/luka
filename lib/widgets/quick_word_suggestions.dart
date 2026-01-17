@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:ui';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../utils/constants.dart';
 import 'dart:math';
 
@@ -20,14 +20,14 @@ class QuickWordSuggestions extends StatelessWidget {
   List<String> _getRandomWords() {
     final random = Random();
     final selectedWords = <String>[];
-    
+
     while (selectedWords.length < maxSuggestions) {
       final word = wordList[random.nextInt(wordList.length)];
       if (!selectedWords.contains(word)) {
         selectedWords.add(word);
       }
     }
-    
+
     return selectedWords;
   }
 
@@ -35,7 +35,7 @@ class QuickWordSuggestions extends StatelessWidget {
   Widget build(BuildContext context) {
     final suggestions = _getRandomWords();
 
-    return Container(
+    return SizedBox(
       height: 45,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
@@ -73,10 +73,10 @@ class _WordChip extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
             ),
           ),
           child: Row(
@@ -87,14 +87,14 @@ class _WordChip extends StatelessWidget {
                 style: GoogleFonts.spaceGrotesk(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                 ),
               ),
               const SizedBox(width: 6),
               Icon(
-                Icons.add_circle_outline,
+                PhosphorIconsBold.plusCircle,
                 size: 16,
-                color: AppColors.primaryColor.withOpacity(0.6),
+                color: AppColors.primaryColor.withValues(alpha: 0.6),
               ),
             ],
           ),
@@ -103,3 +103,4 @@ class _WordChip extends StatelessWidget {
     );
   }
 }
+

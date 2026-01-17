@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'dart:ui';
 
 class CustomBottomNavBar extends StatelessWidget {
@@ -37,19 +38,19 @@ class CustomBottomNavBar extends StatelessWidget {
                 children: [
               // Home
               _NavBarItem(
-                icon: Icons.grid_view,
+                icon: PhosphorIconsBold.gridFour,
                 isSelected: currentIndex == 0,
                 onTap: () => onTap(0),
               ),
               // Activity
               _NavBarItem(
-                icon: Icons.history,
+                icon: PhosphorIconsBold.clockCounterClockwise,
                 isSelected: currentIndex == 1,
                 onTap: () => onTap(1),
               ),
               // Settings
               _NavBarItem(
-                icon: Icons.settings_outlined,
+                icon: PhosphorIconsBold.gear,
                 isSelected: currentIndex == 2,
                 onTap: () => onTap(2),
               ),

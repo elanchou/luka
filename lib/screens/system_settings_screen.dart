@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../widgets/gradient_background.dart';
 import '../services/master_key_service.dart';
 
@@ -82,7 +83,7 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                           children: [
                             if (_hasPassword)
                               _SettingsTile(
-                                icon: Icons.lock_outline,
+                                icon: PhosphorIconsBold.lock,
                                 title: 'Change Master Password',
                                 subtitle: 'PASSWORD PROTECTED',
                                 trailing: const _TrailingArrow(),
@@ -98,7 +99,7 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                               ),
                             if (_hasPassword)
                               _SettingsTile(
-                                icon: Icons.shield_outlined,
+                                icon: PhosphorIconsBold.shieldCheck,
                                 title: 'Security Level',
                                 trailing: _TrailingTextWithArrow(
                                   text: _currentSecurityLevel.displayName,
@@ -106,7 +107,7 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                                 onTap: () => _showSecurityInfo(),
                               ),
                             const _SettingsTile(
-                              icon: Icons.timer_outlined,
+                              icon: PhosphorIconsBold.timer,
                               title: 'Auto-Lock Timer',
                               trailing: _TrailingTextWithArrow(text: 'Immediate'),
                               isLast: true,
@@ -118,13 +119,13 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                           title: 'BACKUP & DATA',
                           children: [
                             _SettingsTile(
-                              icon: Icons.output,
+                              icon: PhosphorIconsBold.export,
                               title: 'Export Seed Vault',
                               trailing: const _TrailingArrow(),
                               onTap: () => Navigator.pushNamed(context, '/export-progress'),
                             ),
                             const _SettingsTile(
-                              icon: Icons.cleaning_services_outlined,
+                              icon: PhosphorIconsBold.broom,
                               title: 'Clear Local Cache',
                               trailing: _TrailingArrow(),
                               isLast: true,
@@ -136,12 +137,12 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                           title: 'APPEARANCE',
                           children: [
                             _SettingsTile(
-                              icon: Icons.contrast,
+                              icon: PhosphorIconsBold.palette,
                               title: 'Theme',
                               trailing: _TrailingTextWithArrow(text: 'Dark'),
                             ),
                             _SettingsTile(
-                              icon: Icons.vibration,
+                              icon: PhosphorIconsBold.waveform,
                               title: 'Haptic Feedback',
                               trailing: _SettingsSwitch(value: true),
                               isLast: true,
@@ -153,17 +154,17 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                           title: 'ABOUT',
                           children: [
                             _SettingsTile(
-                              icon: Icons.info_outline,
+                              icon: PhosphorIconsBold.info,
                               title: 'App Version',
                               trailing: _TrailingText(text: '1.0.0'),
                             ),
                             _SettingsTile(
-                              icon: Icons.article_outlined,
+                              icon: PhosphorIconsBold.shieldCheck,
                               title: 'Privacy Policy',
                               trailing: _TrailingArrow(),
                             ),
                             _SettingsTile(
-                              icon: Icons.description_outlined,
+                              icon: PhosphorIconsBold.fileText,
                               title: 'Terms of Service',
                               trailing: _TrailingArrow(),
                               isLast: true,
@@ -394,7 +395,7 @@ class _TrailingArrow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Icon(Icons.chevron_right, color: Colors.grey[600], size: 20);
+    return Icon(PhosphorIconsBold.caretRight, color: Colors.grey[600], size: 20);
   }
 }
 
@@ -435,3 +436,4 @@ class _TrailingText extends StatelessWidget {
     );
   }
 }
+

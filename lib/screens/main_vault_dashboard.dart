@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'dart:ui';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -76,8 +77,8 @@ class _MainVaultDashboardState extends State<MainVaultDashboard> {
                     width: 56,
                     height: 56,
                     alignment: Alignment.center,
-                    child: const Icon(
-                      Icons.add,
+                    child: Icon(
+                      PhosphorIconsBold.plus,
                       color: backgroundDark,
                       size: 32,
                     ),
@@ -124,7 +125,7 @@ class _DashboardHome extends StatelessWidget {
                   child: Row(
                     children: [
                       Icon(
-                        Icons.search,
+                        PhosphorIconsBold.magnifyingGlass,
                         color: Colors.grey[600],
                         size: 20,
                       ),
@@ -243,16 +244,16 @@ class _VaultItem extends StatelessWidget {
     IconData icon;
     switch (secret.type) {
       case SecretType.seedPhrase:
-        icon = Icons.account_balance_wallet_outlined;
+        icon = PhosphorIconsBold.wallet;
         break;
       case SecretType.privateKey:
-        icon = Icons.vpn_key_outlined;
+        icon = PhosphorIconsBold.key;
         break;
       case SecretType.note:
-        icon = Icons.sticky_note_2_outlined;
+        icon = PhosphorIconsBold.notepad;
         break;
       default:
-        icon = Icons.lock_outline;
+        icon = PhosphorIconsBold.lockKey;
     }
 
     final formattedDate = DateFormat('MMM d').format(secret.createdAt).toUpperCase();

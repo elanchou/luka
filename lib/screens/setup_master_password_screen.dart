@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../services/master_key_service.dart';
 import '../widgets/gradient_background.dart';
 import '../widgets/vault_button.dart';
@@ -17,7 +18,7 @@ class _SetupMasterPasswordScreenState extends State<SetupMasterPasswordScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _masterKeyService = MasterKeyService();
-  
+
   SecurityLevel _selectedLevel = SecurityLevel.standard;
   bool _isLoading = false;
   String? _errorMessage;
@@ -88,7 +89,7 @@ class _SetupMasterPasswordScreenState extends State<SetupMasterPasswordScreen> {
                   child: Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        icon: const Icon(PhosphorIconsBold.arrowLeft, color: Colors.white),
                         onPressed: () => Navigator.pop(context),
                       ),
                       const SizedBox(width: 8),
@@ -115,7 +116,7 @@ class _SetupMasterPasswordScreenState extends State<SetupMasterPasswordScreen> {
                           child: Column(
                             children: [
                               Icon(
-                                Icons.shield_outlined,
+                                PhosphorIconsBold.shieldCheck,
                                 size: 80,
                                 color: primaryColor,
                               ),
@@ -156,7 +157,7 @@ class _SetupMasterPasswordScreenState extends State<SetupMasterPasswordScreen> {
                           child: Row(
                             children: [
                               Icon(
-                                Icons.info_outline,
+                                PhosphorIconsBold.info,
                                 color: primaryColor,
                                 size: 24,
                               ),
@@ -273,8 +274,8 @@ class _SetupMasterPasswordScreenState extends State<SetupMasterPasswordScreen> {
                                   children: [
                                     Icon(
                                       isSelected
-                                          ? Icons.radio_button_checked
-                                          : Icons.radio_button_unchecked,
+                                          ? PhosphorIconsBold.checkCircle
+                                          : PhosphorIconsBold.circle,
                                       color: isSelected
                                           ? primaryColor
                                           : Colors.grey[600],
@@ -325,7 +326,7 @@ class _SetupMasterPasswordScreenState extends State<SetupMasterPasswordScreen> {
                           child: Row(
                             children: [
                               Icon(
-                                Icons.warning_amber_rounded,
+                                PhosphorIconsBold.warning,
                                 color: Colors.orange[300],
                                 size: 20,
                               ),
@@ -357,7 +358,7 @@ class _SetupMasterPasswordScreenState extends State<SetupMasterPasswordScreen> {
                             child: Row(
                               children: [
                                 const Icon(
-                                  Icons.error_outline,
+                                  PhosphorIconsBold.warningCircle,
                                   color: Colors.red,
                                   size: 20,
                                 ),
@@ -384,9 +385,9 @@ class _SetupMasterPasswordScreenState extends State<SetupMasterPasswordScreen> {
                           onTap: _isLoading ? null : _setupPassword,
                           isLoading: _isLoading,
                         ),
-                        
+
                         const SizedBox(height: 16),
-                        
+
                         // Warning
                         Container(
                           padding: const EdgeInsets.all(12),
@@ -401,7 +402,7 @@ class _SetupMasterPasswordScreenState extends State<SetupMasterPasswordScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Icon(
-                                Icons.lock_outline,
+                                PhosphorIconsBold.lock,
                                 color: Colors.red[300],
                                 size: 20,
                               ),
@@ -438,3 +439,4 @@ class _SetupMasterPasswordScreenState extends State<SetupMasterPasswordScreen> {
     );
   }
 }
+

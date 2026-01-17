@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import 'dart:math' as math;
 import '../widgets/gradient_background.dart';
@@ -8,7 +9,7 @@ import '../services/master_key_service.dart';
 
 class DecryptingProgressScreen extends StatefulWidget {
   final String masterPassword;
-  
+
   const DecryptingProgressScreen({super.key, required this.masterPassword});
 
   @override
@@ -61,7 +62,7 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
       setState(() {
         _currentProgress = _progressAnimation.value;
       });
-      
+
       if (_controller.value >= 0.95 && !_isUnlocked) {
         _isUnlocked = true;
         _vaultController.forward();
@@ -93,26 +94,26 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
       final securityLevel = await masterKeyService.getSecurityLevel();
       await Future.delayed(const Duration(milliseconds: 150));
       _controller.animateTo(0.2, duration: const Duration(milliseconds: 150));
-      
+
       _addLog('[OK] Security Level: ${securityLevel.displayName} (${_formatNumber(securityLevel.iterations)} iterations)', LogType.highlight);
 
       // Step 3: PBKDF2 密钥派生
       _updateStep('Deriving encryption key (PBKDF2)...', 0.2);
       _addLog('[EXEC] Starting PBKDF2 key derivation...', LogType.active);
-      
+
       final keyDerivationStart = DateTime.now();
-      
+
       _controller.animateTo(0.3, duration: const Duration(milliseconds: 100));
       await Future.delayed(const Duration(milliseconds: 100));
-      
+
       // 实际执行 PBKDF2
       if (mounted) {
         final vaultProvider = Provider.of<VaultProvider>(context, listen: false);
-        
+
         _controller.animateTo(0.7, duration: Duration(milliseconds: securityLevel.iterations ~/ 1000));
-        
+
         await vaultProvider.reinitialize(widget.masterPassword);
-        
+
         final keyDerivationTime = DateTime.now().difference(keyDerivationStart);
         _addLog('[OK] Key derived in ${keyDerivationTime.inMilliseconds}ms', LogType.success);
       }
@@ -134,7 +135,7 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
       _addLog('[DECRYPT] Using AES-256-CBC algorithm', LogType.active);
       await Future.delayed(const Duration(milliseconds: 200));
       _controller.animateTo(0.9, duration: const Duration(milliseconds: 200));
-      
+
       _addLog('[OK] ${secretCount} secrets decrypted successfully', LogType.success);
 
       // Step 6: JSON 解析
@@ -142,7 +143,7 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
       _addLog('[PARSE] Processing JSON data structure', LogType.info);
       await Future.delayed(const Duration(milliseconds: 100));
       _controller.animateTo(0.95, duration: const Duration(milliseconds: 100));
-      
+
       _addLog('[OK] Vault data loaded into memory', LogType.success);
 
       // Step 7: 完成
@@ -158,7 +159,7 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
     } catch (e) {
       _addLog('[ERROR] ${e.toString()}', LogType.error);
       _updateStep('Decryption failed', _currentProgress);
-      
+
       await Future.delayed(const Duration(milliseconds: 1500));
       if (mounted) {
         Navigator.of(context).pop();
@@ -224,7 +225,7 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
             child: Column(
               children: [
                 const SizedBox(height: 40),
-                
+
                 // Vault animation
                 Expanded(
                   flex: 3,
@@ -246,7 +247,7 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
                           },
                         ),
                         const SizedBox(height: 32),
-                        
+
                         // Current step
                         Text(
                           _currentStep,
@@ -258,7 +259,7 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 24),
-                        
+
                         // Progress bar
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -290,7 +291,7 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
                     ),
                   ),
                 ),
-                
+
                 // Log console
                 Expanded(
                   flex: 2,
@@ -310,7 +311,7 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
                         Row(
                           children: [
                             Icon(
-                              Icons.terminal,
+                              PhosphorIconsBold.terminal,
                               color: primaryColor,
                               size: 16,
                             ),
@@ -398,7 +399,7 @@ class VaultDoorPainter extends CustomPainter {
     final bodyPaint = Paint()
       ..color = surfaceColor
       ..style = PaintingStyle.fill;
-    
+
     canvas.drawCircle(center, radius, bodyPaint);
 
     // Draw vault outer ring
@@ -406,7 +407,7 @@ class VaultDoorPainter extends CustomPainter {
       ..color = isUnlocked ? successColor : primaryColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
-    
+
     canvas.drawCircle(center, radius, outerRingPaint);
 
     // Draw inner decorative rings
@@ -414,7 +415,7 @@ class VaultDoorPainter extends CustomPainter {
       ..color = Colors.white.withOpacity(0.1)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
-    
+
     canvas.drawCircle(center, radius - 10, innerRingPaint);
     canvas.drawCircle(center, radius - 20, innerRingPaint);
 
@@ -423,11 +424,11 @@ class VaultDoorPainter extends CustomPainter {
     canvas.translate(center.dx, center.dy);
     final doorAngle = doorProgress * math.pi * 0.5;
     canvas.rotate(doorAngle);
-    
+
     final doorPaint = Paint()
       ..color = surfaceColor
       ..style = PaintingStyle.fill;
-    
+
     final doorPath = Path()
       ..moveTo(0, -radius)
       ..arcTo(
@@ -438,14 +439,14 @@ class VaultDoorPainter extends CustomPainter {
       )
       ..lineTo(0, -radius)
       ..close();
-    
+
     canvas.drawPath(doorPath, doorPaint);
-    
+
     final doorBorderPaint = Paint()
       ..color = isUnlocked ? successColor : primaryColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
-    
+
     canvas.drawPath(doorPath, doorBorderPaint);
     canvas.restore();
 
@@ -453,22 +454,22 @@ class VaultDoorPainter extends CustomPainter {
     canvas.save();
     canvas.translate(center.dx, center.dy);
     canvas.rotate(lockRotation);
-    
+
     final lockPaint = Paint()
       ..color = isUnlocked ? successColor : primaryColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
-    
+
     canvas.drawCircle(Offset.zero, 15, lockPaint);
     canvas.drawCircle(Offset.zero, 8, lockPaint);
-    
+
     for (int i = 0; i < 8; i++) {
       final angle = (math.pi * 2 / 8) * i;
       final start = Offset(math.cos(angle) * 15, math.sin(angle) * 15);
       final end = Offset(math.cos(angle) * 20, math.sin(angle) * 20);
       canvas.drawLine(start, end, lockPaint);
     }
-    
+
     canvas.drawLine(Offset.zero, const Offset(0, -25), lockPaint);
     canvas.restore();
 
@@ -488,11 +489,12 @@ class VaultDoorPainter extends CustomPainter {
   }
 }
 
-enum LogType { info, highlight, active, success, error }
-
 class LogEntry {
   final String message;
   final LogType type;
 
   LogEntry(this.message, this.type);
 }
+
+enum LogType { info, highlight, active, success, error }
+

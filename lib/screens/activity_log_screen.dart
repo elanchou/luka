@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../widgets/gradient_background.dart';
 
 class ActivityLogScreen extends StatelessWidget {
@@ -128,7 +129,7 @@ class _ActivityLogBodyState extends State<ActivityLogBody> {
                   title: 'Vault Accessed',
                   time: '09:15',
                   description: 'FaceID Verified',
-                  icon: Icons.face,
+                  icon: PhosphorIconsBold.userFocus,
                   color: successColor,
                 ),
 
@@ -139,7 +140,7 @@ class _ActivityLogBodyState extends State<ActivityLogBody> {
                   title: 'Backup Created',
                   time: '22:45',
                   description: 'Cloud Sync',
-                  icon: Icons.cloud_sync_outlined,
+                  icon: PhosphorIconsBold.cloudArrowUp,
                   color: primaryColor,
                   isFirst: true,
                 ),
@@ -163,7 +164,7 @@ class _ActivityLogBodyState extends State<ActivityLogBody> {
                 Column(
                   children: [
                     Icon(
-                      Icons.verified_user_outlined,
+                      PhosphorIconsBold.shieldCheck,
                       color: Colors.white.withOpacity(0.3),
                       size: 24,
                     ),
@@ -353,3 +354,4 @@ class _TimelineItem extends StatelessWidget {
     );
   }
 }
+

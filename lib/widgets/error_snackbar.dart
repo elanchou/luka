@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../utils/constants.dart';
 
 class ErrorSnackbar {
@@ -14,7 +15,7 @@ class ErrorSnackbar {
         content: Row(
           children: [
             const Icon(
-              Icons.error_outline,
+              PhosphorIconsBold.warningCircle,
               color: Colors.white,
               size: 20,
             ),
@@ -55,7 +56,7 @@ class SuccessSnackbar {
         content: Row(
           children: [
             const Icon(
-              Icons.check_circle_outline,
+              PhosphorIconsBold.checkCircle,
               color: Colors.white,
               size: 20,
             ),
@@ -96,7 +97,7 @@ class InfoSnackbar {
         content: Row(
           children: [
             const Icon(
-              Icons.info_outline,
+              PhosphorIconsBold.info,
               color: Colors.white,
               size: 20,
             ),
@@ -124,3 +125,4 @@ class InfoSnackbar {
     );
   }
 }
+

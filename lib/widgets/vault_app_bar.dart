@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class VaultAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -33,7 +34,7 @@ class VaultAppBar extends StatelessWidget implements PreferredSizeWidget {
       leading: leading ??
           (Navigator.canPop(context)
               ? IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+                  icon: const Icon(PhosphorIconsBold.arrowLeft, size: 20),
                   color: Colors.white,
                   onPressed: () => Navigator.pop(context),
                 )

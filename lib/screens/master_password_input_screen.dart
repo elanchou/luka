@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import "decrypting_progress_screen.dart";
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -44,7 +45,7 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
 
     try {
       final isValid = await _masterKeyService.verifyPassword(password);
-      
+
       if (!isValid) {
         setState(() {
           _errorMessage = 'Incorrect password';
@@ -86,13 +87,13 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Logo/Icon
-                  Icon(
-                    Icons.lock_outline,
+                  const Icon(
+                    PhosphorIconsRegular.cubeFocus,
                     size: 80,
                     color: primaryColor,
                   ),
                   const SizedBox(height: 32),
-                  
+
                   // Title
                   Text(
                     'Enter Master Password',
@@ -112,9 +113,9 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  
+
                   const SizedBox(height: 48),
-                  
+
                   // Password field
                   VaultTextField(
                     controller: _passwordController,
@@ -123,9 +124,9 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
                     textInputAction: TextInputAction.done,
                     onChanged: (_) => setState(() => _errorMessage = null),
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // Show password toggle
                   Row(
                     children: [
@@ -145,7 +146,7 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
                       ),
                     ],
                   ),
-                  
+
                   if (_errorMessage != null) ...[
                     const SizedBox(height: 16),
                     Container(
@@ -157,7 +158,7 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.error_outline, color: Colors.red, size: 20),
+                          const Icon(PhosphorIconsBold.warningCircle, color: Colors.red, size: 20),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -172,18 +173,18 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
                       ),
                     ),
                   ],
-                  
+
                   const SizedBox(height: 32),
-                  
+
                   // Unlock button
                   VaultButton(
                     text: 'Unlock Vault',
                     onTap: _isLoading ? null : _unlock,
                     isLoading: _isLoading,
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // Reset option
                   TextButton(
                     onPressed: () {
@@ -255,3 +256,4 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
     );
   }
 }
+
