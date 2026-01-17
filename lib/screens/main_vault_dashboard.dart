@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'dart:ui';
@@ -115,10 +116,10 @@ class _DashboardHome extends StatelessWidget {
                 Container(
                   height: 50,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.03),
-                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                     ),
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -126,7 +127,7 @@ class _DashboardHome extends StatelessWidget {
                     children: [
                       Icon(
                         PhosphorIconsBold.magnifyingGlass,
-                        color: Colors.grey[600],
+                        color: primaryColor.withValues(alpha: 0.5),
                         size: 20,
                       ),
                       const SizedBox(width: 12),
@@ -141,10 +142,10 @@ class _DashboardHome extends StatelessWidget {
                             fontWeight: FontWeight.w500,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Search secrets...',
+                            hintText: 'Search encrypted vault...',
                             hintStyle: GoogleFonts.spaceGrotesk(
                               fontSize: 14,
-                              color: Colors.grey[500],
+                              color: Colors.grey[600],
                               fontWeight: FontWeight.w500,
                             ),
                             border: InputBorder.none,
@@ -193,18 +194,33 @@ class _DashboardHome extends StatelessWidget {
                             Text(
                               'ALL SECRETS',
                               style: GoogleFonts.spaceGrotesk(
-                                fontSize: 12,
+                                fontSize: 11,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.grey[500],
+                                color: Colors.grey[600],
                                 letterSpacing: 1.5,
                               ),
                             ),
-                            Text(
-                              'Filter',
-                              style: GoogleFonts.spaceGrotesk(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: primaryColor,
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: primaryColor.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: primaryColor.withValues(alpha: 0.2)),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(PhosphorIconsBold.funnel, size: 12, color: primaryColor),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'FILTER',
+                                    style: GoogleFonts.spaceGrotesk(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: primaryColor,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -240,65 +256,77 @@ class _VaultItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const primaryColor = Color(0xFF13b6ec);
+    const surfaceColor = Color(0xFF1a2c32);
 
     IconData icon;
+    Color iconBgColor;
     switch (secret.type) {
       case SecretType.seedPhrase:
         icon = PhosphorIconsBold.wallet;
+        iconBgColor = const Color(0xFF00d68f);
         break;
       case SecretType.privateKey:
         icon = PhosphorIconsBold.key;
+        iconBgColor = primaryColor;
         break;
       case SecretType.note:
         icon = PhosphorIconsBold.notepad;
+        iconBgColor = const Color(0xFFffaa00);
         break;
       default:
         icon = PhosphorIconsBold.lockKey;
+        iconBgColor = Colors.grey;
     }
 
-    final formattedDate = DateFormat('MMM d').format(secret.createdAt).toUpperCase();
+    final formattedDate = DateFormat('MMM d, yyyy').format(secret.createdAt);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+      child: Container(
+        decoration: BoxDecoration(
+          color: surfaceColor.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.05),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
           child: Material(
             color: Colors.transparent,
             child: InkWell(
               onTap: () {
-                // Navigate and pass the secret
+                HapticFeedback.lightImpact();
                 Navigator.pushNamed(
                   context,
                   '/seed-detail',
                   arguments: secret,
                 );
               },
-              child: Container(
+              child: Padding(
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.03),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.08),
-                  ),
-                ),
                 child: Row(
                   children: [
                     Container(
-                      width: 48,
-                      height: 48,
+                      width: 52,
+                      height: 52,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.05),
-                        borderRadius: BorderRadius.circular(8),
+                        color: iconBgColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.05),
+                          color: iconBgColor.withValues(alpha: 0.2),
                         ),
                       ),
                       child: Icon(
                         icon,
-                        color: Colors.white,
+                        color: iconBgColor,
                         size: 24,
                       ),
                     ),
@@ -307,42 +335,55 @@ class _VaultItem extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Text(
+                            secret.name,
+                            style: GoogleFonts.spaceGrotesk(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              letterSpacing: 0.2,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Flexible(
-                                child: Text(
-                                  secret.name,
-                                  style: GoogleFonts.spaceGrotesk(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.white,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
                               Text(
-                                formattedDate,
-                                style: GoogleFonts.spaceGrotesk(
+                                secret.typeLabel.toUpperCase(),
+                                style: GoogleFonts.spaceMono(
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
+                                  color: Colors.grey[500],
+                                  letterSpacing: 1.0,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                width: 3,
+                                height: 3,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[700],
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                secret.network,
+                                style: GoogleFonts.spaceGrotesk(
+                                  fontSize: 11,
                                   color: Colors.grey[600],
-                                  letterSpacing: 0.5,
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            secret.typeLabel,
-                            style: GoogleFonts.spaceGrotesk(
-                              fontSize: 12,
-                              color: Colors.grey[400],
-                              letterSpacing: 0.5,
-                            ),
-                          ),
                         ],
                       ),
+                    ),
+                    Icon(
+                      PhosphorIconsBold.caretRight,
+                      color: Colors.grey[700],
+                      size: 18,
                     ),
                   ],
                 ),

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../widgets/gradient_background.dart';
+import '../providers/vault_provider.dart';
+import '../models/activity_log_model.dart';
 
 class ActivityLogScreen extends StatelessWidget {
   const ActivityLogScreen({super.key});
@@ -30,7 +34,7 @@ class ActivityLogBody extends StatefulWidget {
 
 class _ActivityLogBodyState extends State<ActivityLogBody> {
   int _selectedFilterIndex = 0;
-  final List<String> _filters = ['All', 'Security', 'Access', 'Transfers'];
+  final List<String> _filters = ['All', 'Security', 'Access', 'System'];
 
   @override
   Widget build(BuildContext context) {
@@ -45,30 +49,24 @@ class _ActivityLogBodyState extends State<ActivityLogBody> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // If we are in a tab view, we might not want the back button.
-                // We can check if we can pop, or just hide it if it's the root of the tab.
-                // For now, let's keep the design but maybe make the back button optional or functional only if not in tab.
-                // Assuming this is used in MainDashboard which replaces the route stack or is the root,
-                // "Back" might not make sense if it's a tab.
-                // Let's assume for the TabBar implementation, we don't want the back button.
-                // But the original design had it. I'll make it conditionally visible or just keep it for now.
-                // Actually, if I switch tabs, I don't "pop".
-                // I'll hide the back button if it's used in the tab context (implied by this refactor).
-
-                // Let's just keep the header simple.
-                const SizedBox(width: 24), // Placeholder for alignment if back button removed
-
-                Text(
-                  'Activity Log',
-                  style: GoogleFonts.spaceGrotesk(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                IconButton(
+                  icon: const Icon(PhosphorIconsBold.arrowLeft, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      'Activity Log',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(width: 24), // Spacer for centering
+                const SizedBox(width: 48), // Spacer for centering
               ],
             ),
           ),
@@ -113,80 +111,76 @@ class _ActivityLogBodyState extends State<ActivityLogBody> {
 
           // Timeline
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              children: [
-                // Today Section
-                const _DateDivider(label: 'TODAY'),
-                const _TimelineItem(
-                  title: 'New Secret Added',
-                  time: '14:02',
-                  description: 'Ethereum Main Wallet',
-                  color: successColor,
-                  isFirst: true,
-                ),
-                const _TimelineItem(
-                  title: 'Vault Accessed',
-                  time: '09:15',
-                  description: 'FaceID Verified',
-                  icon: PhosphorIconsBold.userFocus,
-                  color: successColor,
-                ),
+            child: Consumer<VaultProvider>(
+              builder: (context, provider, child) {
+                final logs = provider.logs.where((log) {
+                  if (_selectedFilterIndex == 0) return true;
+                  final filterCategory = ActivityCategory.values[_selectedFilterIndex - 1];
+                  return log.category == filterCategory;
+                }).toList();
 
-                // Yesterday Section
-                const SizedBox(height: 16),
-                const _DateDivider(label: 'YESTERDAY'),
-                const _TimelineItem(
-                  title: 'Backup Created',
-                  time: '22:45',
-                  description: 'Cloud Sync',
-                  icon: PhosphorIconsBold.cloudArrowUp,
-                  color: primaryColor,
-                  isFirst: true,
-                ),
-                const _TimelineItem(
-                  title: 'Failed Attempt',
-                  time: '18:30',
-                  description: 'Incorrect PIN • 3rd try',
-                  color: dangerColor,
-                ),
-                const _TimelineItem(
-                  title: 'Vault Accessed',
-                  time: '08:12',
-                  description: 'Passcode Verified',
-                  color: successColor,
-                  isLast: true,
-                ),
-
-                const SizedBox(height: 48),
-
-                // Footer
-                Column(
-                  children: [
-                    Icon(
-                      PhosphorIconsBold.shieldCheck,
-                      color: Colors.white.withOpacity(0.3),
-                      size: 24,
+                if (logs.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'No activities found',
+                      style: GoogleFonts.notoSans(color: Colors.grey[600]),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'END OF ENCRYPTED LOG',
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white.withOpacity(0.3),
-                        letterSpacing: 1.5,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
-              ],
+                  );
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  itemCount: logs.length,
+                  itemBuilder: (context, index) {
+                    final log = logs[index];
+                    final showDivider = index == 0 ||
+                                       !_isSameDay(log.timestamp, logs[index-1].timestamp);
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (showDivider)
+                          _DateDivider(label: _getRelativeDate(log.timestamp)),
+                        _TimelineItem(
+                          title: log.title,
+                          time: DateFormat('HH:mm').format(log.timestamp),
+                          description: log.description,
+                          icon: _getCategoryIcon(log.category),
+                          color: log.isSuccess ? successColor : dangerColor,
+                          isFirst: showDivider,
+                          isLast: index == logs.length - 1 ||
+                                 !_isSameDay(log.timestamp, logs[index+1].timestamp),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
             ),
           ),
         ],
       ),
     );
+  }
+
+  bool _isSameDay(DateTime d1, DateTime d2) {
+    return d1.year == d2.year && d1.month == d2.month && d1.day == d2.day;
+  }
+
+  String _getRelativeDate(DateTime date) {
+    final now = DateTime.now();
+    if (_isSameDay(date, now)) return 'TODAY';
+    if (_isSameDay(date, now.subtract(const Duration(days: 1)))) return 'YESTERDAY';
+    return DateFormat('MMM d, yyyy').format(date).toUpperCase();
+  }
+
+  IconData _getCategoryIcon(ActivityCategory category) {
+    switch (category) {
+      case ActivityCategory.security: return PhosphorIconsBold.shieldCheck;
+      case ActivityCategory.access: return PhosphorIconsBold.userFocus;
+      case ActivityCategory.transfers: return PhosphorIconsBold.swap;
+      case ActivityCategory.system: return PhosphorIconsBold.cpu;
+    }
   }
 }
 

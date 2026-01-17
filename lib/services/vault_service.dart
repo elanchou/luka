@@ -126,5 +126,30 @@ class VaultService {
     }
   }
 
+  Future<File?> getEncryptedVaultFile() async {
+    final file = await _file;
+    if (await file.exists()) {
+      return file;
+    }
+    return null;
+  }
+
+  Future<void> importEncryptedVault(File importedFile) async {
+    try {
+      final file = await _file;
+
+      // Ensure directory exists
+      final directory = file.parent;
+      if (!await directory.exists()) {
+        await directory.create(recursive: true);
+      }
+
+      // Copy the imported file to the vault location
+      await importedFile.copy(file.path);
+    } catch (e) {
+      throw Exception('Failed to import vault: $e');
+    }
+  }
+
   bool get isInitialized => _isInitialized;
 }

@@ -341,40 +341,17 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
                   ),
                 ),
 
-                VaultButton(
-                      text: _isVerifying ? 'Verifying...' : 'Verify & Save',
-                      onTap: validCount == 12 && !_isVerifying
-                          ? _verifyPhrase
-                          : null,
-                      icon: _isVerifying
-                          ? null
-                          : PhosphorIconsBold.shieldCheck,
-                    ),
-
-                // // Bottom Action
-                // Container(
-                //   padding: const EdgeInsets.all(20),
-                //   decoration: BoxDecoration(
-                //     color: backgroundDark.withValues(alpha: 0.95),
-                //     border: Border(
-                //       top: BorderSide(
-                //         color: Colors.white.withValues(alpha: 0.05),
-                //       ),
-                //     ),
-                //   ),
-                //   child: SafeArea(
-                //     top: false,
-                //     child: VaultButton(
-                //       text: _isVerifying ? 'Verifying...' : 'Verify & Save',
-                //       onTap: validCount == 12 && !_isVerifying
-                //           ? _verifyPhrase
-                //           : null,
-                //       icon: _isVerifying
-                //           ? null
-                //           : PhosphorIconsBold.shieldCheck,
-                //     ),
-                //   ),
-                // ),
+                // Action Button
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(32, 0, 32, 40),
+                  child: VaultButton(
+                    text: _isVerifying ? 'VERIFYING...' : 'VERIFY & SAVE',
+                    onTap: validCount == 12 && !_isVerifying ? _verifyPhrase : null,
+                    icon: _isVerifying ? null : PhosphorIconsBold.shieldCheck,
+                    backgroundColor: primaryColor,
+                    textColor: backgroundDark,
+                  ),
+                ),
               ],
             ),
           ),

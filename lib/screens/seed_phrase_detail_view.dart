@@ -106,49 +106,99 @@ class _SeedPhraseDetailViewState extends State<SeedPhraseDetailView> {
               padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
               child: Column(
                 children: [
-                  // Header
+                  // Information Header Card
                   Container(
-                    width: 64,
-                    height: 64,
+                    padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      gradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [surfaceDark, surfaceHighlight],
-                      ),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                      color: surfaceDark.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
                     ),
-                    child: Icon(
-                      secret.type == SecretType.seedPhrase
-                          ? PhosphorIconsBold.wallet
-                          : PhosphorIconsBold.key,
-                      size: 32,
-                      color: primaryColor,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    secret.name,
-                    style: GoogleFonts.spaceGrotesk(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Created on $formattedDate',
-                    style: GoogleFonts.spaceGrotesk(
-                      fontSize: 12,
-                      color: Colors.grey[500],
-                      letterSpacing: 0.5,
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 64,
+                          height: 64,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                primaryColor.withValues(alpha: 0.2),
+                                primaryColor.withValues(alpha: 0.05),
+                              ],
+                            ),
+                            border: Border.all(color: primaryColor.withValues(alpha: 0.2)),
+                          ),
+                          child: Icon(
+                            secret.type == SecretType.seedPhrase
+                                ? PhosphorIconsBold.wallet
+                                : PhosphorIconsBold.key,
+                            size: 32,
+                            color: primaryColor,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          secret.name,
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(PhosphorIconsBold.globe, size: 14, color: Colors.grey[500]),
+                            const SizedBox(width: 6),
+                            Text(
+                              secret.network.toUpperCase(),
+                              style: GoogleFonts.spaceMono(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey[500],
+                                letterSpacing: 1.0,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Container(width: 4, height: 4, decoration: BoxDecoration(color: Colors.grey[700], shape: BoxShape.circle)),
+                            const SizedBox(width: 12),
+                            Icon(PhosphorIconsBold.calendarBlank, size: 14, color: Colors.grey[500]),
+                            const SizedBox(width: 6),
+                            Text(
+                              formattedDate,
+                              style: GoogleFonts.spaceMono(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 32),
 
                   // Seed Grid or Content View with Reveal Toggle
-                  GestureDetector(
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: _isVisible ? [
+                        BoxShadow(
+                          color: primaryColor.withValues(alpha: 0.1),
+                          blurRadius: 40,
+                          spreadRadius: -10,
+                        )
+                      ] : [],
+                    ),
+                    child: GestureDetector(
                     onTap: () {
                       HapticFeedback.lightImpact();
                       setState(() => _isVisible = !_isVisible);
@@ -167,79 +217,73 @@ class _SeedPhraseDetailViewState extends State<SeedPhraseDetailView> {
                             child: secret.type == SecretType.seedPhrase
                                 ? Container(
                                     decoration: BoxDecoration(
-                                      color: surfaceDark.withValues(alpha: 0.6),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                                      color: surfaceDark.withValues(alpha: 0.8),
+                                      borderRadius: BorderRadius.circular(24),
+                                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                                     ),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        GridView.builder(
-                                          padding: const EdgeInsets.all(12),
-                                          shrinkWrap: true,
-                                          physics: const NeverScrollableScrollPhysics(),
-                                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                            crossAxisCount: 2,
-                                            childAspectRatio: 3.2,
-                                            crossAxisSpacing: 8,
-                                            mainAxisSpacing: 8,
+                                    child: GridView.builder(
+                                      padding: const EdgeInsets.all(20),
+                                      shrinkWrap: true,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2,
+                                        childAspectRatio: 2.8,
+                                        crossAxisSpacing: 12,
+                                        mainAxisSpacing: 12,
+                                      ),
+                                      itemCount: seedWords.length,
+                                      itemBuilder: (context, index) {
+                                        return Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withValues(alpha: 0.2),
+                                            borderRadius: BorderRadius.circular(12),
+                                            border: Border.all(color: Colors.white.withValues(alpha: 0.03)),
                                           ),
-                                          itemCount: seedWords.length,
-                                          itemBuilder: (context, index) {
-                                            return Container(
-                                              decoration: BoxDecoration(
-                                                color: surfaceDark,
-                                                borderRadius: BorderRadius.circular(6),
-                                                border: Border.all(color: Colors.white.withValues(alpha: 0.02)),
+                                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                                          child: Row(
+                                            children: [
+                                              Text(
+                                                (index + 1).toString(),
+                                                style: GoogleFonts.spaceMono(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: primaryColor.withValues(alpha: 0.5),
+                                                ),
                                               ),
-                                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                                              child: Row(
-                                                children: [
-                                                  SizedBox(
-                                                    width: 20,
-                                                    child: Text(
-                                                      (index + 1).toString().padLeft(2, '0'),
-                                                      style: GoogleFonts.spaceMono(
-                                                        fontSize: 10,
-                                                        fontWeight: FontWeight.bold,
-                                                        color: primaryColor.withValues(alpha: 0.5),
-                                                      ),
-                                                    ),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: Text(
+                                                  _isVisible ? seedWords[index] : '••••••••',
+                                                  style: GoogleFonts.spaceGrotesk(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Colors.white,
                                                   ),
-                                                  const SizedBox(width: 8),
-                                                  Expanded(
-                                                    child: Text(
-                                                      _isVisible ? seedWords[index] : '••••••••',
-                                                      style: GoogleFonts.spaceGrotesk(
-                                                        fontSize: 14,
-                                                        fontWeight: FontWeight.w600,
-                                                        color: Colors.white,
-                                                      ),
-                                                      overflow: TextOverflow.ellipsis,
-                                                    ),
-                                                  ),
-                                                ],
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
                                               ),
-                                            );
-                                          },
-                                        ),
-                                      ],
+                                            ],
+                                          ),
+                                        );
+                                      },
                                     ),
                                   )
                                 : Container(
                                     width: double.infinity,
-                                    padding: const EdgeInsets.all(24),
+                                    padding: const EdgeInsets.all(32),
                                     decoration: BoxDecoration(
-                                      color: surfaceDark.withValues(alpha: 0.6),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                                      color: surfaceDark.withValues(alpha: 0.8),
+                                      borderRadius: BorderRadius.circular(24),
+                                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                                     ),
                                     child: Text(
                                       _isVisible ? secret.content : '••••••••••••••••••••••••',
-                                      style: GoogleFonts.spaceMono(
+                                      style: GoogleFonts.jetBrainsMono(
                                         color: Colors.white,
-                                        fontSize: 14,
+                                        fontSize: 16,
+                                        height: 1.6,
                                       ),
+                                      textAlign: TextAlign.center,
                                     ),
                                   ),
                           ),
@@ -273,6 +317,7 @@ class _SeedPhraseDetailViewState extends State<SeedPhraseDetailView> {
                           ),
                       ],
                     ),
+                  ),
                   ),
 
                   const SizedBox(height: 24),
@@ -334,15 +379,21 @@ class _SeedPhraseDetailViewState extends State<SeedPhraseDetailView> {
                           HapticFeedback.mediumImpact();
                           setState(() => _isVisible = !_isVisible);
                         },
-                        primaryColor: primaryColor,
+                        primaryColor: _isVisible ? const Color(0xFFff4d4d) : primaryColor,
                       ),
-                      const SizedBox(height: 12),
-                      _ActionButton(
-                        icon: PhosphorIconsBold.arrowLeft,
-                        label: 'BACK TO DASHBOARD',
-                        onTap: () => Navigator.pop(context),
-                        primaryColor: Colors.grey[600]!,
-                        isOutline: true,
+                      const SizedBox(height: 16),
+                      TextButton.icon(
+                        onPressed: () => Navigator.pop(context),
+                        icon: Icon(PhosphorIconsBold.arrowLeft, size: 16, color: Colors.grey[600]),
+                        label: Text(
+                          'RETURN TO DASHBOARD',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey[600],
+                            letterSpacing: 1.2,
+                          ),
+                        ),
                       ),
                     ],
                   ),

@@ -2,8 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
 import '../widgets/gradient_background.dart';
 import '../services/master_key_service.dart';
+import '../providers/vault_provider.dart';
+import '../widgets/error_snackbar.dart';
 
 class SystemSettingsScreen extends StatefulWidget {
   const SystemSettingsScreen({super.key});
@@ -17,6 +23,7 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
   SecurityLevel _currentSecurityLevel = SecurityLevel.standard;
   bool _hasPassword = false;
   bool _isLoading = true;
+  bool _hapticsEnabled = true;
 
   @override
   void initState() {
@@ -120,24 +127,61 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                           title: 'BACKUP & DATA',
                           children: [
                             _SettingsTile(
-                              icon: PhosphorIconsBold.export,
-                              title: 'Export Seed Vault',
+                              icon: PhosphorIconsBold.fileArrowUp,
+                              title: 'Backup Vault File',
+                              subtitle: 'ENCRYPTED FILE',
                               trailing: const _TrailingArrow(),
-                              onTap: () => Navigator.pushNamed(context, '/export-progress'),
+                              onTap: () async {
+                                final vaultProvider = Provider.of<VaultProvider>(context, listen: false);
+                                final file = await vaultProvider.getEncryptedVaultFile();
+                                if (file != null) {
+                                  await Share.shareXFiles([XFile(file.path)], text: 'Vault Backup');
+                                } else {
+                                  if (mounted) {
+                                    ErrorSnackbar.show(context, message: 'Vault file not found');
+                                  }
+                                }
+                              },
                             ),
-                            const _SettingsTile(
+                            _SettingsTile(
                               icon: PhosphorIconsBold.broom,
-                              title: 'Clear Local Cache',
-                              trailing: _TrailingArrow(),
+                              title: 'Clear Activity Logs',
+                              subtitle: 'WIPE HISTORY',
+                              trailing: const _TrailingArrow(),
+                              onTap: () async {
+                                final confirm = await showDialog<bool>(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    backgroundColor: const Color(0xFF1a2c32),
+                                    title: Text('Clear Logs?', style: GoogleFonts.spaceGrotesk(color: Colors.white, fontWeight: FontWeight.bold)),
+                                    content: Text('Delete all activity history? This cannot be undone.', style: GoogleFonts.notoSans(color: Colors.grey[300])),
+                                    actions: [
+                                      TextButton(onPressed: () => Navigator.pop(context, false), child: Text('Cancel', style: GoogleFonts.spaceGrotesk(color: Colors.grey[400]))),
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context, true),
+                                        child: Text('Clear', style: GoogleFonts.spaceGrotesk(color: Colors.red)),
+                                      ),
+                                    ],
+                                  ),
+                                );
+
+                                if (confirm == true && mounted) {
+                                  final vaultProvider = Provider.of<VaultProvider>(context, listen: false);
+                                  await vaultProvider.clearLogs();
+                                  if (mounted) {
+                                    SuccessSnackbar.show(context, message: 'Activity logs cleared');
+                                  }
+                                }
+                              },
                               isLast: true,
                             ),
                           ],
                         ),
                         const SizedBox(height: 24),
-                        const _SettingsSection(
+                        _SettingsSection(
                           title: 'APPEARANCE',
                           children: [
-                            _SettingsTile(
+                            const _SettingsTile(
                               icon: PhosphorIconsBold.palette,
                               title: 'Theme',
                               trailing: _TrailingTextWithArrow(text: 'Dark'),
@@ -145,16 +189,22 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                             _SettingsTile(
                               icon: PhosphorIconsBold.waveform,
                               title: 'Haptic Feedback',
-                              trailing: _SettingsSwitch(value: true),
+                              trailing: _SettingsSwitch(
+                                value: _hapticsEnabled,
+                                onChanged: (val) {
+                                  setState(() => _hapticsEnabled = val);
+                                  HapticFeedback.lightImpact();
+                                },
+                              ),
                               isLast: true,
                             ),
                           ],
                         ),
                         const SizedBox(height: 24),
-                        const _SettingsSection(
+                        _SettingsSection(
                           title: 'ABOUT',
                           children: [
-                            _SettingsTile(
+                            const _SettingsTile(
                               icon: PhosphorIconsBold.info,
                               title: 'App Version',
                               trailing: _TrailingText(text: '1.0.0'),
@@ -162,17 +212,19 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                             _SettingsTile(
                               icon: PhosphorIconsBold.shieldCheck,
                               title: 'Privacy Policy',
-                              trailing: _TrailingArrow(),
+                              trailing: const _TrailingArrow(),
+                              onTap: () => SuccessSnackbar.show(context, message: 'Privacy Policy is locally enforced.'),
                             ),
                             _SettingsTile(
                               icon: PhosphorIconsBold.fileText,
                               title: 'Terms of Service',
-                              trailing: _TrailingArrow(),
+                              trailing: const _TrailingArrow(),
+                              onTap: () => SuccessSnackbar.show(context, message: 'Terms of Service: Your data, your responsibility.'),
                               isLast: true,
                             ),
                           ],
                         ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 24),
                         _SettingsSection(
                           title: 'DANGER ZONE',
                           color: const Color(0xFFff4d4d),
@@ -190,7 +242,7 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 40),
+                        const SizedBox(height: 32),
                       ],
                     ),
                   ),
@@ -391,26 +443,30 @@ class _SettingsTile extends StatelessWidget {
 
 class _SettingsSwitch extends StatelessWidget {
   final bool value;
-  const _SettingsSwitch({required this.value});
+  final ValueChanged<bool>? onChanged;
+  const _SettingsSwitch({required this.value, this.onChanged});
 
   @override
   Widget build(BuildContext context) {
     const primaryColor = Color(0xFF13b6ec);
-    return Container(
-      width: 48,
-      height: 28,
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: value ? primaryColor : const Color(0xFF344247),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+    return GestureDetector(
+      onTap: () => onChanged?.call(!value),
       child: Container(
-        width: 20,
-        height: 20,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
+        width: 48,
+        height: 28,
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: value ? primaryColor : const Color(0xFF344247),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+        child: Container(
+          width: 20,
+          height: 20,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
         ),
       ),
     );

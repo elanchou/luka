@@ -1,13 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:provider/provider.dart';
+import 'dart:io';
 import '../widgets/gradient_background.dart';
 import '../widgets/vault_button.dart';
 import '../widgets/vault_outline_button.dart';
 import '../widgets/vault_brand.dart';
+import '../providers/vault_provider.dart';
+import '../widgets/error_snackbar.dart';
 
 class VaultOnboardingScreen extends StatelessWidget {
   const VaultOnboardingScreen({super.key});
+
+  Future<void> _importVault(BuildContext context) async {
+    final result = await FilePicker.platform.pickFiles();
+    if (result != null && result.files.single.path != null) {
+      if (!context.mounted) return;
+
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: const Color(0xFF1a2c32),
+          title: Text(
+            'Import Vault?',
+            style: GoogleFonts.spaceGrotesk(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          content: Text(
+            'This will load an existing encrypted vault file. You will need the original master password to unlock it.',
+            style: GoogleFonts.notoSans(color: Colors.grey[300]),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text('Cancel', style: GoogleFonts.spaceGrotesk(color: Colors.grey[400])),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text('Import', style: GoogleFonts.spaceGrotesk(color: const Color(0xFF13b6ec))),
+            ),
+          ],
+        ),
+      );
+
+      if (confirm == true && context.mounted) {
+        try {
+          final vaultProvider = Provider.of<VaultProvider>(context, listen: false);
+          await vaultProvider.importVault(File(result.files.single.path!));
+          if (context.mounted) {
+            SuccessSnackbar.show(context, message: 'Vault imported. Please log in.');
+            Navigator.of(context).pushReplacementNamed('/');
+          }
+        } catch (e) {
+          if (context.mounted) {
+            ErrorSnackbar.show(context, message: 'Failed to import vault: $e');
+          }
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -126,11 +178,9 @@ class VaultOnboardingScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   VaultOutlineButton(
-                    text: 'Import Recovery Phrase',
-                    icon: PhosphorIconsBold.clockCounterClockwise,
-                    onTap: () {
-                      // Import flow
-                    },
+                    text: 'Import Vault File',
+                    icon: PhosphorIconsBold.fileArrowDown,
+                    onTap: () => _importVault(context),
                     textColor: Colors.white,
                   ),
                   const SizedBox(height: 24),

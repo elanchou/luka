@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -12,9 +13,12 @@ class NetworkBlockedScreen extends StatefulWidget {
   State<NetworkBlockedScreen> createState() => _NetworkBlockedScreenState();
 }
 
-class _NetworkBlockedScreenState extends State<NetworkBlockedScreen> with SingleTickerProviderStateMixin {
+class _NetworkBlockedScreenState extends State<NetworkBlockedScreen> with TickerProviderStateMixin {
   late AnimationController _pulseController;
+  late AnimationController _countdownController;
   Timer? _hapticTimer;
+  Timer? _countdownTimer;
+  int _secondsRemaining = 9;
 
   @override
   void initState() {
@@ -24,16 +28,41 @@ class _NetworkBlockedScreenState extends State<NetworkBlockedScreen> with Single
       duration: const Duration(milliseconds: 1000),
     )..repeat(reverse: true);
 
+    _countdownController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+
     // Constant warning haptics
     _hapticTimer = Timer.periodic(const Duration(milliseconds: 1500), (timer) {
       HapticFeedback.heavyImpact();
     });
+
+    // Auto-shutdown countdown
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_secondsRemaining > 0) {
+        setState(() {
+          _secondsRemaining--;
+          _countdownController.forward(from: 0.0);
+        });
+      } else {
+        _countdownTimer?.cancel();
+        _shutdownApp();
+      }
+    });
+  }
+
+  void _shutdownApp() {
+    // Kill the app process
+    exit(0);
   }
 
   @override
   void dispose() {
     _pulseController.dispose();
+    _countdownController.dispose();
     _hapticTimer?.cancel();
+    _countdownTimer?.cancel();
     super.dispose();
   }
 
@@ -94,7 +123,7 @@ class _NetworkBlockedScreenState extends State<NetworkBlockedScreen> with Single
                 const SizedBox(height: 16),
 
                 Text(
-                  'This vault requires strict offline isolation. Network activity detected. App has been locked to prevent potential data leakage.',
+                  'This vault requires strict offline isolation. Network activity detected. App will terminate in $_secondsRemaining seconds to protect data.',
                   style: GoogleFonts.notoSans(
                     fontSize: 14,
                     color: Colors.grey[400],
@@ -110,25 +139,41 @@ class _NetworkBlockedScreenState extends State<NetworkBlockedScreen> with Single
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                     borderRadius: BorderRadius.circular(8),
+                    color: dangerColor.withValues(alpha: 0.05),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      ScaleTransition(
+                        scale: Tween(begin: 1.0, end: 1.4).animate(
+                          CurvedAnimation(parent: _countdownController, curve: Curves.elasticOut),
+                        ),
+                        child: Text(
+                          '$_secondsRemaining',
+                          style: GoogleFonts.spaceMono(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: dangerColor,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Text(
+                        'TERMINATING PROCESS',
+                        style: GoogleFonts.spaceMono(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: dangerColor,
+                          letterSpacing: 2.0,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
                       const SizedBox(
                         width: 12,
                         height: 12,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
                           color: dangerColor,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'MONITORING ACTIVE',
-                        style: GoogleFonts.spaceMono(
-                          fontSize: 10,
-                          color: Colors.grey[500],
-                          letterSpacing: 1.0,
                         ),
                       ),
                     ],
@@ -138,7 +183,7 @@ class _NetworkBlockedScreenState extends State<NetworkBlockedScreen> with Single
                 const SizedBox(height: 32),
 
                 Text(
-                  'Disable all network connections (Wi-Fi, Mobile Data, Bluetooth) to restore access.',
+                  'Disable all network connections and restart the app to restore access.',
                   style: GoogleFonts.notoSans(
                     fontSize: 12,
                     color: Colors.grey[600],
