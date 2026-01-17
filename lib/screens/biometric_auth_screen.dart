@@ -4,6 +4,7 @@ import 'package:local_auth/local_auth.dart';
 import '../services/biometric_service.dart';
 import '../widgets/gradient_background.dart';
 import '../utils/constants.dart';
+import '../widgets/error_snackbar.dart';
 
 class BiometricAuthScreen extends StatefulWidget {
   const BiometricAuthScreen({super.key});
@@ -20,6 +21,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
   bool _isAuthenticating = false;
   String _statusText = 'Authenticating...';
   bool _isFaceId = false;
+  bool _authAttempted = false;
 
   @override
   void initState() {
@@ -38,10 +40,18 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
     );
 
     // Auto-start authentication
-    _checkAndAuthenticate();
+    Future.delayed(const Duration(milliseconds: 500), () {
+      _checkAndAuthenticate();
+    });
   }
 
   Future<void> _checkAndAuthenticate() async {
+    if (_authAttempted) {
+      // If already attempted, just retry
+      _authenticate();
+      return;
+    }
+
     setState(() {
       _statusText = 'Checking biometric support...';
     });
@@ -52,8 +62,9 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
         setState(() {
           _statusText = 'Biometrics not available';
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Biometrics not supported on this device')),
+        ErrorSnackbar.show(
+          context,
+          message: 'Biometrics not supported on this device',
         );
       }
       return;
@@ -67,6 +78,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
       });
     }
 
+    _authAttempted = true;
     _authenticate();
   }
 
@@ -89,12 +101,18 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
         setState(() {
           _statusText = 'Authentication Successful';
         });
-        // Navigate to Dashboard
-        Navigator.of(context).pushReplacementNamed('/dashboard');
+        // Navigate to decrypting screen
+        Navigator.of(context).pushReplacementNamed('/decrypting-progress');
       } else {
         setState(() {
           _statusText = 'Authentication Failed. Tap to retry.';
         });
+        if (mounted) {
+          ErrorSnackbar.show(
+            context,
+            message: 'Authentication failed. Please try again.',
+          );
+        }
       }
     }
   }
@@ -114,10 +132,8 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
       backgroundColor: AppColors.backgroundDark,
       body: Stack(
         children: [
-          // Ambient Background Glow
           const GradientBackground(),
 
-          // Main Content
           SafeArea(
             child: SizedBox(
               width: double.infinity,
@@ -315,8 +331,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
                       width: double.infinity,
                       child: TextButton(
                         onPressed: () {
-                          // Placeholder for PIN entry logic
-                          // Navigator.pushNamed(context, '/pin-auth');
+                          // Placeholder for PIN entry
                         },
                         style: TextButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),

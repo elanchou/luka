@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'dart:async';
+import '../providers/vault_provider.dart';
+import '../services/vault_service.dart';
+import '../services/master_key_service.dart';
 
 class AppSplashScreen extends StatefulWidget {
   const AppSplashScreen({super.key});
@@ -31,12 +35,33 @@ class _AppSplashScreenState extends State<AppSplashScreen> with SingleTickerProv
 
     _controller.forward();
 
-    // Navigate to onboarding after 3 seconds
-    Timer(const Duration(seconds: 3), () {
+    _checkVaultStatus();
+  }
+
+
+  Future<void> _checkVaultStatus() async {
+    await Future.delayed(const Duration(milliseconds: 1500));
+
+    if (!mounted) return;
+
+    try {
+      final masterKeyService = MasterKeyService();
+      final hasPassword = await masterKeyService.hasPassword();
+
+      if (mounted) {
+        if (hasPassword) {
+          // 已经设置过密码 -> 直接进入密码输入页
+          Navigator.pushReplacementNamed(context, '/master-password-input');
+        } else {
+          // 没有设置密码 -> 进入欢迎页
+          Navigator.pushReplacementNamed(context, '/onboarding');
+        }
+      }
+    } catch (e) {
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/onboarding');
       }
-    });
+    }
   }
 
   @override
@@ -45,7 +70,6 @@ class _AppSplashScreenState extends State<AppSplashScreen> with SingleTickerProv
     super.dispose();
   }
 
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
@@ -127,13 +151,12 @@ class _AppSplashScreenState extends State<AppSplashScreen> with SingleTickerProv
                           letterSpacing: 14.4,
                           height: 1.0,
                         ),
-                        textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 8),
                       Text(
                         'SECURE STORAGE',
                         style: TextStyle(
-                          color: const Color(0xFF53616b),
+                          color: Colors.grey[600],
                           fontSize: 10,
                           fontWeight: FontWeight.w300,
                           letterSpacing: 2.0,
@@ -216,11 +239,10 @@ class VaultLogoPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
 
     // Draw rotated square (diamond shape)
-    final squarePath = Path();
-    final squareSize = 31.0; // 44/sqrt(2) adjusted
+    final squareSize = 31.0;
     canvas.save();
     canvas.translate(center.dx, center.dy);
-    canvas.rotate(0.785398); // 45 degrees in radians
+    canvas.rotate(0.785398); // 45 degrees
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromCenter(center: Offset.zero, width: squareSize, height: squareSize),
@@ -234,25 +256,21 @@ class VaultLogoPainter extends CustomPainter {
     canvas.drawCircle(center, 8, paint);
 
     // Draw lines from circle
-    // Top
     canvas.drawLine(
       Offset(center.dx, center.dy - 8),
       Offset(center.dx, center.dy - 16),
       paint,
     );
-    // Bottom
     canvas.drawLine(
       Offset(center.dx, center.dy + 8),
       Offset(center.dx, center.dy + 16),
       paint,
     );
-    // Left
     canvas.drawLine(
       Offset(center.dx - 8, center.dy),
       Offset(center.dx - 16, center.dy),
       paint,
     );
-    // Right
     canvas.drawLine(
       Offset(center.dx + 8, center.dy),
       Offset(center.dx + 16, center.dy),

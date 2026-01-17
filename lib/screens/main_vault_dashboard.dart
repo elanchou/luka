@@ -24,7 +24,7 @@ class _MainVaultDashboardState extends State<MainVaultDashboard> {
   final List<Widget> _pages = [
     const _DashboardHome(),
     const ActivityLogBody(),
-    const SystemSettingsBody(),
+    const SystemSettingsScreen(),
   ];
 
   @override
@@ -39,22 +39,16 @@ class _MainVaultDashboardState extends State<MainVaultDashboard> {
       backgroundColor: backgroundDark,
       body: Stack(
         children: [
-          // Ambient Background Glows (Global)
           const GradientBackground(),
-
-          // Main Content
           IndexedStack(
             index: _currentIndex,
             children: _pages.map((page) {
-              // Ensure bottom padding for tab bar
               return Padding(
-                padding: EdgeInsets.only(bottom: navBarHeight), // Space for bottom bar
+                padding: EdgeInsets.only(bottom: navBarHeight),
                 child: page,
               );
             }).toList(),
           ),
-
-          // Bottom Navigation & FAB
           Positioned(
             bottom: 0,
             left: 0,
@@ -64,8 +58,6 @@ class _MainVaultDashboardState extends State<MainVaultDashboard> {
               onTap: (index) => setState(() => _currentIndex = index),
             ),
           ),
-
-          // FAB (Only on Home)
           if (_currentIndex == 0)
             Positioned(
               bottom: 96 + bottomPadding,

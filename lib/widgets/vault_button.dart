@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 class VaultButton extends StatelessWidget {
   final String text;
   final VoidCallback? onTap;
+  final IconData? iconData;
   final Widget? icon;
   final Color? backgroundColor;
   final Color? textColor;
@@ -17,6 +18,7 @@ class VaultButton extends StatelessWidget {
     super.key,
     required this.text,
     this.onTap,
+    this.iconData,
     this.icon,
     this.backgroundColor,
     this.textColor,
@@ -25,7 +27,10 @@ class VaultButton extends StatelessWidget {
     this.borderRadius = 12.0,
     this.isFullWidth = true,
     this.isLoading = false,
-  });
+  }) : assert(
+         iconData == null || icon == null,
+         'Cannot provide both iconData and icon widget',
+       );
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +41,13 @@ class VaultButton extends StatelessWidget {
     final bgColor = backgroundColor ?? defaultPrimaryColor;
     final txtColor = textColor ?? defaultBackgroundDark;
     final isDisabled = onTap == null;
+
+    Widget? iconWidget;
+    if (icon != null) {
+      iconWidget = icon;
+    } else if (iconData != null) {
+      iconWidget = Icon(iconData, color: txtColor, size: 20);
+    }
 
     Widget buttonContent = isLoading
         ? SizedBox(
@@ -48,18 +60,22 @@ class VaultButton extends StatelessWidget {
           )
         : Row(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              if (icon != null) ...[
-                icon!,
+              if (iconWidget != null) ...[
+                iconWidget,
                 const SizedBox(width: 8),
               ],
-              Text(
-                text.toUpperCase(),
-                style: GoogleFonts.spaceGrotesk(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: txtColor,
-                  letterSpacing: 0.5,
+              Flexible(
+                child: Text(
+                  text.toUpperCase(),
+                  style: GoogleFonts.spaceGrotesk(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: txtColor,
+                    letterSpacing: 0.5,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],

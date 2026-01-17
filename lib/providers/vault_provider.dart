@@ -10,6 +10,7 @@ class VaultProvider extends ChangeNotifier {
   bool _isInitialized = false;
   String _searchQuery = '';
   String? _error;
+  String? _masterPassword;
 
   List<Secret> get secrets {
     if (_searchQuery.isEmpty) return _secrets;
@@ -25,8 +26,9 @@ class VaultProvider extends ChangeNotifier {
   bool get isInitialized => _isInitialized;
   String? get error => _error;
   int get secretCount => _secrets.length;
+  bool get hasPassword => _masterPassword != null;
 
-  Future<void> init() async {
+  Future<void> init({String? masterPassword}) async {
     if (_isInitialized) return;
     
     _isLoading = true;
@@ -34,18 +36,25 @@ class VaultProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _vaultService.init();
+      _masterPassword = masterPassword;
+      await _vaultService.init(masterPassword: masterPassword);
       _secrets = await _vaultService.loadSecrets();
       _isInitialized = true;
       _error = null;
     } catch (e) {
-      _error = 'Failed to initialize vault: $e';
+      _error = 'Failed to initialize vault: \$e';
       _secrets = [];
       _isInitialized = false;
     } finally {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> reinitialize(String masterPassword) async {
+    _isInitialized = false;
+    _masterPassword = masterPassword;
+    await init(masterPassword: masterPassword);
   }
 
   void setSearchQuery(String query) {
@@ -62,13 +71,12 @@ class VaultProvider extends ChangeNotifier {
 
   Future<bool> addSecret(Secret secret) async {
     try {
-      _secrets.insert(0, secret); // Add to top
+      _secrets.insert(0, secret);
       notifyListeners();
       await _vaultService.saveSecrets(_secrets);
       return true;
     } catch (e) {
-      _error = 'Failed to add secret: $e';
-      // Rollback on failure
+      _error = 'Failed to add secret: \$e';
       _secrets.removeWhere((s) => s.id == secret.id);
       notifyListeners();
       return false;
@@ -80,14 +88,13 @@ class VaultProvider extends ChangeNotifier {
       final index = _secrets.indexWhere((s) => s.id == id);
       if (index == -1) return false;
       
-      final removedSecret = _secrets[index];
       _secrets.removeAt(index);
       notifyListeners();
       
       await _vaultService.saveSecrets(_secrets);
       return true;
     } catch (e) {
-      _error = 'Failed to delete secret: $e';
+      _error = 'Failed to delete secret: \$e';
       notifyListeners();
       return false;
     }
@@ -98,14 +105,13 @@ class VaultProvider extends ChangeNotifier {
       final index = _secrets.indexWhere((s) => s.id == updatedSecret.id);
       if (index == -1) return false;
 
-      final oldSecret = _secrets[index];
       _secrets[index] = updatedSecret;
       notifyListeners();
       
       await _vaultService.saveSecrets(_secrets);
       return true;
     } catch (e) {
-      _error = 'Failed to update secret: $e';
+      _error = 'Failed to update secret: \$e';
       notifyListeners();
       return false;
     }
@@ -115,7 +121,7 @@ class VaultProvider extends ChangeNotifier {
     try {
       return await _vaultService.exportDecryptedData();
     } catch (e) {
-      _error = 'Failed to export data: $e';
+      _error = 'Failed to export data: \$e';
       notifyListeners();
       return null;
     }
@@ -129,7 +135,7 @@ class VaultProvider extends ChangeNotifier {
       _error = null;
       notifyListeners();
     } catch (e) {
-      _error = 'Failed to clear vault: $e';
+      _error = 'Failed to clear vault: \$e';
       notifyListeners();
     }
   }

@@ -9,15 +9,15 @@ class VaultService {
   static const String _fileName = 'vault.enc';
   bool _isInitialized = false;
 
-  Future<void> init() async {
+  Future<void> init({String? masterPassword}) async {
     if (_isInitialized) return;
     
     try {
-      await _encryptionService.init();
+      await _encryptionService.init(masterPassword: masterPassword);
       _isInitialized = true;
     } catch (e) {
       _isInitialized = false;
-      throw Exception('Failed to initialize vault service: $e');
+      throw Exception('Failed to initialize vault service: \$e');
     }
   }
 
@@ -33,13 +33,20 @@ class VaultService {
 
     try {
       final file = await _file;
+      
+      // Ensure directory exists
+      final directory = file.parent;
+      if (!await directory.exists()) {
+        await directory.create(recursive: true);
+      }
+      
       final jsonList = secrets.map((s) => s.toJson()).toList();
       final jsonString = json.encode({'secrets': jsonList});
 
       final encryptedString = _encryptionService.encryptData(jsonString);
       await file.writeAsString(encryptedString);
     } catch (e) {
-      throw Exception('Failed to save secrets: $e');
+      throw Exception('Failed to save secrets: \$e');
     }
   }
 
@@ -66,13 +73,11 @@ class VaultService {
       }
       return [];
     } catch (e) {
-      // Log error but don't crash - return empty list for corrupted data
-      print('Error loading secrets: $e');
+      print('Error loading secrets: \$e');
       return [];
     }
   }
 
-  // Create a temporary file with decrypted JSON data for export
   Future<File?> exportDecryptedData() async {
     if (!_isInitialized) {
       throw Exception('VaultService not initialized');
@@ -83,7 +88,6 @@ class VaultService {
       if (secrets.isEmpty) return null;
 
       final jsonList = secrets.map((s) => s.toJson()).toList();
-      // Pretty print for readability
       final jsonString = const JsonEncoder.withIndent('  ').convert({
         'secrets': jsonList,
         'exported_at': DateTime.now().toIso8601String(),
@@ -92,12 +96,12 @@ class VaultService {
 
       final directory = await getTemporaryDirectory();
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final exportFile = File('${directory.path}/vault_export_$timestamp.json');
+      final exportFile = File('\${directory.path}/vault_export_\$timestamp.json');
       await exportFile.writeAsString(jsonString);
 
       return exportFile;
     } catch (e) {
-      print('Error exporting data: $e');
+      print('Error exporting data: \$e');
       return null;
     }
   }
@@ -109,7 +113,7 @@ class VaultService {
         await file.delete();
       }
     } catch (e) {
-      throw Exception('Failed to clear vault: $e');
+      throw Exception('Failed to clear vault: \$e');
     }
   }
 

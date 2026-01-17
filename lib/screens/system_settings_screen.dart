@@ -1,9 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../widgets/gradient_background.dart';
+import '../services/master_key_service.dart';
 
-class SystemSettingsScreen extends StatelessWidget {
+class SystemSettingsScreen extends StatefulWidget {
   const SystemSettingsScreen({super.key});
+
+  @override
+  State<SystemSettingsScreen> createState() => _SystemSettingsScreenState();
+}
+
+class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
+  final MasterKeyService _masterKeyService = MasterKeyService();
+  SecurityLevel _currentSecurityLevel = SecurityLevel.standard;
+  bool _hasPassword = false;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    try {
+      final hasPassword = await _masterKeyService.hasPassword();
+      final level = await _masterKeyService.getSecurityLevel();
+      setState(() {
+        _hasPassword = hasPassword;
+        _currentSecurityLevel = level;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,149 +44,204 @@ class SystemSettingsScreen extends StatelessWidget {
       body: Stack(
         children: [
           const GradientBackground(),
-          const SystemSettingsBody(),
+          SafeArea(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const SizedBox(width: 24),
+                      Text(
+                        'Settings',
+                        style: GoogleFonts.spaceGrotesk(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+                      const SizedBox(width: 24),
+                    ],
+                  ),
+                ),
+                if (_isLoading)
+                  const Expanded(
+                    child: Center(
+                      child: CircularProgressIndicator(color: Color(0xFF13b6ec)),
+                    ),
+                  )
+                else
+                  Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      children: [
+                        _SettingsSection(
+                          title: 'SECURITY',
+                          children: [
+                            if (_hasPassword)
+                              _SettingsTile(
+                                icon: Icons.lock_outline,
+                                title: 'Change Master Password',
+                                subtitle: 'PASSWORD PROTECTED',
+                                trailing: const _TrailingArrow(),
+                                onTap: () async {
+                                  final result = await Navigator.pushNamed(
+                                    context,
+                                    '/change-master-password',
+                                  );
+                                  if (result == true) {
+                                    _loadSettings();
+                                  }
+                                },
+                              ),
+                            if (_hasPassword)
+                              _SettingsTile(
+                                icon: Icons.shield_outlined,
+                                title: 'Security Level',
+                                trailing: _TrailingTextWithArrow(
+                                  text: _currentSecurityLevel.displayName,
+                                ),
+                                onTap: () => _showSecurityInfo(),
+                              ),
+                            const _SettingsTile(
+                              icon: Icons.timer_outlined,
+                              title: 'Auto-Lock Timer',
+                              trailing: _TrailingTextWithArrow(text: 'Immediate'),
+                              isLast: true,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        _SettingsSection(
+                          title: 'BACKUP & DATA',
+                          children: [
+                            _SettingsTile(
+                              icon: Icons.output,
+                              title: 'Export Seed Vault',
+                              trailing: const _TrailingArrow(),
+                              onTap: () => Navigator.pushNamed(context, '/export-progress'),
+                            ),
+                            const _SettingsTile(
+                              icon: Icons.cleaning_services_outlined,
+                              title: 'Clear Local Cache',
+                              trailing: _TrailingArrow(),
+                              isLast: true,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        const _SettingsSection(
+                          title: 'APPEARANCE',
+                          children: [
+                            _SettingsTile(
+                              icon: Icons.contrast,
+                              title: 'Theme',
+                              trailing: _TrailingTextWithArrow(text: 'Dark'),
+                            ),
+                            _SettingsTile(
+                              icon: Icons.vibration,
+                              title: 'Haptic Feedback',
+                              trailing: _SettingsSwitch(value: true),
+                              isLast: true,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        const _SettingsSection(
+                          title: 'ABOUT',
+                          children: [
+                            _SettingsTile(
+                              icon: Icons.info_outline,
+                              title: 'App Version',
+                              trailing: _TrailingText(text: '1.0.0'),
+                            ),
+                            _SettingsTile(
+                              icon: Icons.article_outlined,
+                              title: 'Privacy Policy',
+                              trailing: _TrailingArrow(),
+                            ),
+                            _SettingsTile(
+                              icon: Icons.description_outlined,
+                              title: 'Terms of Service',
+                              trailing: _TrailingArrow(),
+                              isLast: true,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 40),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
-}
 
-class SystemSettingsBody extends StatelessWidget {
-  const SystemSettingsBody({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Column(
-        children: [
-          // Header
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Back button or placeholder depending on context
-                // If in Tab, we might not want it.
-                // But for now, let's keep it conditional or simple.
-                // Assuming this replaces the previous header.
-                const SizedBox(width: 24), // Placeholder if back button removed
-
-                Text(
-                  'System Settings',
-                  style: GoogleFonts.spaceGrotesk(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    letterSpacing: -0.2,
-                  ),
-                ),
-                const SizedBox(width: 24),
-              ],
-            ),
+  void _showSecurityInfo() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1a2c32),
+        title: Text(
+          'Security Level',
+          style: GoogleFonts.spaceGrotesk(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
           ),
-
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              children: [
-                const _SettingsSection(
-                  title: 'SECURITY',
-                  children: [
-                    _SettingsTile(
-                      icon: Icons.face,
-                      title: 'Biometric Unlock',
-                      trailing: _SettingsSwitch(value: true),
-                    ),
-                    _SettingsTile(
-                      icon: Icons.timer_outlined,
-                      title: 'Auto-Lock Timer',
-                      trailing: _TrailingTextWithArrow(text: 'Immediate'),
-                    ),
-                    _SettingsTile(
-                      icon: Icons.lock_reset,
-                      title: 'Master Password',
-                      trailing: _TrailingArrow(),
-                      isLast: true,
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 24),
-
-                _SettingsSection(
-                  title: 'BACKUP & DATA',
-                  children: [
-                    const _SettingsTile(
-                      icon: Icons.cloud_sync_outlined,
-                      title: 'Cloud Sync',
-                      subtitle: 'ENCRYPTED',
-                      trailing: _SettingsSwitch(value: false),
-                    ),
-                    _SettingsTile(
-                      icon: Icons.output,
-                      title: 'Export Seed Vault',
-                      trailing: const _TrailingArrow(),
-                      onTap: () {
-                        Navigator.pushNamed(context, '/export-progress');
-                      },
-                    ),
-                    const _SettingsTile(
-                      icon: Icons.cleaning_services_outlined,
-                      title: 'Clear Local Cache',
-                      trailing: _TrailingArrow(),
-                      isLast: true,
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 24),
-
-                const _SettingsSection(
-                  title: 'APPEARANCE',
-                  children: [
-                    _SettingsTile(
-                      icon: Icons.contrast,
-                      title: 'Theme',
-                      trailing: _TrailingTextWithArrow(text: 'Dark'),
-                    ),
-                    _SettingsTile(
-                      icon: Icons.vibration,
-                      title: 'Haptic Feedback',
-                      trailing: _SettingsSwitch(value: true),
-                      isLast: true,
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 32),
-
-                // Footer
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.verified_user,
-                      size: 16,
-                      color: Colors.grey[600],
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'VAULT SECURE SYSTEM V2.1',
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey[600],
-                        letterSpacing: 1.5,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
-              ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Current Level: ${_currentSecurityLevel.displayName}',
+              style: GoogleFonts.spaceGrotesk(
+                color: const Color(0xFF13b6ec),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Iterations: ${_formatNumber(_currentSecurityLevel.iterations)}',
+              style: GoogleFonts.notoSans(
+                color: Colors.grey[400],
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'To change security level, use "Change Master Password" above.',
+              style: GoogleFonts.notoSans(
+                color: Colors.grey[500],
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'OK',
+              style: GoogleFonts.spaceGrotesk(
+                color: const Color(0xFF13b6ec),
+              ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  String _formatNumber(int num) {
+    return num.toString().replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (m) => '${m[1]},',
     );
   }
 }
@@ -172,28 +258,24 @@ class _SettingsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 16, bottom: 8),
+          padding: const EdgeInsets.only(left: 4, bottom: 12),
           child: Text(
             title,
             style: GoogleFonts.spaceGrotesk(
               fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey[500],
-              letterSpacing: 1.0,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[600],
+              letterSpacing: 1.5,
             ),
           ),
         ),
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF1c292e),
+            color: const Color(0xFF1a2c32),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.05),
-            ),
+            border: Border.all(color: const Color(0xFF283539)),
           ),
-          child: Column(
-            children: children,
-          ),
+          child: Column(children: children),
         ),
       ],
     );
@@ -220,7 +302,6 @@ class _SettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const primaryColor = Color(0xFF13b6ec);
-
     return InkWell(
       onTap: onTap,
       child: Column(
@@ -232,15 +313,11 @@ class _SettingsTile extends StatelessWidget {
                 Container(
                   width: 40,
                   height: 40,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF283539),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF283539),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    icon,
-                    color: primaryColor,
-                    size: 20,
-                  ),
+                  child: Icon(icon, color: primaryColor, size: 20),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -286,13 +363,11 @@ class _SettingsTile extends StatelessWidget {
 
 class _SettingsSwitch extends StatelessWidget {
   final bool value;
-
   const _SettingsSwitch({required this.value});
 
   @override
   Widget build(BuildContext context) {
     const primaryColor = Color(0xFF13b6ec);
-
     return Container(
       width: 48,
       height: 28,
@@ -319,17 +394,12 @@ class _TrailingArrow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Icon(
-      Icons.chevron_right,
-      color: Colors.grey[600],
-      size: 20,
-    );
+    return Icon(Icons.chevron_right, color: Colors.grey[600], size: 20);
   }
 }
 
 class _TrailingTextWithArrow extends StatelessWidget {
   final String text;
-
   const _TrailingTextWithArrow({required this.text});
 
   @override
@@ -346,6 +416,22 @@ class _TrailingTextWithArrow extends StatelessWidget {
         const SizedBox(width: 4),
         const _TrailingArrow(),
       ],
+    );
+  }
+}
+
+class _TrailingText extends StatelessWidget {
+  final String text;
+  const _TrailingText({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: GoogleFonts.notoSans(
+        fontSize: 14,
+        color: Colors.grey[500],
+      ),
     );
   }
 }

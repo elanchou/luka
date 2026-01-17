@@ -10,23 +10,16 @@ class VaultOnboardingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Determine screen size for responsive layout
     final size = MediaQuery.of(context).size;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Colors from design
     const primaryColor = Color(0xFF13b6ec);
     const backgroundDark = Color(0xFF101d22);
-    // const backgroundLight = Color(0xFFf6f8f8); // Not used as main.dart enforces dark mode
 
     return Scaffold(
       backgroundColor: backgroundDark,
       body: Stack(
         children: [
-          // Ambient Glow
           const GradientBackground(),
-
-          // Decorative Background Grid
           Positioned.fill(
             child: CustomPaint(
               painter: GridPainter(
@@ -35,14 +28,12 @@ class VaultOnboardingScreen extends StatelessWidget {
               ),
             ),
           ),
-
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Top Section: Branding
                   const SizedBox(height: 24),
                   Row(
                     children: [
@@ -67,14 +58,10 @@ class VaultOnboardingScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-
-                  // Middle Section: Illustration & Value Prop
                   Expanded(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Abstract Illustration Placeholder
-                        // Using a stack of containers to mimic the geometric thin line illustration
                         SizedBox(
                           width: size.width * 0.8,
                           height: size.width * 0.8,
@@ -104,7 +91,7 @@ class VaultOnboardingScreen extends StatelessWidget {
                                 ),
                               ),
                               Transform.rotate(
-                                angle: 0.785, // 45 degrees
+                                angle: 0.785,
                                 child: Container(
                                   width: 100,
                                   height: 100,
@@ -124,9 +111,7 @@ class VaultOnboardingScreen extends StatelessWidget {
                             ],
                           ),
                         ),
-
                         const SizedBox(height: 32),
-
                         Text(
                           'Secure Your Legacy',
                           style: GoogleFonts.spaceGrotesk(
@@ -139,7 +124,7 @@ class VaultOnboardingScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          'Zero-knowledge encryption for your digital assets. Your keys remain on your device, always.',
+                          'Password-based encryption with PBKDF2. Your master password derives the encryption key.',
                           style: GoogleFonts.notoSans(
                             fontSize: 16,
                             color: Colors.grey[400],
@@ -150,24 +135,17 @@ class VaultOnboardingScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-
-                  // Bottom Section: Actions
                   const SizedBox(height: 24),
-
-                  // Primary Button: Create New Vault
                   VaultButton(
                     text: 'Create New Vault',
                     icon: const Icon(Icons.add_circle_outline),
                     onTap: () {
-                      Navigator.pushNamed(context, '/biometric-auth');
+                      Navigator.pushNamed(context, '/set-master-password');
                     },
                     backgroundColor: primaryColor,
                     textColor: backgroundDark,
                   ),
-
                   const SizedBox(height: 16),
-
-                  // Secondary Button: Import
                   VaultOutlineButton(
                     text: 'Import Recovery Phrase',
                     icon: Icons.history,
@@ -176,10 +154,7 @@ class VaultOnboardingScreen extends StatelessWidget {
                     },
                     textColor: Colors.white,
                   ),
-
                   const SizedBox(height: 24),
-
-                  // Footer Text
                   Column(
                     children: [
                       Text(
@@ -193,7 +168,7 @@ class VaultOnboardingScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'v1.0.2 • Encrypted',
+                        'v1.0.2 • Master Password Encrypted',
                         style: GoogleFonts.notoSans(
                           fontSize: 10,
                           color: Colors.grey[700],
@@ -212,7 +187,6 @@ class VaultOnboardingScreen extends StatelessWidget {
   }
 }
 
-// Custom Painter for the background grid
 class GridPainter extends CustomPainter {
   final Color color;
   final double spacing;
@@ -225,12 +199,10 @@ class GridPainter extends CustomPainter {
       ..color = color
       ..strokeWidth = 1;
 
-    // Draw vertical lines
     for (double x = 0; x < size.width; x += spacing) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
     }
 
-    // Draw horizontal lines
     for (double y = 0; y < size.height; y += spacing) {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
     }
