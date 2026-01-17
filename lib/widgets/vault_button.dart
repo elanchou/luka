@@ -3,8 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 class VaultButton extends StatelessWidget {
   final String text;
-  final VoidCallback onTap;
-  final IconData? icon;
+  final VoidCallback? onTap;
+  final Widget? icon;
   final Color? backgroundColor;
   final Color? textColor;
   final double? width;
@@ -16,7 +16,7 @@ class VaultButton extends StatelessWidget {
   const VaultButton({
     super.key,
     required this.text,
-    required this.onTap,
+    this.onTap,
     this.icon,
     this.backgroundColor,
     this.textColor,
@@ -35,6 +35,7 @@ class VaultButton extends StatelessWidget {
 
     final bgColor = backgroundColor ?? defaultPrimaryColor;
     final txtColor = textColor ?? defaultBackgroundDark;
+    final isDisabled = onTap == null;
 
     Widget buttonContent = isLoading
         ? SizedBox(
@@ -49,7 +50,7 @@ class VaultButton extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (icon != null) ...[
-                Icon(icon, color: txtColor, size: 20),
+                icon!,
                 const SizedBox(width: 8),
               ],
               Text(
@@ -65,13 +66,15 @@ class VaultButton extends StatelessWidget {
           );
 
     return Material(
-      color: bgColor,
+      color: isDisabled 
+          ? bgColor.withOpacity(0.3) 
+          : bgColor,
       borderRadius: BorderRadius.circular(borderRadius),
       clipBehavior: Clip.antiAlias,
-      elevation: 4,
+      elevation: isDisabled ? 0 : 4,
       shadowColor: bgColor.withOpacity(0.25),
       child: InkWell(
-        onTap: isLoading ? null : onTap,
+        onTap: isLoading || isDisabled ? null : onTap,
         child: Container(
           width: isFullWidth ? double.infinity : width,
           height: height,

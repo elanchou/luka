@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:local_auth/local_auth.dart';
 import '../services/biometric_service.dart';
 import '../widgets/gradient_background.dart';
+import '../utils/constants.dart';
 
 class BiometricAuthScreen extends StatefulWidget {
   const BiometricAuthScreen({super.key});
@@ -14,6 +15,7 @@ class BiometricAuthScreen extends StatefulWidget {
 class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scanAnimation;
+  late Animation<double> _pulseAnimation;
   final BiometricService _biometricService = BiometricService();
   bool _isAuthenticating = false;
   String _statusText = 'Authenticating...';
@@ -28,6 +30,10 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
     )..repeat();
 
     _scanAnimation = Tween<double>(begin: -1.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
 
@@ -46,7 +52,6 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
         setState(() {
           _statusText = 'Biometrics not available';
         });
-        // Fallback to PIN or other method if implemented, or just show error
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Biometrics not supported on this device')),
         );
@@ -103,11 +108,10 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF13b6ec);
-    const backgroundDark = Color(0xFF101d22);
+    final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: backgroundDark,
+      backgroundColor: AppColors.backgroundDark,
       body: Stack(
         children: [
           // Ambient Background Glow
@@ -115,137 +119,242 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
 
           // Main Content
           SafeArea(
-            child: Column(
-              children: [
-                const Spacer(),
+            child: SizedBox(
+              width: double.infinity,
+              height: double.infinity,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Spacer(flex: 2),
 
-                // Scanner Section
-                GestureDetector(
-                  onTap: _authenticate,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Outer glow ring (static for now, could pulse)
-                      Container(
-                        width: 140,
-                        height: 140,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: primaryColor.withOpacity(0.0), // Transparent base
-                          boxShadow: [
-                            BoxShadow(
-                              color: primaryColor.withOpacity(0.1),
-                              blurRadius: 30,
-                              spreadRadius: 0,
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Icon Container
-                      Container(
-                        width: 128,
-                        height: 128,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: backgroundDark.withOpacity(0.5),
-                          border: Border.all(
-                            color: primaryColor.withOpacity(0.1),
-                            width: 1,
-                          ),
-                        ),
-                        child: Icon(
-                          _isFaceId ? Icons.face_unlock_outlined : Icons.fingerprint,
-                          size: 64,
-                          color: primaryColor,
-                        ),
-                      ),
-
-                      // Scanning Line
-                      ClipOval(
-                        child: SizedBox(
-                          width: 128,
-                          height: 128,
-                          child: AnimatedBuilder(
-                            animation: _scanAnimation,
-                            builder: (context, child) {
-                              return FractionallySizedBox(
-                                heightFactor: 0.1, // Thickness of the scan line area
-                                alignment: Alignment(0, _scanAnimation.value),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [
-                                        primaryColor.withOpacity(0.0),
-                                        primaryColor.withOpacity(0.5),
-                                        primaryColor.withOpacity(0.0),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 32),
-
-                // Status Text
-                Text(
-                  _statusText,
-                  style: GoogleFonts.spaceGrotesk(
-                    fontSize: 20,
-                    color: Colors.white.withOpacity(0.9),
-                    letterSpacing: 0.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Your security is our priority',
-                  style: GoogleFonts.notoSans(
-                    fontSize: 14,
-                    color: Colors.grey[400],
-                    fontWeight: FontWeight.w300,
-                  ),
-                ),
-
-                const Spacer(),
-
-                // Footer: Enter PIN
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 48.0),
-                  child: TextButton(
-                    onPressed: () {
-                      // Placeholder for PIN entry logic
-                      // Navigator.pushNamed(context, '/pin-auth');
-                    },
-                    style: TextButton.styleFrom(
-                      overlayColor: primaryColor.withOpacity(0.1),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
+                    // App Logo/Title
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'ENTER PIN',
+                          'VAULT',
                           style: GoogleFonts.spaceGrotesk(
-                            fontSize: 14,
-                            color: Colors.grey[400],
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 1.5,
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            letterSpacing: -1.0,
+                          ),
+                        ),
+                        Text(
+                          '.',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primaryColor,
                           ),
                         ),
                       ],
                     ),
-                  ),
+
+                    const SizedBox(height: 60),
+
+                    // Scanner Section
+                    GestureDetector(
+                      onTap: _authenticate,
+                      child: AnimatedBuilder(
+                        animation: _pulseAnimation,
+                        builder: (context, child) {
+                          return Transform.scale(
+                            scale: _isAuthenticating ? _pulseAnimation.value : 1.0,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                // Outer glow ring
+                                Container(
+                                  width: 160,
+                                  height: 160,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppColors.primaryColor.withOpacity(0.2),
+                                        blurRadius: 40,
+                                        spreadRadius: 10,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                // Icon Container
+                                Container(
+                                  width: 140,
+                                  height: 140,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white.withOpacity(0.05),
+                                    border: Border.all(
+                                      color: AppColors.primaryColor.withOpacity(0.3),
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: Icon(
+                                    _isFaceId ? Icons.face_unlock_outlined : Icons.fingerprint,
+                                    size: 70,
+                                    color: AppColors.primaryColor,
+                                  ),
+                                ),
+
+                                // Scanning Line
+                                if (_isAuthenticating)
+                                  ClipOval(
+                                    child: SizedBox(
+                                      width: 140,
+                                      height: 140,
+                                      child: AnimatedBuilder(
+                                        animation: _scanAnimation,
+                                        builder: (context, child) {
+                                          return FractionallySizedBox(
+                                            heightFactor: 0.15,
+                                            alignment: Alignment(0, _scanAnimation.value),
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  begin: Alignment.topCenter,
+                                                  end: Alignment.bottomCenter,
+                                                  colors: [
+                                                    AppColors.primaryColor.withOpacity(0.0),
+                                                    AppColors.primaryColor.withOpacity(0.6),
+                                                    AppColors.primaryColor.withOpacity(0.0),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(height: 48),
+
+                    // Status Text
+                    SizedBox(
+                      width: double.infinity,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            _statusText,
+                            style: GoogleFonts.spaceGrotesk(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white.withOpacity(0.95),
+                              letterSpacing: 0.5,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            constraints: BoxConstraints(maxWidth: size.width * 0.8),
+                            child: Text(
+                              'Your security is our priority',
+                              style: GoogleFonts.notoSans(
+                                fontSize: 14,
+                                color: Colors.grey[400],
+                                fontWeight: FontWeight.w400,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const Spacer(flex: 3),
+
+                    // Instruction Card
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.03),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.1),
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(
+                            _isFaceId ? Icons.face : Icons.fingerprint,
+                            size: 24,
+                            color: AppColors.primaryColor.withOpacity(0.7),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            _isFaceId 
+                                ? 'Position your face within the frame'
+                                : 'Place your finger on the sensor',
+                            style: GoogleFonts.spaceGrotesk(
+                              fontSize: 13,
+                              color: Colors.white.withOpacity(0.7),
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Footer: Enter PIN
+                    SizedBox(
+                      width: double.infinity,
+                      child: TextButton(
+                        onPressed: () {
+                          // Placeholder for PIN entry logic
+                          // Navigator.pushNamed(context, '/pin-auth');
+                        },
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          backgroundColor: Colors.white.withOpacity(0.02),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(
+                              color: Colors.white.withOpacity(0.1),
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.dialpad,
+                              size: 18,
+                              color: Colors.grey[400],
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'ENTER PIN INSTEAD',
+                              style: GoogleFonts.spaceGrotesk(
+                                fontSize: 13,
+                                color: Colors.grey[400],
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ],

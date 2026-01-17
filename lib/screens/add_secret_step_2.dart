@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:bip39/src/wordlists/english.dart';
 import '../providers/vault_provider.dart';
 import '../models/secret_model.dart';
 import '../widgets/gradient_background.dart';
 import '../widgets/vault_button.dart';
 import '../widgets/vault_app_bar.dart';
+import '../widgets/seed_word_autocomplete.dart';
+import '../widgets/error_snackbar.dart';
+import '../utils/validators.dart';
 
 class AddSecretStep2 extends StatefulWidget {
   const AddSecretStep2({super.key});
@@ -17,6 +21,9 @@ class AddSecretStep2 extends StatefulWidget {
 class _AddSecretStep2State extends State<AddSecretStep2> {
   late String _secretName;
   late String _network;
+
+  // Get BIP39 word list (2048 words)
+  final List<String> _bip39Words = WORDLIST;
 
   final List<TextEditingController> _controllers = List.generate(
     12,
@@ -30,6 +37,7 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
 
   int _currentIndex = 0;
   bool _initialized = false;
+  bool _isVerifying = false;
 
   @override
   void didChangeDependencies() {
@@ -47,11 +55,6 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
   @override
   void initState() {
     super.initState();
-    // Simulate some pre-filled values for demo
-    // _controllers[0].text = 'witch';
-    // _controllers[1].text = 'wagon';
-    // _controllers[2].text = 'fizzle';
-    // _controllers[3].text = 'plump';
 
     // Set focus listeners
     for (int i = 0; i < 12; i++) {
@@ -76,15 +79,39 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
     super.dispose();
   }
 
-  void _verifyPhrase() async {
-    // Collect all words
-    final words = _controllers.map((c) => c.text.trim()).toList();
+  void _focusNext(int currentIndex) {
+    if (currentIndex < 11) {
+      _focusNodes[currentIndex + 1].requestFocus();
+    } else {
+      // Last word - unfocus to hide keyboard
+      _focusNodes[currentIndex].unfocus();
+    }
+  }
 
-    // Basic validation
-    if (words.any((w) => w.isEmpty)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all 12 words')),
-      );
+  void _verifyPhrase() async {
+    if (_isVerifying) return;
+
+    setState(() {
+      _isVerifying = true;
+    });
+
+    // Collect all words
+    final words = _controllers.map((c) => c.text.trim().toLowerCase()).toList();
+
+    // Use validator
+    final validationResult = Validators.validateSeedPhrase(words, _bip39Words);
+
+    if (!validationResult.isValid) {
+      if (mounted) {
+        ErrorSnackbar.show(
+          context,
+          message: validationResult.error!,
+          duration: const Duration(seconds: 5),
+        );
+      }
+      setState(() {
+        _isVerifying = false;
+      });
       return;
     }
 
@@ -99,17 +126,45 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
     );
 
     // Save using Provider
-    await Provider.of<VaultProvider>(context, listen: false).addSecret(secret);
+    final success = await Provider.of<VaultProvider>(context, listen: false).addSecret(secret);
+
+    setState(() {
+      _isVerifying = false;
+    });
 
     if (mounted) {
-      Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
+      if (success) {
+        SuccessSnackbar.show(
+          context,
+          message: 'Seed phrase saved securely',
+        );
+        Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
+      } else {
+        ErrorSnackbar.show(
+          context,
+          message: 'Failed to save seed phrase',
+        );
+      }
     }
+  }
+
+  int _getFilledWordCount() {
+    return _controllers.where((c) => c.text.trim().isNotEmpty).length;
+  }
+
+  int _getValidWordCount() {
+    return _controllers.where((c) {
+      final word = c.text.trim().toLowerCase();
+      return word.isNotEmpty && _bip39Words.contains(word);
+    }).length;
   }
 
   @override
   Widget build(BuildContext context) {
     const primaryColor = Color(0xFF13b6ec);
     const backgroundDark = Color(0xFF101d22);
+    final filledCount = _getFilledWordCount();
+    final validCount = _getValidWordCount();
 
     return Scaffold(
       backgroundColor: backgroundDark,
@@ -161,146 +216,159 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Enter your 12-word recovery phrase in the correct order to verify your backup.',
+                        'Enter your 12-word recovery phrase. Start typing and select from suggestions.',
                         style: GoogleFonts.notoSans(
                           fontSize: 16,
                           color: Colors.grey[400],
                           height: 1.5,
                         ),
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 24),
 
-                      // Grid of Input Cells
+                      // Progress Indicator
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.03),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.1),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.checklist_rounded,
+                              color: primaryColor,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Progress: $validCount/12 valid words',
+                                    style: GoogleFonts.spaceGrotesk(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(4),
+                                    child: LinearProgressIndicator(
+                                      value: validCount / 12,
+                                      backgroundColor: Colors.white.withOpacity(0.1),
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        validCount == 12 
+                                            ? const Color(0xFF00d68f)
+                                            : primaryColor,
+                                      ),
+                                      minHeight: 6,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Grid of Input Cells with Autocomplete
                       GridView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
+                          crossAxisCount: 2,
                           crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: 1.4, // Matches approx h-[72px] width ratio
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 3.5,
                         ),
                         itemCount: 12,
                         itemBuilder: (context, index) {
-                          final isFocused = _currentIndex == index;
-                          // Need to check mounted to avoid error if accessed during build but it's fine here
-                          final isFilled = _controllers[index].text.isNotEmpty;
-
-                          return AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            decoration: BoxDecoration(
-                              color: isFocused
-                                  ? primaryColor.withOpacity(0.03)
-                                  : (isFilled ? Colors.white.withOpacity(0.05) : Colors.transparent),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: isFocused
-                                    ? primaryColor
-                                    : Colors.white.withOpacity(0.1),
-                                width: 1,
-                              ),
-                              boxShadow: isFocused ? [
-                                BoxShadow(
-                                  color: primaryColor.withOpacity(0.1),
-                                  blurRadius: 15,
-                                  spreadRadius: -3,
-                                )
-                              ] : [],
-                            ),
-                            child: Stack(
-                              children: [
-                                Positioned(
-                                  left: 10,
-                                  top: 8,
-                                  child: Text(
-                                    (index + 1).toString().padLeft(2, '0'),
-                                    style: GoogleFonts.spaceGrotesk(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: isFocused ? primaryColor : Colors.white.withOpacity(0.3),
-                                      letterSpacing: 1.0,
-                                    ),
-                                  ),
-                                ),
-                                Center(
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(top: 8.0, left: 4, right: 4),
-                                    child: TextField(
-                                      controller: _controllers[index],
-                                      focusNode: _focusNodes[index],
-                                      textAlign: TextAlign.center,
-                                      style: GoogleFonts.spaceMono( // Using a monospaced font if available, or fallback
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.white,
-                                      ),
-                                      decoration: InputDecoration(
-                                        border: InputBorder.none,
-                                        contentPadding: EdgeInsets.zero,
-                                        isDense: true,
-                                        hintText: isFocused ? 'Type...' : '',
-                                        hintStyle: TextStyle(
-                                          color: Colors.white.withOpacity(0.1),
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                      textInputAction: index < 11
-                                          ? TextInputAction.next
-                                          : TextInputAction.done,
-                                      onChanged: (value) {
-                                        setState(() {}); // Rebuild to update cell style
-                                      },
-                                      onSubmitted: (_) {
-                                        if (index < 11) {
-                                          FocusScope.of(context).requestFocus(_focusNodes[index + 1]);
-                                        }
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                          return SeedWordAutocomplete(
+                            controller: _controllers[index],
+                            focusNode: _focusNodes[index],
+                            wordList: _bip39Words,
+                            wordNumber: index + 1,
+                            onSubmitted: () => _focusNext(index),
+                            onChanged: () {
+                              setState(() {});
+                            },
                           );
                         },
                       ),
-
                       const SizedBox(height: 24),
 
-                      // Security Note
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.lock_outline,
-                            size: 16,
-                            color: Colors.white.withOpacity(0.4)
+                      // Helpful Tip
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: primaryColor.withOpacity(0.2),
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'End-to-end encrypted locally',
-                            style: GoogleFonts.notoSans(
-                              fontSize: 12,
-                              color: Colors.white.withOpacity(0.4),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              Icons.lightbulb_outline,
+                              color: primaryColor,
+                              size: 20,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'Tip: Words are auto-suggested as you type. Select from the dropdown to quickly fill in each word.',
+                                style: GoogleFonts.spaceGrotesk(
+                                  fontSize: 13,
+                                  color: Colors.white.withOpacity(0.8),
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-
-                      // Bottom padding to avoid FAB overlap if any, or just spacing
                       const SizedBox(height: 100),
                     ],
                   ),
                 ),
 
-                // Fixed Bottom Button
-                Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: VaultButton(
-                    text: 'Save Secret',
-                    icon: Icons.check,
-                    onTap: _verifyPhrase,
-                    backgroundColor: primaryColor,
-                    textColor: backgroundDark,
+                // Bottom Action
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: backgroundDark.withOpacity(0.95),
+                    border: Border(
+                      top: BorderSide(
+                        color: Colors.white.withOpacity(0.05),
+                      ),
+                    ),
+                  ),
+                  child: SafeArea(
+                    top: false,
+                    child: VaultButton(
+                      text: _isVerifying ? 'Verifying...' : 'Verify & Save',
+                      onTap: validCount == 12 && !_isVerifying 
+                          ? _verifyPhrase 
+                          : null,
+                      icon: _isVerifying 
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : const Icon(Icons.verified_user, size: 20),
+                    ),
                   ),
                 ),
               ],

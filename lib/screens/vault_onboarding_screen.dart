@@ -157,7 +157,7 @@ class VaultOnboardingScreen extends StatelessWidget {
                   // Primary Button: Create New Vault
                   VaultButton(
                     text: 'Create New Vault',
-                    icon: Icons.add_circle_outline,
+                    icon: const Icon(Icons.add_circle_outline),
                     onTap: () {
                       Navigator.pushNamed(context, '/biometric-auth');
                     },

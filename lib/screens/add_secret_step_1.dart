@@ -106,7 +106,7 @@ class _AddSecretStep1State extends State<AddSecretStep1> {
                   padding: const EdgeInsets.fromLTRB(32, 0, 32, 40),
                   child: VaultButton(
                     text: 'NEXT',
-                    icon: Icons.arrow_forward,
+                    icon: const Icon(Icons.arrow_forward),
                     onTap: _nextStep,
                     backgroundColor: primaryColor,
                     textColor: backgroundDark,
