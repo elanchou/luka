@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class VaultButton extends StatelessWidget {
@@ -78,7 +79,10 @@ class VaultButton extends StatelessWidget {
       elevation: isDisabled ? 0 : 4,
       shadowColor: bgColor.withValues(alpha: 0.25),
       child: InkWell(
-        onTap: isLoading || isDisabled ? null : onTap,
+        onTap: isLoading || isDisabled ? null : () {
+          HapticFeedback.lightImpact();
+          onTap?.call();
+        },
         child: Container(
           width: isFullWidth ? double.infinity : width,
           height: height,

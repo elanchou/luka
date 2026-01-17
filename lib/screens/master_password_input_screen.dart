@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import "decrypting_progress_screen.dart";
 import 'package:google_fonts/google_fonts.dart';
@@ -48,6 +49,7 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
       final isValid = await _masterKeyService.verifyPassword(password);
 
       if (!isValid) {
+        HapticFeedback.vibrate(); // Error vibration
         setState(() {
           _errorMessage = 'Incorrect password';
           _isLoading = false;
@@ -55,6 +57,7 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
         return;
       }
 
+      HapticFeedback.mediumImpact(); // Success vibration
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(

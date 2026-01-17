@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class VaultOutlineButton extends StatelessWidget {
@@ -28,7 +29,7 @@ class VaultOutlineButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Default colors
-    final defaultBorderColor = Colors.white.withOpacity(0.2);
+    final defaultBorderColor = Colors.white.withValues(alpha: 0.2);
     const defaultTextColor = Colors.white;
 
     final brColor = borderColor ?? defaultBorderColor;
@@ -42,8 +43,11 @@ class VaultOutlineButton extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: onTap,
-        hoverColor: Colors.white.withOpacity(0.05),
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
+        hoverColor: Colors.white.withValues(alpha: 0.05),
         child: Container(
           width: isFullWidth ? double.infinity : width,
           height: height,
@@ -53,7 +57,7 @@ class VaultOutlineButton extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (icon != null) ...[
-                Icon(icon, color: txtColor.withOpacity(0.6), size: 20),
+                Icon(icon, color: txtColor.withValues(alpha: 0.6), size: 20),
                 const SizedBox(width: 8),
               ],
               Text(
