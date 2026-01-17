@@ -40,39 +40,14 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      final isValid = await _masterKeyService.verifyPassword(password);
-
-      if (!isValid) {
-        HapticFeedback.vibrate(); // Error vibration
-        setState(() {
-          _errorMessage = 'Incorrect password';
-          _isLoading = false;
-        });
-        return;
-      }
-
-      HapticFeedback.mediumImpact(); // Success vibration
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => DecryptingProgressScreen(
-              masterPassword: password,
-            ),
-          ),
-        );
-      }
-    } catch (e) {
-      setState(() {
-        _errorMessage = e.toString().replaceAll('Exception: ', '');
-        _isLoading = false;
-      });
-    }
+    HapticFeedback.mediumImpact();
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => DecryptingProgressScreen(
+          masterPassword: password,
+        ),
+      ),
+    );
   }
   Widget build(BuildContext context) {
     const backgroundDark = Color(0xFF101d22);

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../widgets/gradient_background.dart';
@@ -171,6 +172,24 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                             ),
                           ],
                         ),
+                        const SizedBox(height: 32),
+                        _SettingsSection(
+                          title: 'DANGER ZONE',
+                          color: const Color(0xFFff4d4d),
+                          children: [
+                            _SettingsTile(
+                              icon: PhosphorIconsBold.warningCircle,
+                              title: 'Factory Reset Vault',
+                              subtitle: 'WIPE ALL DATA',
+                              trailing: const _TrailingArrow(),
+                              onTap: () {
+                                HapticFeedback.heavyImpact();
+                                Navigator.pushNamed(context, '/reset-vault');
+                              },
+                              isLast: true,
+                            ),
+                          ],
+                        ),
                         const SizedBox(height: 40),
                       ],
                     ),
@@ -250,11 +269,17 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
 class _SettingsSection extends StatelessWidget {
   final String title;
   final List<Widget> children;
+  final Color? color;
 
-  const _SettingsSection({required this.title, required this.children});
+  const _SettingsSection({
+    required this.title,
+    required this.children,
+    this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final titleColor = color ?? Colors.grey[600];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -265,7 +290,7 @@ class _SettingsSection extends StatelessWidget {
             style: GoogleFonts.spaceGrotesk(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[600],
+              color: titleColor,
               letterSpacing: 1.5,
             ),
           ),
@@ -274,7 +299,9 @@ class _SettingsSection extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color(0xFF1a2c32),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF283539)),
+            border: Border.all(
+              color: color?.withValues(alpha: 0.3) ?? const Color(0xFF283539),
+            ),
           ),
           child: Column(children: children),
         ),

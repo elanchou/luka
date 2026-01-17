@@ -81,8 +81,20 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
 
   Future<void> _startDecryptProcess() async {
     try {
+      // Step 0: Verify Master Password
+      _updateStep('Verifying master password...', 0.0);
+      _addLog('[AUTH] Verifying master password', LogType.active);
+      final masterKeyService = MasterKeyService();
+
+      final isValid = await masterKeyService.verifyPassword(widget.masterPassword);
+      if (!isValid) {
+        throw Exception('Incorrect master password');
+      }
+      _addLog('[OK] Identity verified', LogType.success);
+      await Future.delayed(const Duration(milliseconds: 300));
+
       // Step 1: 读取配置
-      _updateStep('Reading vault configuration...', 0.0);
+      _updateStep('Reading vault configuration...', 0.05);
       _addLog('[INFO] Reading vault configuration', LogType.info);
       await Future.delayed(const Duration(milliseconds: 200));
       _controller.animateTo(0.1, duration: const Duration(milliseconds: 200));
@@ -90,7 +102,6 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
       // Step 2: 读取 salt 和 iterations
       _updateStep('Loading security parameters...', 0.1);
       _addLog('[INIT] Loading salt and iterations', LogType.info);
-      final masterKeyService = MasterKeyService();
       final securityLevel = await masterKeyService.getSecurityLevel();
       await Future.delayed(const Duration(milliseconds: 150));
       _controller.animateTo(0.2, duration: const Duration(milliseconds: 150));

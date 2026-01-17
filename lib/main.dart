@@ -15,6 +15,7 @@ import 'screens/export_progress_screen.dart';
 import 'screens/setup_master_password_screen.dart';
 import 'screens/master_password_input_screen.dart';
 import 'screens/change_master_password_screen.dart';
+import 'screens/reset_vault_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -63,6 +64,7 @@ class VaultApp extends StatelessWidget {
         '/activity-log': (context) => const ActivityLogScreen(),
         '/settings': (context) => const SystemSettingsScreen(),
         '/export-progress': (context) => const ExportProgressScreen(),
+        '/reset-vault': (context) => const ResetVaultScreen(),
       },
     );
   }
