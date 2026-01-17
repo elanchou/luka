@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:encrypt/encrypt.dart' as encrypt;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
 
 /// Security level for key derivation (similar to 1Password)
 enum SecurityLevel {
@@ -20,6 +21,75 @@ enum SecurityLevel {
     if (iterations >= enhanced.iterations) return enhanced;
     return standard;
   }
+}
+
+/// Helper class for PBKDF2 isolate communication
+class _PBKDF2Params {
+  final String password;
+  final Uint8List salt;
+  final int iterations;
+  final int keyLength;
+
+  _PBKDF2Params({
+    required this.password,
+    required this.salt,
+    required this.iterations,
+    required this.keyLength,
+  });
+}
+
+/// PBKDF2 implementation using HMAC-SHA256 (Top-level for compute)
+Uint8List _pbkdf2Work(_PBKDF2Params params) {
+  final passwordBytes = utf8.encode(params.password);
+  final numBlocks = (params.keyLength / 32).ceil();
+  final derivedKey = BytesBuilder();
+
+  for (var i = 1; i <= numBlocks; i++) {
+    final block = _pbkdf2Block(
+      passwordBytes: passwordBytes,
+      salt: params.salt,
+      iterations: params.iterations,
+      blockIndex: i,
+    );
+    derivedKey.add(block);
+  }
+
+  return Uint8List.fromList(derivedKey.toBytes().take(params.keyLength).toList());
+}
+
+Uint8List _pbkdf2Block({
+  required List<int> passwordBytes,
+  required Uint8List salt,
+  required int iterations,
+  required int blockIndex,
+}) {
+  // Create salt || INT(i)
+  final saltWithIndex = BytesBuilder()
+    ..add(salt)
+    ..add([
+      (blockIndex >> 24) & 0xff,
+      (blockIndex >> 16) & 0xff,
+      (blockIndex >> 8) & 0xff,
+      blockIndex & 0xff,
+    ]);
+
+  // U1 = PRF(Password, Salt || INT(i))
+  var hmac = Hmac(sha256, passwordBytes);
+  var u = Uint8List.fromList(hmac.convert(saltWithIndex.toBytes()).bytes);
+  var result = Uint8List.fromList(u);
+
+  // U2 through Uc
+  for (var i = 1; i < iterations; i++) {
+    hmac = Hmac(sha256, passwordBytes);
+    u = Uint8List.fromList(hmac.convert(u).bytes);
+
+    // XOR with result
+    for (var j = 0; j < result.length; j++) {
+      result[j] ^= u[j];
+    }
+  }
+
+  return result;
 }
 
 /// Master key derivation service using PBKDF2 (like 1Password)
@@ -87,12 +157,15 @@ class MasterKeyService {
       final salt = base64.decode(saltBase64);
       final iterations = int.parse(iterationsStr);
 
-      // Derive key using PBKDF2
-      final derivedKey = _pbkdf2(
-        password: password,
-        salt: salt,
-        iterations: iterations,
-        keyLength: _keyLength,
+      // Derive key using PBKDF2 in a separate isolate
+      final derivedKey = await compute(
+        _pbkdf2Work,
+        _PBKDF2Params(
+          password: password,
+          salt: salt,
+          iterations: iterations,
+          keyLength: _keyLength,
+        ),
       );
 
       return encrypt.Key(derivedKey);
@@ -182,63 +255,5 @@ class MasterKeyService {
       throw Exception('Failed to reset master key service: $e');
     }
   }
-
-  /// PBKDF2 implementation using HMAC-SHA256
-  Uint8List _pbkdf2({
-    required String password,
-    required Uint8List salt,
-    required int iterations,
-    required int keyLength,
-  }) {
-    final passwordBytes = utf8.encode(password);
-    final numBlocks = (keyLength / 32).ceil();
-    final derivedKey = BytesBuilder();
-
-    for (var i = 1; i <= numBlocks; i++) {
-      final block = _pbkdf2Block(
-        passwordBytes: passwordBytes,
-        salt: salt,
-        iterations: iterations,
-        blockIndex: i,
-      );
-      derivedKey.add(block);
-    }
-
-    return Uint8List.fromList(derivedKey.toBytes().take(keyLength).toList());
-  }
-
-  Uint8List _pbkdf2Block({
-    required List<int> passwordBytes,
-    required Uint8List salt,
-    required int iterations,
-    required int blockIndex,
-  }) {
-    // Create salt || INT(i)
-    final saltWithIndex = BytesBuilder()
-      ..add(salt)
-      ..add([
-        (blockIndex >> 24) & 0xff,
-        (blockIndex >> 16) & 0xff,
-        (blockIndex >> 8) & 0xff,
-        blockIndex & 0xff,
-      ]);
-
-    // U1 = PRF(Password, Salt || INT(i))
-    var hmac = Hmac(sha256, passwordBytes);
-    var u = Uint8List.fromList(hmac.convert(saltWithIndex.toBytes()).bytes);
-    var result = Uint8List.fromList(u);
-
-    // U2 through Uc
-    for (var i = 1; i < iterations; i++) {
-      hmac = Hmac(sha256, passwordBytes);
-      u = Uint8List.fromList(hmac.convert(u).bytes);
-
-      // XOR with result
-      for (var j = 0; j < result.length; j++) {
-        result[j] ^= u[j];
-      }
-    }
-
-    return result;
-  }
 }
+

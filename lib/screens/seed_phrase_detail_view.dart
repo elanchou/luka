@@ -12,8 +12,15 @@ import '../widgets/vault_app_bar.dart';
 import '../widgets/vault_brand.dart';
 import '../widgets/error_snackbar.dart';
 
-class SeedPhraseDetailView extends StatelessWidget {
+class SeedPhraseDetailView extends StatefulWidget {
   const SeedPhraseDetailView({super.key});
+
+  @override
+  State<SeedPhraseDetailView> createState() => _SeedPhraseDetailViewState();
+}
+
+class _SeedPhraseDetailViewState extends State<SeedPhraseDetailView> {
+  bool _isVisible = false;
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +89,7 @@ class SeedPhraseDetailView extends StatelessWidget {
               );
 
               if (confirm == true) {
-                if (context.mounted) {
+                if (mounted) {
                   await Provider.of<VaultProvider>(context, listen: false).deleteSecret(secret.id);
                   Navigator.pop(context);
                 }
@@ -140,105 +147,133 @@ class SeedPhraseDetailView extends StatelessWidget {
                   ),
                   const SizedBox(height: 32),
 
-                  // Seed Grid or Content View
-                  if (secret.type == SecretType.seedPhrase)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: surfaceDark.withValues(alpha: 0.6),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                height: 1,
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.transparent,
-                                      primaryColor.withValues(alpha: 0.5),
-                                      Colors.transparent,
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              GridView.builder(
-                                padding: const EdgeInsets.all(12),
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  childAspectRatio: 3.2,
-                                  crossAxisSpacing: 8,
-                                  mainAxisSpacing: 8,
-                                ),
-                                itemCount: seedWords.length,
-                                itemBuilder: (context, index) {
-                                  return Container(
+                  // Seed Grid or Content View with Reveal Toggle
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      setState(() => _isVisible = !_isVisible);
+                    },
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Content
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: ImageFiltered(
+                            imageFilter: ImageFilter.blur(
+                              sigmaX: _isVisible ? 0 : 16,
+                              sigmaY: _isVisible ? 0 : 16,
+                            ),
+                            child: secret.type == SecretType.seedPhrase
+                                ? Container(
                                     decoration: BoxDecoration(
-                                      color: surfaceDark,
-                                      borderRadius: BorderRadius.circular(6),
-                                      border: Border.all(color: Colors.white.withValues(alpha: 0.02)),
+                                      color: surfaceDark.withValues(alpha: 0.6),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
                                     ),
-                                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                                    child: Row(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        SizedBox(
-                                          width: 20,
-                                          child: Text(
-                                            (index + 1).toString().padLeft(2, '0'),
-                                            style: GoogleFonts.spaceMono(
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.bold,
-                                              color: primaryColor.withValues(alpha: 0.5),
-                                            ),
+                                        GridView.builder(
+                                          padding: const EdgeInsets.all(12),
+                                          shrinkWrap: true,
+                                          physics: const NeverScrollableScrollPhysics(),
+                                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: 2,
+                                            childAspectRatio: 3.2,
+                                            crossAxisSpacing: 8,
+                                            mainAxisSpacing: 8,
                                           ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: Text(
-                                            seedWords[index],
-                                            style: GoogleFonts.spaceGrotesk(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.white,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
+                                          itemCount: seedWords.length,
+                                          itemBuilder: (context, index) {
+                                            return Container(
+                                              decoration: BoxDecoration(
+                                                color: surfaceDark,
+                                                borderRadius: BorderRadius.circular(6),
+                                                border: Border.all(color: Colors.white.withValues(alpha: 0.02)),
+                                              ),
+                                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                                              child: Row(
+                                                children: [
+                                                  SizedBox(
+                                                    width: 20,
+                                                    child: Text(
+                                                      (index + 1).toString().padLeft(2, '0'),
+                                                      style: GoogleFonts.spaceMono(
+                                                        fontSize: 10,
+                                                        fontWeight: FontWeight.bold,
+                                                        color: primaryColor.withValues(alpha: 0.5),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  Expanded(
+                                                    child: Text(
+                                                      _isVisible ? seedWords[index] : '••••••••',
+                                                      style: GoogleFonts.spaceGrotesk(
+                                                        fontSize: 14,
+                                                        fontWeight: FontWeight.w600,
+                                                        color: Colors.white,
+                                                      ),
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
                                         ),
                                       ],
                                     ),
-                                  );
-                                },
-                              ),
-                            ],
+                                  )
+                                : Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(24),
+                                    decoration: BoxDecoration(
+                                      color: surfaceDark.withValues(alpha: 0.6),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                                    ),
+                                    child: Text(
+                                      _isVisible ? secret.content : '••••••••••••••••••••••••',
+                                      style: GoogleFonts.spaceMono(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
                           ),
                         ),
-                      ),
-                    )
-                  else
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: surfaceDark.withValues(alpha: 0.6),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-                      ),
-                      child: Text(
-                        secret.content,
-                        style: GoogleFonts.spaceMono(
-                          color: Colors.white,
-                          fontSize: 14,
-                        ),
-                      ),
+
+                        // Overlay Message when Hidden
+                        if (!_isVisible)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.5),
+                              borderRadius: BorderRadius.circular(30),
+                              border: Border.all(color: primaryColor.withValues(alpha: 0.3)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(PhosphorIconsBold.eye, color: primaryColor, size: 18),
+                                const SizedBox(width: 12),
+                                Text(
+                                  'TAP TO REVEAL',
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: primaryColor,
+                                    letterSpacing: 1.0,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
                     ),
+                  ),
 
                   const SizedBox(height: 24),
 
@@ -246,27 +281,41 @@ class SeedPhraseDetailView extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withValues(alpha: 0.1),
+                      color: Colors.red.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.orange.withValues(alpha: 0.2)),
+                      border: Border.all(color: Colors.red.withValues(alpha: 0.2)),
                     ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Column(
                       children: [
-                        Icon(
-                          PhosphorIconsBold.warning,
-                          color: Colors.orange[500],
-                          size: 20,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'Never share these words with anyone. Anyone with this phrase can access your wallet.',
-                            style: GoogleFonts.notoSans(
-                              fontSize: 12,
-                              color: Colors.orange[200]!.withValues(alpha: 0.8),
-                              height: 1.4,
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(
+                              PhosphorIconsBold.warningDiamond,
+                              color: Color(0xFFff4d4d),
+                              size: 20,
                             ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'STRICT SECURITY PROTOCOL ACTIVE',
+                                style: GoogleFonts.spaceGrotesk(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFFff4d4d),
+                                  letterSpacing: 1.0,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Copying is disabled to prevent clipboard monitoring. Do not take screenshots. Hand-write this phrase and store it in a physical vault.',
+                          style: GoogleFonts.notoSans(
+                            fontSize: 12,
+                            color: Colors.grey[400],
+                            height: 1.5,
                           ),
                         ),
                       ],
@@ -279,19 +328,18 @@ class SeedPhraseDetailView extends StatelessWidget {
                   Column(
                     children: [
                       _ActionButton(
-                        icon: PhosphorIconsBold.copy,
-                        label: 'COPY SEED PHRASE',
+                        icon: _isVisible ? PhosphorIconsBold.eyeSlash : PhosphorIconsBold.eye,
+                        label: _isVisible ? 'HIDE CONTENT' : 'REVEAL CONTENT',
                         onTap: () {
                           HapticFeedback.mediumImpact();
-                          Clipboard.setData(ClipboardData(text: secret.content));
-                          SuccessSnackbar.show(context, message: 'Copied to clipboard');
+                          setState(() => _isVisible = !_isVisible);
                         },
                         primaryColor: primaryColor,
                       ),
                       const SizedBox(height: 12),
                       _ActionButton(
-                        icon: PhosphorIconsBold.eyeSlash,
-                        label: 'HIDE CONTENT',
+                        icon: PhosphorIconsBold.arrowLeft,
+                        label: 'BACK TO DASHBOARD',
                         onTap: () => Navigator.pop(context),
                         primaryColor: Colors.grey[600]!,
                         isOutline: true,
@@ -308,7 +356,7 @@ class SeedPhraseDetailView extends StatelessWidget {
                       const Icon(PhosphorIconsBold.shieldCheck, size: 16, color: primaryColor),
                       const SizedBox(width: 8),
                       Text(
-                        'ENCRYPTED & VERIFIED',
+                        'AIR-GAPPED STORAGE',
                         style: GoogleFonts.spaceGrotesk(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,

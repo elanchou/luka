@@ -41,6 +41,7 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
     }
 
     HapticFeedback.mediumImpact();
+    FocusScope.of(context).unfocus();
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (context) => DecryptingProgressScreen(
