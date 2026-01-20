@@ -9,6 +9,8 @@ import '../widgets/gradient_background.dart';
 import '../widgets/vault_button.dart';
 import '../widgets/vault_text_field.dart';
 
+import '../widgets/error_snackbar.dart';
+
 class ChangeMasterPasswordScreen extends StatefulWidget {
   const ChangeMasterPasswordScreen({super.key});
 
@@ -109,15 +111,9 @@ class _ChangeMasterPasswordScreenState extends State<ChangeMasterPasswordScreen>
         await vaultProvider.reinitialize(newPassword);
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Master password changed successfully',
-                style: GoogleFonts.notoSans(),
-              ),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 2),
-            ),
+          SuccessSnackbar.show(
+            context,
+            message: 'Master password changed successfully',
           );
           Navigator.pop(context, true);
         }

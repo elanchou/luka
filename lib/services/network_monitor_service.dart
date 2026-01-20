@@ -23,6 +23,15 @@ class NetworkMonitorService extends ChangeNotifier {
   }
 
   void _updateState(List<ConnectivityResult> results) {
+    // Disable network monitoring in debug mode
+    if (kDebugMode) {
+      if (_isConnected != false) {
+        _isConnected = false;
+        notifyListeners();
+      }
+      return;
+    }
+
     // We consider it "connected" if any result is NOT none
     final connected = results.any((result) => result != ConnectivityResult.none);
 

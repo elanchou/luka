@@ -242,7 +242,6 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 32),
                       ],
                     ),
                   ),

@@ -50,10 +50,6 @@ class _ActivityLogBodyState extends State<ActivityLogBody> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Row(
               children: [
-                IconButton(
-                  icon: const Icon(PhosphorIconsBold.arrowLeft, color: Colors.white),
-                  onPressed: () => Navigator.pop(context),
-                ),
                 Expanded(
                   child: Center(
                     child: Text(
