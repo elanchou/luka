@@ -1,6 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-enum ThemeMode { light, dark, system }
+enum AppThemeMode { light, dark, system }
 
 enum AutoLockDuration {
   immediate(seconds: 0, displayName: 'Immediate'),
@@ -66,17 +66,17 @@ class PreferencesService {
   }
 
   // Theme Mode
-  Future<void> setThemeMode(ThemeMode mode) async {
+  Future<void> setThemeMode(AppThemeMode mode) async {
     await prefs.setString(_themeKey, mode.name);
   }
 
-  ThemeMode getThemeMode() {
+  AppThemeMode getThemeMode() {
     final value = prefs.getString(_themeKey);
-    if (value == null) return ThemeMode.dark;
+    if (value == null) return AppThemeMode.dark;
     try {
-      return ThemeMode.values.firstWhere((e) => e.name == value);
+      return AppThemeMode.values.firstWhere((e) => e.name == value);
     } catch (e) {
-      return ThemeMode.dark;
+      return AppThemeMode.dark;
     }
   }
 
