@@ -10,7 +10,9 @@ import 'screens/vault_onboarding_screen.dart';
 import 'screens/main_vault_dashboard.dart';
 import 'screens/add_secret_step_1.dart';
 import 'screens/add_secret_step_2.dart';
+import 'screens/add_secret_step_3.dart';
 import 'screens/seed_phrase_detail_view.dart';
+import 'screens/decrypting_progress_screen.dart';
 import 'screens/activity_log_screen.dart';
 import 'screens/system_settings_screen.dart';
 import 'screens/export_progress_screen.dart';
@@ -78,10 +80,12 @@ class VaultApp extends StatelessWidget {
         '/dashboard': (context) => const MainVaultDashboard(),
         '/add-secret-1': (context) => const AddSecretStep1(),
         '/add-secret-2': (context) => const AddSecretStep2(),
+        '/add-secret-3': (context) => const AddSecretStep3(),
         '/seed-detail': (context) => const SeedPhraseDetailView(),
         '/activity-log': (context) => const ActivityLogScreen(),
         '/settings': (context) => const SystemSettingsScreen(),
         '/export-progress': (context) => const ExportProgressScreen(),
+        '/decrypting-progress': (context) => const DecryptingProgressScreen(),
         '/reset-vault': (context) => const ResetVaultScreen(),
       },
     );

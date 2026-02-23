@@ -8,15 +8,14 @@ import '../providers/vault_provider.dart';
 import '../services/master_key_service.dart';
 
 class DecryptingProgressScreen extends StatefulWidget {
-  final String masterPassword;
-
-  const DecryptingProgressScreen({super.key, required this.masterPassword});
+  const DecryptingProgressScreen({super.key});
 
   @override
   State<DecryptingProgressScreen> createState() => _DecryptingProgressScreenState();
 }
 
 class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> with TickerProviderStateMixin {
+  late String _masterPassword;
   late AnimationController _controller;
   late AnimationController _vaultController;
   late Animation<double> _progressAnimation;
@@ -74,6 +73,8 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_decryptStarted) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      _masterPassword = args?['masterPassword'] ?? '';
       _decryptStarted = true;
       _startDecryptProcess();
     }
@@ -86,7 +87,7 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
       _addLog('[AUTH] Verifying master password', LogType.active);
       final masterKeyService = MasterKeyService();
 
-      final isValid = await masterKeyService.verifyPassword(widget.masterPassword);
+      final isValid = await masterKeyService.verifyPassword(_masterPassword);
       if (!isValid) {
         throw Exception('Incorrect master password');
       }
@@ -123,7 +124,7 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
 
         _controller.animateTo(0.7, duration: Duration(milliseconds: securityLevel.iterations ~/ 1000));
 
-        await vaultProvider.reinitialize(widget.masterPassword);
+        await vaultProvider.reinitialize(_masterPassword);
 
         final keyDerivationTime = DateTime.now().difference(keyDerivationStart);
         _addLog('[OK] Key derived in ${keyDerivationTime.inMilliseconds}ms', LogType.success);

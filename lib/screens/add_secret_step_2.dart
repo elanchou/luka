@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:bip39/src/wordlists/english.dart';
-import '../providers/vault_provider.dart';
-import '../models/secret_model.dart';
 import '../widgets/gradient_background.dart';
 import '../widgets/vault_button.dart';
 import '../widgets/vault_app_bar.dart';
@@ -22,23 +20,19 @@ class AddSecretStep2 extends StatefulWidget {
 class _AddSecretStep2State extends State<AddSecretStep2> {
   late String _secretName;
   late String _network;
+  late String _icon;
 
   // Get BIP39 word list (2048 words)
   final List<String> _bip39Words = WORDLIST;
 
-  final List<TextEditingController> _controllers = List.generate(
-    12,
-    (index) => TextEditingController(),
-  );
+  // Available word counts
+  final List<int> _availableWordCounts = [12, 15, 18, 21, 24];
+  int _selectedWordCount = 12;
 
-  final List<FocusNode> _focusNodes = List.generate(
-    12,
-    (index) => FocusNode(),
-  );
+  List<TextEditingController> _controllers = [];
+  List<FocusNode> _focusNodes = [];
 
-  int _currentIndex = 0;
   bool _initialized = false;
-  bool _isVerifying = false;
 
   @override
   void didChangeDependencies() {
@@ -48,7 +42,17 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
       if (args != null) {
         _secretName = args['name'] ?? 'Unknown';
         _network = args['network'] ?? 'Unknown';
+        _icon = args['icon'] ?? 'wallet';
+        final wordCount = args['wordCount'] as int?;
+        if (wordCount != null && _availableWordCounts.contains(wordCount)) {
+          _selectedWordCount = wordCount;
+        }
+      } else {
+        _secretName = 'Unknown';
+        _network = 'Unknown';
+        _icon = 'wallet';
       }
+      _initializeInputs();
       _initialized = true;
     }
   }
@@ -56,17 +60,44 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
   @override
   void initState() {
     super.initState();
+  }
+
+  void _initializeInputs() {
+    // Dispose existing controllers and focus nodes
+    for (var controller in _controllers) {
+      controller.dispose();
+    }
+    for (var node in _focusNodes) {
+      node.dispose();
+    }
+
+    // Create new controllers and focus nodes
+    _controllers = List.generate(
+      _selectedWordCount,
+      (index) => TextEditingController(),
+    );
+
+    _focusNodes = List.generate(
+      _selectedWordCount,
+      (index) => FocusNode(),
+    );
 
     // Set focus listeners
-    for (int i = 0; i < 12; i++) {
+    for (int i = 0; i < _selectedWordCount; i++) {
+      final index = i; // Capture for closure
       _focusNodes[i].addListener(() {
-        if (_focusNodes[i].hasFocus) {
-          setState(() {
-            _currentIndex = i;
-          });
+        if (_focusNodes[index].hasFocus) {
+          setState(() {});
         }
       });
     }
+  }
+
+  void _changeWordCount(int newCount) {
+    setState(() {
+      _selectedWordCount = newCount;
+      _initializeInputs();
+    });
   }
 
   @override
@@ -81,7 +112,7 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
   }
 
   void _focusNext(int currentIndex) {
-    if (currentIndex < 11) {
+    if (currentIndex < _selectedWordCount - 1) {
       _focusNodes[currentIndex + 1].requestFocus();
     } else {
       // Last word - unfocus to hide keyboard
@@ -89,13 +120,7 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
     }
   }
 
-  void _verifyPhrase() async {
-    if (_isVerifying) return;
-
-    setState(() {
-      _isVerifying = true;
-    });
-
+  void _proceedToConfirm() {
     // Collect all words
     final words = _controllers.map((c) => c.text.trim().toLowerCase()).toList();
 
@@ -110,47 +135,68 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
           duration: const Duration(seconds: 5),
         );
       }
-      setState(() {
-        _isVerifying = false;
-      });
       return;
     }
 
-    // Create Secret
-    final secretContent = words.join(' ');
-    final secret = Secret.create(
-      name: _secretName,
-      network: _network,
-      content: secretContent,
-      type: SecretType.seedPhrase,
-      typeLabel: 'SEED PHRASE • 12 WORDS',
+    // Navigate to Step 3 for confirmation
+    Navigator.pushNamed(
+      context,
+      '/add-secret-3',
+      arguments: {
+        'name': _secretName,
+        'network': _network,
+        'icon': _icon,
+        'wordCount': _selectedWordCount,
+        'words': words,
+      },
     );
+  }
 
-    // Save using Provider
-    final success = await Provider.of<VaultProvider>(context, listen: false).addSecret(secret);
+  Future<void> _pasteFromClipboard() async {
+    final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+    if (clipboardData == null || clipboardData.text == null || clipboardData.text!.trim().isEmpty) {
+      if (mounted) {
+        ErrorSnackbar.show(context, message: 'Clipboard is empty');
+      }
+      return;
+    }
 
-    setState(() {
-      _isVerifying = false;
-    });
+    final words = clipboardData.text!.trim().split(RegExp(r'\s+'));
+    final cleanWords = words.map((w) => w.toLowerCase().trim()).where((w) => w.isNotEmpty).toList();
+
+    if (cleanWords.isEmpty) {
+      if (mounted) {
+        ErrorSnackbar.show(context, message: 'No valid words found in clipboard');
+      }
+      return;
+    }
+
+    // Auto-switch word count if pasted count matches an available option
+    if (_availableWordCounts.contains(cleanWords.length) && cleanWords.length != _selectedWordCount) {
+      setState(() {
+        _selectedWordCount = cleanWords.length;
+        _initializeInputs();
+      });
+    }
+
+    // Fill controllers
+    final fillCount = cleanWords.length < _selectedWordCount ? cleanWords.length : _selectedWordCount;
+    for (int i = 0; i < fillCount; i++) {
+      _controllers[i].text = cleanWords[i];
+    }
+
+    setState(() {});
 
     if (mounted) {
-      if (success) {
-        SuccessSnackbar.show(
-          context,
-          message: 'Seed phrase saved securely',
-        );
-        Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
-      } else {
-        ErrorSnackbar.show(
-          context,
-          message: 'Failed to save seed phrase',
-        );
-      }
+      SuccessSnackbar.show(context, message: '$fillCount words pasted');
     }
   }
 
-  int _getFilledWordCount() {
-    return _controllers.where((c) => c.text.trim().isNotEmpty).length;
+  void _clearAll() {
+    for (var controller in _controllers) {
+      controller.clear();
+    }
+    setState(() {});
   }
 
   int _getValidWordCount() {
@@ -164,7 +210,6 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
   Widget build(BuildContext context) {
     const primaryColor = Color(0xFF13b6ec);
     const backgroundDark = Color(0xFF101d22);
-    final filledCount = _getFilledWordCount();
     final validCount = _getValidWordCount();
 
     return Scaffold(
@@ -207,7 +252,7 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
                     children: [
                       // Headline
                       Text(
-                        'Secure your phrase',
+                        'Enter your seed phrase',
                         style: GoogleFonts.spaceGrotesk(
                           fontSize: 30,
                           fontWeight: FontWeight.bold,
@@ -217,11 +262,85 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Enter your 12-word recovery phrase. Start typing and select from suggestions.',
+                        'Start typing and select from suggestions. Choose your preferred word count below.',
                         style: GoogleFonts.notoSans(
                           fontSize: 16,
                           color: Colors.grey[400],
                           height: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Word Count Selector
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.03),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.1),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  PhosphorIconsBold.listNumbers,
+                                  color: primaryColor,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 12),
+                                Text(
+                                  'Word Count',
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: _availableWordCounts.map((count) {
+                                final isSelected = count == _selectedWordCount;
+                                return GestureDetector(
+                                  onTap: () => _changeWordCount(count),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 8,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isSelected
+                                          ? primaryColor
+                                          : Colors.white.withValues(alpha: 0.05),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: isSelected
+                                            ? primaryColor
+                                            : Colors.white.withValues(alpha: 0.1),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      '$count',
+                                      style: GoogleFonts.spaceGrotesk(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: isSelected
+                                            ? backgroundDark
+                                            : Colors.white.withValues(alpha: 0.7),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -249,7 +368,7 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Progress: $validCount/12 valid words',
+                                    'Progress: $validCount/$_selectedWordCount valid words',
                                     style: GoogleFonts.spaceGrotesk(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
@@ -260,10 +379,10 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(4),
                                     child: LinearProgressIndicator(
-                                      value: validCount / 12,
+                                      value: validCount / _selectedWordCount,
                                       backgroundColor: Colors.white.withValues(alpha: 0.1),
                                       valueColor: AlwaysStoppedAnimation<Color>(
-                                        validCount == 12
+                                        validCount == _selectedWordCount
                                             ? const Color(0xFF00d68f)
                                             : primaryColor,
                                       ),
@@ -275,6 +394,83 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
                             ),
                           ],
                         ),
+                      ),
+                      // Paste / Clear row
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: _pasteFromClipboard,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.03),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.1),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      PhosphorIconsBold.clipboard,
+                                      color: primaryColor,
+                                      size: 16,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'PASTE',
+                                      style: GoogleFonts.spaceGrotesk(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: primaryColor,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: _clearAll,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.03),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.1),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      PhosphorIconsBold.eraser,
+                                      color: Colors.white.withValues(alpha: 0.5),
+                                      size: 16,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'CLEAR',
+                                      style: GoogleFonts.spaceGrotesk(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white.withValues(alpha: 0.5),
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 24),
 
@@ -288,7 +484,7 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
                           mainAxisSpacing: 16,
                           childAspectRatio: 3.5,
                         ),
-                        itemCount: 12,
+                        itemCount: _selectedWordCount,
                         itemBuilder: (context, index) {
                           return SeedWordAutocomplete(
                             controller: _controllers[index],
@@ -345,9 +541,9 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(32, 0, 32, 40),
                   child: VaultButton(
-                    text: _isVerifying ? 'VERIFYING...' : 'VERIFY & SAVE',
-                    onTap: validCount == 12 && !_isVerifying ? _verifyPhrase : null,
-                    icon: _isVerifying ? null : PhosphorIconsBold.shieldCheck,
+                    text: 'REVIEW',
+                    onTap: validCount == _selectedWordCount ? _proceedToConfirm : null,
+                    icon: PhosphorIconsBold.arrowRight,
                     backgroundColor: primaryColor,
                     textColor: backgroundDark,
                   ),

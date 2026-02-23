@@ -77,30 +77,37 @@ class _AddSecretStep1State extends State<AddSecretStep1> {
     return Scaffold(
       backgroundColor: backgroundDark,
       extendBodyBehindAppBar: true,
-      appBar: const VaultAppBar(title: 'Add Secret'),
+      appBar: VaultAppBar(
+        title: 'Add Secret',
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  'Step 1/3',
+                  style: GoogleFonts.spaceGrotesk(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF9db2b9),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
       body: Stack(
         children: [
           const GradientBackground(),
           SafeArea(
             child: Column(
               children: [
-                // Step Counter
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      '01 / 02',
-                      style: GoogleFonts.spaceMono(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: labelColor,
-                        letterSpacing: 2.0,
-                      ),
-                    ),
-                  ),
-                ),
-
                 // Form Fields
                 Expanded(
                   child: SingleChildScrollView(

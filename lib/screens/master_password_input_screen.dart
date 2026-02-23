@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import "decrypting_progress_screen.dart";
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../services/master_key_service.dart';
@@ -42,12 +41,9 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
 
     HapticFeedback.mediumImpact();
     FocusScope.of(context).unfocus();
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => DecryptingProgressScreen(
-          masterPassword: password,
-        ),
-      ),
+    Navigator.of(context).pushReplacementNamed(
+      '/decrypting-progress',
+      arguments: {'masterPassword': password},
     );
   }
   Widget build(BuildContext context) {
