@@ -376,7 +376,7 @@ class _AddSecretStep3State extends State<AddSecretStep3> {
 
                 // Bottom Actions
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(32, 0, 32, 16),
+                  padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
                   child: VaultButton(
                     text: _isSaving ? 'SAVING...' : 'CONFIRM & SAVE',
                     onTap: !_isSaving ? _confirmAndSave : null,

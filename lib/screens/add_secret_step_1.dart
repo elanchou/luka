@@ -264,7 +264,7 @@ class _AddSecretStep1State extends State<AddSecretStep1> {
 
                 // Next Button
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(32, 16, 32, 40),
+                  padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
                   child: VaultButton(
                     text: 'NEXT STEP',
                     icon: PhosphorIconsBold.arrowRight,

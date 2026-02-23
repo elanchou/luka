@@ -539,7 +539,7 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
 
                 // Action Button
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(32, 0, 32, 40),
+                  padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
                   child: VaultButton(
                     text: 'REVIEW',
                     onTap: validCount == _selectedWordCount ? _proceedToConfirm : null,
