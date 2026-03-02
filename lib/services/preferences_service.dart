@@ -51,6 +51,8 @@ class PreferencesService {
   static const _biometricKey = 'biometric_enabled';
   static const _languageKey = 'app_language';
   static const _notificationsKey = 'notifications_enabled';
+  static const _icloudBackupKey = 'icloud_backup_enabled';
+  static const _lastBackupTimeKey = 'icloud_last_backup';
 
   SharedPreferences? _prefs;
 
@@ -129,6 +131,25 @@ class PreferencesService {
     return prefs.getBool(_notificationsKey) ?? true;
   }
 
+  // iCloud Backup
+  Future<void> setICloudBackupEnabled(bool enabled) async {
+    await prefs.setBool(_icloudBackupKey, enabled);
+  }
+
+  bool getICloudBackupEnabled() {
+    return prefs.getBool(_icloudBackupKey) ?? false;
+  }
+
+  Future<void> setLastBackupTime(DateTime time) async {
+    await prefs.setString(_lastBackupTimeKey, time.toIso8601String());
+  }
+
+  DateTime? getLastBackupTime() {
+    final value = prefs.getString(_lastBackupTimeKey);
+    if (value == null) return null;
+    return DateTime.tryParse(value);
+  }
+
   // Reset all preferences
   Future<void> resetAll() async {
     await prefs.remove(_themeKey);
@@ -137,5 +158,7 @@ class PreferencesService {
     await prefs.remove(_biometricKey);
     await prefs.remove(_languageKey);
     await prefs.remove(_notificationsKey);
+    await prefs.remove(_icloudBackupKey);
+    await prefs.remove(_lastBackupTimeKey);
   }
 }

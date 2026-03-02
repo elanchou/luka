@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'providers/vault_provider.dart';
 import 'services/network_monitor_service.dart';
+import 'services/icloud_backup_service.dart';
 import 'screens/network_blocked_screen.dart';
 import 'screens/app_splash_screen.dart';
 import 'screens/vault_onboarding_screen.dart';
@@ -31,11 +32,15 @@ void main() async {
   final networkMonitor = NetworkMonitorService();
   await networkMonitor.init();
 
+  final icloudBackupService = ICloudBackupService();
+  icloudBackupService.checkAvailability();
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: vaultProvider),
         ChangeNotifierProvider.value(value: networkMonitor),
+        ChangeNotifierProvider.value(value: icloudBackupService),
       ],
       child: const VaultApp(),
     ),

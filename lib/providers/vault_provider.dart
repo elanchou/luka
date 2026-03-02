@@ -4,10 +4,25 @@ import '../models/secret_model.dart';
 import '../models/activity_log_model.dart';
 import '../services/vault_service.dart';
 import '../services/activity_log_service.dart';
+import '../services/icloud_backup_service.dart';
+import '../services/preferences_service.dart';
 
 class VaultProvider extends ChangeNotifier {
   final VaultService _vaultService = VaultService();
   final ActivityLogService _logService = ActivityLogService();
+  final ICloudBackupService _icloudBackupService = ICloudBackupService();
+  PreferencesService? _preferencesService;
+
+  void setPreferencesService(PreferencesService prefs) {
+    _preferencesService = prefs;
+    _icloudBackupService.loadLastBackupTime(prefs);
+  }
+
+  void _triggerBackupIfEnabled() {
+    if (_preferencesService != null && _preferencesService!.getICloudBackupEnabled()) {
+      _icloudBackupService.scheduleBackup(prefs: _preferencesService);
+    }
+  }
   List<Secret> _secrets = [];
   List<ActivityLog> _logs = [];
   bool _isLoading = true;
@@ -88,6 +103,7 @@ class VaultProvider extends ChangeNotifier {
       notifyListeners();
       await _vaultService.saveSecrets(_secrets);
       await _logAction('Secret Added', secret.name, ActivityCategory.system);
+      _triggerBackupIfEnabled();
       return true;
     } catch (e) {
       _error = 'Failed to add secret: $e';
@@ -108,6 +124,7 @@ class VaultProvider extends ChangeNotifier {
 
       await _vaultService.saveSecrets(_secrets);
       await _logAction('Secret Deleted', secret.name, ActivityCategory.system);
+      _triggerBackupIfEnabled();
       return true;
     } catch (e) {
       _error = 'Failed to delete secret: $e';
@@ -126,6 +143,7 @@ class VaultProvider extends ChangeNotifier {
 
       await _vaultService.saveSecrets(_secrets);
       await _logAction('Secret Updated', updatedSecret.name, ActivityCategory.system);
+      _triggerBackupIfEnabled();
       return true;
     } catch (e) {
       _error = 'Failed to update secret: $e';

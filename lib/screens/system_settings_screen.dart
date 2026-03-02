@@ -8,6 +8,8 @@ import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import '../widgets/gradient_background.dart';
 import '../services/master_key_service.dart';
+import '../services/icloud_backup_service.dart';
+import '../services/preferences_service.dart';
 import '../providers/vault_provider.dart';
 import '../widgets/error_snackbar.dart';
 
@@ -20,10 +22,12 @@ class SystemSettingsScreen extends StatefulWidget {
 
 class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
   final MasterKeyService _masterKeyService = MasterKeyService();
+  final PreferencesService _preferencesService = PreferencesService();
   SecurityLevel _currentSecurityLevel = SecurityLevel.standard;
   bool _hasPassword = false;
   bool _isLoading = true;
   bool _hapticsEnabled = true;
+  bool _icloudEnabled = false;
 
   @override
   void initState() {
@@ -33,11 +37,13 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
 
   Future<void> _loadSettings() async {
     try {
+      await _preferencesService.initialize();
       final hasPassword = await _masterKeyService.hasPassword();
       final level = await _masterKeyService.getSecurityLevel();
       setState(() {
         _hasPassword = hasPassword;
         _currentSecurityLevel = level;
+        _icloudEnabled = _preferencesService.getICloudBackupEnabled();
         _isLoading = false;
       });
     } catch (e) {
@@ -126,6 +132,71 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                         _SettingsSection(
                           title: 'BACKUP & DATA',
                           children: [
+                            Consumer<ICloudBackupService>(
+                              builder: (context, icloud, _) => _SettingsTile(
+                                icon: PhosphorIconsBold.cloudArrowUp,
+                                title: 'iCloud Backup',
+                                subtitle: icloud.isAvailable
+                                    ? (_icloudEnabled ? 'ENABLED' : 'DISABLED')
+                                    : 'UNAVAILABLE',
+                                trailing: _SettingsSwitch(
+                                  value: _icloudEnabled && icloud.isAvailable,
+                                  onChanged: icloud.isAvailable
+                                      ? (val) async {
+                                          await _preferencesService.setICloudBackupEnabled(val);
+                                          setState(() => _icloudEnabled = val);
+                                          if (val) {
+                                            icloud.backupToICloud(prefs: _preferencesService);
+                                          }
+                                        }
+                                      : null,
+                                ),
+                              ),
+                            ),
+                            Consumer<ICloudBackupService>(
+                              builder: (context, icloud, _) => _SettingsTile(
+                                icon: PhosphorIconsBold.clockCounterClockwise,
+                                title: 'Last Backup',
+                                trailing: _TrailingText(
+                                  text: _formatLastBackupTime(icloud.lastBackupTime ?? _preferencesService.getLastBackupTime()),
+                                ),
+                              ),
+                            ),
+                            Consumer<ICloudBackupService>(
+                              builder: (context, icloud, _) => _SettingsTile(
+                                icon: PhosphorIconsBold.cloudCheck,
+                                title: 'Backup Now',
+                                trailing: icloud.status == ICloudBackupStatus.backingUp
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Color(0xFF13b6ec),
+                                        ),
+                                      )
+                                    : const _TrailingArrow(),
+                                onTap: icloud.status == ICloudBackupStatus.backingUp
+                                    ? null
+                                    : () async {
+                                        final success = await icloud.backupToICloud(prefs: _preferencesService);
+                                        if (mounted) {
+                                          if (success) {
+                                            SuccessSnackbar.show(context, message: 'Backup to iCloud complete');
+                                          } else {
+                                            ErrorSnackbar.show(context, message: 'Backup failed');
+                                          }
+                                        }
+                                      },
+                              ),
+                            ),
+                            _SettingsTile(
+                              icon: PhosphorIconsBold.cloudArrowDown,
+                              title: 'Restore from iCloud',
+                              subtitle: 'OVERWRITE LOCAL',
+                              trailing: const _TrailingArrow(),
+                              onTap: () => _showRestoreConfirmation(),
+                            ),
                             _SettingsTile(
                               icon: PhosphorIconsBold.fileArrowUp,
                               title: 'Backup Vault File',
@@ -251,6 +322,57 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
         ],
       ),
     );
+  }
+
+  String _formatLastBackupTime(DateTime? time) {
+    if (time == null) return 'Never';
+    final now = DateTime.now();
+    final diff = now.difference(time);
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    return '${time.month}/${time.day}/${time.year}';
+  }
+
+  void _showRestoreConfirmation() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1a2c32),
+        title: Text(
+          'Restore from iCloud?',
+          style: GoogleFonts.spaceGrotesk(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'This will replace your current vault with the iCloud backup. You will need to re-enter your master password.',
+          style: GoogleFonts.notoSans(color: Colors.grey[300]),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel', style: GoogleFonts.spaceGrotesk(color: Colors.grey[400])),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('Restore', style: GoogleFonts.spaceGrotesk(color: const Color(0xFF13b6ec))),
+          ),
+        ],
+      ),
+    ).then((confirm) async {
+      if (confirm == true && mounted) {
+        final icloud = ICloudBackupService();
+        final success = await icloud.restoreFromICloud();
+        if (mounted) {
+          if (success) {
+            SuccessSnackbar.show(context, message: 'Vault restored. Please log in.');
+            Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+          } else {
+            ErrorSnackbar.show(context, message: 'Restore failed: ${icloud.lastError}');
+          }
+        }
+      }
+    });
   }
 
   void _showSecurityInfo() {

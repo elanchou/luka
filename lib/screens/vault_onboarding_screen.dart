@@ -9,10 +9,51 @@ import '../widgets/vault_button.dart';
 import '../widgets/vault_outline_button.dart';
 import '../widgets/vault_brand.dart';
 import '../providers/vault_provider.dart';
+import '../services/icloud_backup_service.dart';
 import '../widgets/error_snackbar.dart';
 
 class VaultOnboardingScreen extends StatelessWidget {
   const VaultOnboardingScreen({super.key});
+
+  Future<void> _restoreFromICloud(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1a2c32),
+        title: Text(
+          'Restore from iCloud?',
+          style: GoogleFonts.spaceGrotesk(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'This will restore your vault from iCloud backup. You will need the original master password to unlock it.',
+          style: GoogleFonts.notoSans(color: Colors.grey[300]),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel', style: GoogleFonts.spaceGrotesk(color: Colors.grey[400])),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('Restore', style: GoogleFonts.spaceGrotesk(color: const Color(0xFF13b6ec))),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && context.mounted) {
+      final icloud = ICloudBackupService();
+      final success = await icloud.restoreFromICloud();
+      if (context.mounted) {
+        if (success) {
+          SuccessSnackbar.show(context, message: 'Vault restored. Please log in.');
+          Navigator.of(context).pushReplacementNamed('/');
+        } else {
+          ErrorSnackbar.show(context, message: 'Restore failed: ${icloud.lastError}');
+        }
+      }
+    }
+  }
 
   Future<void> _importVault(BuildContext context) async {
     final result = await FilePicker.platform.pickFiles();
@@ -182,6 +223,21 @@ class VaultOnboardingScreen extends StatelessWidget {
                     icon: PhosphorIconsBold.fileArrowDown,
                     onTap: () => _importVault(context),
                     textColor: Colors.white,
+                  ),
+                  FutureBuilder<bool>(
+                    future: ICloudBackupService().hasICloudBackup(),
+                    builder: (context, snapshot) {
+                      if (snapshot.data != true) return const SizedBox.shrink();
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 16),
+                        child: VaultOutlineButton(
+                          text: 'Restore from iCloud',
+                          icon: PhosphorIconsBold.cloudArrowDown,
+                          onTap: () => _restoreFromICloud(context),
+                          textColor: Colors.white,
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 24),
                   Column(

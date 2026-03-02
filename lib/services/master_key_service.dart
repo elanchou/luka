@@ -245,6 +245,28 @@ class MasterKeyService {
     }
   }
 
+  /// Get raw salt and iterations for backup metadata
+  Future<Map<String, dynamic>?> getKeyMetadata() async {
+    try {
+      final saltBase64 = await _storage.read(key: _saltKey);
+      final iterationsStr = await _storage.read(key: _iterationsKey);
+      if (saltBase64 == null || iterationsStr == null) return null;
+      return {
+        'salt': saltBase64,
+        'iterations': int.parse(iterationsStr),
+      };
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Restore salt and iterations from backup metadata
+  Future<void> restoreKeyMetadata(String saltBase64, int iterations) async {
+    await _storage.write(key: _saltKey, value: saltBase64);
+    await _storage.write(key: _iterationsKey, value: iterations.toString());
+    await _storage.write(key: _hasPasswordKey, value: 'true');
+  }
+
   /// Reset all master password data
   Future<void> reset() async {
     try {
