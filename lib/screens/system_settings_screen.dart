@@ -10,7 +10,7 @@ import '../widgets/gradient_background.dart';
 import '../services/master_key_service.dart';
 import '../services/icloud_backup_service.dart';
 import '../services/preferences_service.dart';
-import '../providers/vault_provider.dart';
+import '../providers/sault_provider.dart';
 import '../widgets/error_snackbar.dart';
 
 class SystemSettingsScreen extends StatefulWidget {
@@ -199,14 +199,14 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                             ),
                             _SettingsTile(
                               icon: PhosphorIconsBold.fileArrowUp,
-                              title: 'Backup Vault File',
+                              title: 'Backup Sault File',
                               subtitle: 'ENCRYPTED FILE',
                               trailing: const _TrailingArrow(),
                               onTap: () async {
-                                final vaultProvider = Provider.of<VaultProvider>(context, listen: false);
+                                final vaultProvider = Provider.of<SaultProvider>(context, listen: false);
                                 final file = await vaultProvider.getEncryptedVaultFile();
                                 if (file != null) {
-                                  await Share.shareXFiles([XFile(file.path)], text: 'Vault Backup');
+                                  await Share.shareXFiles([XFile(file.path)], text: 'Sault Backup');
                                 } else {
                                   if (mounted) {
                                     ErrorSnackbar.show(context, message: 'Vault file not found');
@@ -237,7 +237,7 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                                 );
 
                                 if (confirm == true && mounted) {
-                                  final vaultProvider = Provider.of<VaultProvider>(context, listen: false);
+                                  final vaultProvider = Provider.of<SaultProvider>(context, listen: false);
                                   await vaultProvider.clearLogs();
                                   if (mounted) {
                                     SuccessSnackbar.show(context, message: 'Activity logs cleared');
@@ -302,7 +302,7 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                           children: [
                             _SettingsTile(
                               icon: PhosphorIconsBold.warningCircle,
-                              title: 'Factory Reset Vault',
+                              title: 'Factory Reset Sault',
                               subtitle: 'WIPE ALL DATA',
                               trailing: const _TrailingArrow(),
                               onTap: () {
@@ -365,7 +365,7 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
         final success = await icloud.restoreFromICloud();
         if (mounted) {
           if (success) {
-            SuccessSnackbar.show(context, message: 'Vault restored. Please log in.');
+            SuccessSnackbar.show(context, message: 'Sault restored. Please log in.');
             Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
           } else {
             ErrorSnackbar.show(context, message: 'Restore failed: ${icloud.lastError}');

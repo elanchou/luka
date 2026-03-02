@@ -6,10 +6,10 @@ import 'dart:ui';
 import 'package:intl/intl.dart';
 import '../models/secret_model.dart';
 import 'package:provider/provider.dart';
-import '../providers/vault_provider.dart';
+import '../providers/sault_provider.dart';
 import '../widgets/gradient_background.dart';
-import '../widgets/vault_app_bar.dart';
-import '../widgets/vault_brand.dart';
+import '../widgets/sault_app_bar.dart';
+import '../widgets/sault_brand.dart';
 import '../widgets/error_snackbar.dart';
 
 class SeedPhraseDetailView extends StatefulWidget {
@@ -43,8 +43,8 @@ class _SeedPhraseDetailViewState extends State<SeedPhraseDetailView> {
     return Scaffold(
       backgroundColor: backgroundDark,
       extendBodyBehindAppBar: true,
-      appBar: VaultAppBar(
-        titleWidget: const VaultBrand(fontSize: 16),
+      appBar: SaultAppBar(
+        titleWidget: const SaultBrand(fontSize: 16),
         actions: [
           IconButton(
             icon: const Icon(PhosphorIconsBold.trash, size: 22),
@@ -90,7 +90,7 @@ class _SeedPhraseDetailViewState extends State<SeedPhraseDetailView> {
 
               if (confirm == true) {
                 if (mounted) {
-                  await Provider.of<VaultProvider>(context, listen: false).deleteSecret(secret.id);
+                  await Provider.of<SaultProvider>(context, listen: false).deleteSecret(secret.id);
                   Navigator.pop(context);
                 }
               }

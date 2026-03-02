@@ -5,7 +5,7 @@ import '../utils/constants.dart';
 
 enum ToastType { success, error, info }
 
-class VaultToast {
+class SaultToast {
   static OverlayEntry? _currentEntry;
 
   static void show(

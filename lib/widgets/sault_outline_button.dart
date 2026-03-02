@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class VaultOutlineButton extends StatelessWidget {
+class SaultOutlineButton extends StatelessWidget {
   final String text;
   final VoidCallback onTap;
   final IconData? icon;
@@ -13,7 +13,7 @@ class VaultOutlineButton extends StatelessWidget {
   final double borderRadius;
   final bool isFullWidth;
 
-  const VaultOutlineButton({
+  const SaultOutlineButton({
     super.key,
     required this.text,
     required this.onTap,

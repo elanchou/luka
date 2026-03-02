@@ -5,15 +5,15 @@ import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 import '../widgets/gradient_background.dart';
-import '../widgets/vault_button.dart';
-import '../widgets/vault_outline_button.dart';
-import '../widgets/vault_brand.dart';
-import '../providers/vault_provider.dart';
+import '../widgets/sault_button.dart';
+import '../widgets/sault_outline_button.dart';
+import '../widgets/sault_brand.dart';
+import '../providers/sault_provider.dart';
 import '../services/icloud_backup_service.dart';
 import '../widgets/error_snackbar.dart';
 
-class VaultOnboardingScreen extends StatelessWidget {
-  const VaultOnboardingScreen({super.key});
+class SaultOnboardingScreen extends StatelessWidget {
+  const SaultOnboardingScreen({super.key});
 
   Future<void> _restoreFromICloud(BuildContext context) async {
     final confirm = await showDialog<bool>(
@@ -46,7 +46,7 @@ class VaultOnboardingScreen extends StatelessWidget {
       final success = await icloud.restoreFromICloud();
       if (context.mounted) {
         if (success) {
-          SuccessSnackbar.show(context, message: 'Vault restored. Please log in.');
+          SuccessSnackbar.show(context, message: 'Sault restored. Please log in.');
           Navigator.of(context).pushReplacementNamed('/');
         } else {
           ErrorSnackbar.show(context, message: 'Restore failed: ${icloud.lastError}');
@@ -65,7 +65,7 @@ class VaultOnboardingScreen extends StatelessWidget {
         builder: (context) => AlertDialog(
           backgroundColor: const Color(0xFF1a2c32),
           title: Text(
-            'Import Vault?',
+            'Import Sault?',
             style: GoogleFonts.spaceGrotesk(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           content: Text(
@@ -87,10 +87,10 @@ class VaultOnboardingScreen extends StatelessWidget {
 
       if (confirm == true && context.mounted) {
         try {
-          final vaultProvider = Provider.of<VaultProvider>(context, listen: false);
+          final vaultProvider = Provider.of<SaultProvider>(context, listen: false);
           await vaultProvider.importVault(File(result.files.single.path!));
           if (context.mounted) {
-            SuccessSnackbar.show(context, message: 'Vault imported. Please log in.');
+            SuccessSnackbar.show(context, message: 'Sault imported. Please log in.');
             Navigator.of(context).pushReplacementNamed('/');
           }
         } catch (e) {
@@ -129,7 +129,7 @@ class VaultOnboardingScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 24),
-                  const VaultBrand(fontSize: 36),
+                  const SaultBrand(fontSize: 36),
                   Expanded(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -208,8 +208,8 @@ class VaultOnboardingScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  VaultButton(
-                    text: 'Create New Vault',
+                  SaultButton(
+                    text: 'Create New Sault',
                     icon: PhosphorIconsBold.plusCircle,
                     onTap: () {
                       Navigator.pushNamed(context, '/set-master-password');
@@ -218,8 +218,8 @@ class VaultOnboardingScreen extends StatelessWidget {
                     textColor: backgroundDark,
                   ),
                   const SizedBox(height: 16),
-                  VaultOutlineButton(
-                    text: 'Import Vault File',
+                  SaultOutlineButton(
+                    text: 'Import Sault File',
                     icon: PhosphorIconsBold.fileArrowDown,
                     onTap: () => _importVault(context),
                     textColor: Colors.white,
@@ -230,7 +230,7 @@ class VaultOnboardingScreen extends StatelessWidget {
                       if (snapshot.data != true) return const SizedBox.shrink();
                       return Padding(
                         padding: const EdgeInsets.only(top: 16),
-                        child: VaultOutlineButton(
+                        child: SaultOutlineButton(
                           text: 'Restore from iCloud',
                           icon: PhosphorIconsBold.cloudArrowDown,
                           onTap: () => _restoreFromICloud(context),

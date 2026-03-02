@@ -5,20 +5,20 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import '../services/master_key_service.dart';
-import '../providers/vault_provider.dart';
+import '../providers/sault_provider.dart';
 import '../widgets/gradient_background.dart';
-import '../widgets/vault_app_bar.dart';
-import '../widgets/vault_text_field.dart';
-import '../widgets/vault_brand.dart';
+import '../widgets/sault_app_bar.dart';
+import '../widgets/sault_text_field.dart';
+import '../widgets/sault_brand.dart';
 
-class ResetVaultScreen extends StatefulWidget {
-  const ResetVaultScreen({super.key});
+class ResetSaultScreen extends StatefulWidget {
+  const ResetSaultScreen({super.key});
 
   @override
-  State<ResetVaultScreen> createState() => _ResetVaultScreenState();
+  State<ResetSaultScreen> createState() => _ResetSaultScreenState();
 }
 
-class _ResetVaultScreenState extends State<ResetVaultScreen> with SingleTickerProviderStateMixin {
+class _ResetSaultScreenState extends State<ResetSaultScreen> with SingleTickerProviderStateMixin {
   final _passwordController = TextEditingController();
   final _masterKeyService = MasterKeyService();
 
@@ -132,7 +132,7 @@ class _ResetVaultScreenState extends State<ResetVaultScreen> with SingleTickerPr
 
     if (!mounted) return;
 
-    final vaultProvider = Provider.of<VaultProvider>(context, listen: false);
+    final vaultProvider = Provider.of<SaultProvider>(context, listen: false);
 
     try {
       // Clear data
@@ -164,7 +164,7 @@ class _ResetVaultScreenState extends State<ResetVaultScreen> with SingleTickerPr
     return Scaffold(
       backgroundColor: backgroundDark,
       extendBodyBehindAppBar: true,
-      appBar: const VaultAppBar(title: 'Reset Vault'),
+      appBar: const SaultAppBar(title: 'Reset Sault'),
       body: Stack(
         children: [
           const GradientBackground(),
@@ -175,7 +175,7 @@ class _ResetVaultScreenState extends State<ResetVaultScreen> with SingleTickerPr
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   if (!_isPasswordVerified) ...[
-                    const Center(child: VaultBrand(fontSize: 32)),
+                    const Center(child: SaultBrand(fontSize: 32)),
                     const SizedBox(height: 48),
                     Text(
                       'Verify Identity',
@@ -193,7 +193,7 @@ class _ResetVaultScreenState extends State<ResetVaultScreen> with SingleTickerPr
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 40),
-                    VaultTextField(
+                    SaultTextField(
                       controller: _passwordController,
                       hintText: 'Master Password',
                       isPassword: !_showPassword,

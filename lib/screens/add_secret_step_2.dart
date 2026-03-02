@@ -4,8 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:bip39/src/wordlists/english.dart';
 import '../widgets/gradient_background.dart';
-import '../widgets/vault_button.dart';
-import '../widgets/vault_app_bar.dart';
+import '../widgets/sault_button.dart';
+import '../widgets/sault_app_bar.dart';
 import '../widgets/seed_word_autocomplete.dart';
 import '../widgets/error_snackbar.dart';
 import '../utils/validators.dart';
@@ -215,8 +215,8 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
     return Scaffold(
       backgroundColor: backgroundDark,
       extendBodyBehindAppBar: true,
-      appBar: VaultAppBar(
-        title: 'New Vault',
+      appBar: SaultAppBar(
+        title: 'New Sault',
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
@@ -540,7 +540,7 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
                 // Action Button
                 Padding(
                   padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
-                  child: VaultButton(
+                  child: SaultButton(
                     text: 'REVIEW',
                     onTap: validCount == _selectedWordCount ? _proceedToConfirm : null,
                     icon: PhosphorIconsBold.arrowRight,

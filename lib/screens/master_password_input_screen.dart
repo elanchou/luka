@@ -4,11 +4,11 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../services/master_key_service.dart';
-import '../providers/vault_provider.dart';
+import '../providers/sault_provider.dart';
 import '../widgets/gradient_background.dart';
-import '../widgets/vault_button.dart';
-import '../widgets/vault_text_field.dart';
-import '../widgets/vault_brand.dart';
+import '../widgets/sault_button.dart';
+import '../widgets/sault_text_field.dart';
+import '../widgets/sault_brand.dart';
 
 class MasterPasswordInputScreen extends StatefulWidget {
   const MasterPasswordInputScreen({super.key});
@@ -63,7 +63,7 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Logo/Brand
-                  const VaultBrand(
+                  const SaultBrand(
                     fontSize: 48,
                     mainAxisAlignment: MainAxisAlignment.center,
                   ),
@@ -92,7 +92,7 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
                   const SizedBox(height: 48),
 
                   // Password field
-                  VaultTextField(
+                  SaultTextField(
                     controller: _passwordController,
                     hintText: 'Enter your master password',
                     isPassword: !_showPassword,
@@ -152,8 +152,8 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
                   const SizedBox(height: 32),
 
                   // Unlock button
-                  VaultButton(
-                    text: 'Unlock Vault',
+                  SaultButton(
+                    text: 'Unlock Sault',
                     onTap: _isLoading ? null : _unlock,
                     isLoading: _isLoading,
                   ),
@@ -189,7 +189,7 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1a2c32),
         title: Text(
-          'Reset Vault?',
+          'Reset Sault?',
           style: GoogleFonts.spaceGrotesk(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -214,7 +214,7 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
             onPressed: () async {
               Navigator.pop(context);
               // Reset vault
-              final vaultProvider = Provider.of<VaultProvider>(context, listen: false);
+              final vaultProvider = Provider.of<SaultProvider>(context, listen: false);
               await vaultProvider.clearVault();
               await _masterKeyService.reset();
               if (mounted) {
@@ -222,7 +222,7 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
               }
             },
             child: Text(
-              'Reset Vault',
+              'Reset Sault',
               style: GoogleFonts.spaceGrotesk(color: Colors.red),
             ),
           ),

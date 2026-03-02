@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import '../widgets/vault_brand.dart';
+import '../widgets/sault_brand.dart';
 
 class NetworkBlockedScreen extends StatefulWidget {
   const NetworkBlockedScreen({super.key});
@@ -81,7 +81,7 @@ class _NetworkBlockedScreenState extends State<NetworkBlockedScreen> with Ticker
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const VaultBrand(fontSize: 32),
+                const SaultBrand(fontSize: 32),
                 const SizedBox(height: 64),
 
                 ScaleTransition(

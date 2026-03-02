@@ -4,7 +4,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../widgets/gradient_background.dart';
-import '../providers/vault_provider.dart';
+import '../providers/sault_provider.dart';
 import '../models/activity_log_model.dart';
 
 class ActivityLogScreen extends StatelessWidget {
@@ -107,7 +107,7 @@ class _ActivityLogBodyState extends State<ActivityLogBody> {
 
           // Timeline
           Expanded(
-            child: Consumer<VaultProvider>(
+            child: Consumer<SaultProvider>(
               builder: (context, provider, child) {
                 final logs = provider.logs.where((log) {
                   if (_selectedFilterIndex == 0) return true;

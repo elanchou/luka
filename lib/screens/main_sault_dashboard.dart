@@ -5,22 +5,22 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'dart:ui';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../providers/vault_provider.dart';
+import '../providers/sault_provider.dart';
 import '../models/secret_model.dart';
 import 'activity_log_screen.dart';
 import 'system_settings_screen.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/gradient_background.dart';
-import '../widgets/vault_header.dart';
+import '../widgets/sault_header.dart';
 
-class MainVaultDashboard extends StatefulWidget {
-  const MainVaultDashboard({super.key});
+class MainSaultDashboard extends StatefulWidget {
+  const MainSaultDashboard({super.key});
 
   @override
-  State<MainVaultDashboard> createState() => _MainVaultDashboardState();
+  State<MainSaultDashboard> createState() => _MainSaultDashboardState();
 }
 
-class _MainVaultDashboardState extends State<MainVaultDashboard> {
+class _MainSaultDashboardState extends State<MainSaultDashboard> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
@@ -110,7 +110,7 @@ class _DashboardHome extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
             child: Column(
               children: [
-                const VaultHeader(),
+                const SaultHeader(),
                 const SizedBox(height: 24),
                 // Search Bar
                 Container(
@@ -134,7 +134,7 @@ class _DashboardHome extends StatelessWidget {
                       Expanded(
                         child: TextField(
                           onChanged: (value) {
-                            context.read<VaultProvider>().setSearchQuery(value);
+                            context.read<SaultProvider>().setSearchQuery(value);
                           },
                           style: GoogleFonts.spaceGrotesk(
                             fontSize: 14,
@@ -162,7 +162,7 @@ class _DashboardHome extends StatelessWidget {
 
           // List Content
           Expanded(
-            child: Consumer<VaultProvider>(
+            child: Consumer<SaultProvider>(
               builder: (context, vault, child) {
                 if (vault.isLoading) {
                   return const Center(child: CircularProgressIndicator(color: primaryColor));

@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'providers/vault_provider.dart';
+import 'providers/sault_provider.dart';
 import 'services/network_monitor_service.dart';
 import 'services/icloud_backup_service.dart';
 import 'screens/network_blocked_screen.dart';
 import 'screens/app_splash_screen.dart';
-import 'screens/vault_onboarding_screen.dart';
-import 'screens/main_vault_dashboard.dart';
+import 'screens/sault_onboarding_screen.dart';
+import 'screens/main_sault_dashboard.dart';
 import 'screens/add_secret_step_1.dart';
 import 'screens/add_secret_step_2.dart';
 import 'screens/add_secret_step_3.dart';
@@ -20,7 +20,7 @@ import 'screens/export_progress_screen.dart';
 import 'screens/setup_master_password_screen.dart';
 import 'screens/master_password_input_screen.dart';
 import 'screens/change_master_password_screen.dart';
-import 'screens/reset_vault_screen.dart';
+import 'screens/reset_sault_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,7 +28,7 @@ void main() async {
     DeviceOrientation.portraitUp,
   ]);
 
-  final vaultProvider = VaultProvider();
+  final vaultProvider = SaultProvider();
   final networkMonitor = NetworkMonitorService();
   await networkMonitor.init();
 
@@ -42,18 +42,18 @@ void main() async {
         ChangeNotifierProvider.value(value: networkMonitor),
         ChangeNotifierProvider.value(value: icloudBackupService),
       ],
-      child: const VaultApp(),
+      child: const SaultApp(),
     ),
   );
 }
 
-class VaultApp extends StatelessWidget {
-  const VaultApp({super.key});
+class SaultApp extends StatelessWidget {
+  const SaultApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Vault',
+      title: 'Sault',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
@@ -78,11 +78,11 @@ class VaultApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const AppSplashScreen(),
-        '/onboarding': (context) => const VaultOnboardingScreen(),
+        '/onboarding': (context) => const SaultOnboardingScreen(),
         '/set-master-password': (context) => const SetupMasterPasswordScreen(),
         '/master-password-input': (context) => const MasterPasswordInputScreen(),
         '/change-master-password': (context) => const ChangeMasterPasswordScreen(),
-        '/dashboard': (context) => const MainVaultDashboard(),
+        '/dashboard': (context) => const MainSaultDashboard(),
         '/add-secret-1': (context) => const AddSecretStep1(),
         '/add-secret-2': (context) => const AddSecretStep2(),
         '/add-secret-3': (context) => const AddSecretStep3(),
@@ -91,7 +91,7 @@ class VaultApp extends StatelessWidget {
         '/settings': (context) => const SystemSettingsScreen(),
         '/export-progress': (context) => const ExportProgressScreen(),
         '/decrypting-progress': (context) => const DecryptingProgressScreen(),
-        '/reset-vault': (context) => const ResetVaultScreen(),
+        '/reset-vault': (context) => const ResetSaultScreen(),
       },
     );
   }

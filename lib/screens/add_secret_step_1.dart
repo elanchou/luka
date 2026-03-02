@@ -3,9 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../widgets/gradient_background.dart';
-import '../widgets/vault_button.dart';
-import '../widgets/vault_text_field.dart';
-import '../widgets/vault_app_bar.dart';
+import '../widgets/sault_button.dart';
+import '../widgets/sault_text_field.dart';
+import '../widgets/sault_app_bar.dart';
 
 import '../widgets/error_snackbar.dart';
 
@@ -77,7 +77,7 @@ class _AddSecretStep1State extends State<AddSecretStep1> {
     return Scaffold(
       backgroundColor: backgroundDark,
       extendBodyBehindAppBar: true,
-      appBar: VaultAppBar(
+      appBar: SaultAppBar(
         title: 'Add Secret',
         actions: [
           Padding(
@@ -115,7 +115,7 @@ class _AddSecretStep1State extends State<AddSecretStep1> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        VaultTextField(
+                        SaultTextField(
                           controller: _nameController,
                           label: 'SECRET NAME',
                           placeholder: 'e.g. My Primary Wallet',
@@ -265,7 +265,7 @@ class _AddSecretStep1State extends State<AddSecretStep1> {
                 // Next Button
                 Padding(
                   padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
-                  child: VaultButton(
+                  child: SaultButton(
                     text: 'NEXT STEP',
                     icon: PhosphorIconsBold.arrowRight,
                     onTap: _nextStep,

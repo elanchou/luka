@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class VaultBrand extends StatelessWidget {
+class SaultBrand extends StatelessWidget {
   final double fontSize;
   final MainAxisAlignment mainAxisAlignment;
 
-  const VaultBrand({
+  const SaultBrand({
     super.key,
     this.fontSize = 24.0,
     this.mainAxisAlignment = MainAxisAlignment.start,
@@ -20,7 +20,7 @@ class VaultBrand extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'VAULT',
+          'SAULT',
           style: GoogleFonts.spaceGrotesk(
             fontSize: fontSize,
             fontWeight: FontWeight.bold,

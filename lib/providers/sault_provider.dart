@@ -2,13 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'dart:io';
 import '../models/secret_model.dart';
 import '../models/activity_log_model.dart';
-import '../services/vault_service.dart';
+import '../services/sault_service.dart';
 import '../services/activity_log_service.dart';
 import '../services/icloud_backup_service.dart';
 import '../services/preferences_service.dart';
 
-class VaultProvider extends ChangeNotifier {
-  final VaultService _vaultService = VaultService();
+class SaultProvider extends ChangeNotifier {
+  final SaultService _vaultService = SaultService();
   final ActivityLogService _logService = ActivityLogService();
   final ICloudBackupService _icloudBackupService = ICloudBackupService();
   PreferencesService? _preferencesService;
@@ -67,7 +67,7 @@ class VaultProvider extends ChangeNotifier {
       _error = null;
 
       if (masterPassword != null) {
-        await _logAction('Vault Accessed', 'Security check passed', ActivityCategory.access);
+        await _logAction('Sault Accessed', 'Security check passed', ActivityCategory.access);
       }
     } catch (e) {
       _error = 'Failed to initialize vault: \$e';
@@ -155,7 +155,7 @@ class VaultProvider extends ChangeNotifier {
   Future<File?> exportDecryptedData() async {
     try {
       final result = await _vaultService.exportDecryptedData();
-      await _logAction('Vault Exported', 'Decrypted JSON export', ActivityCategory.security);
+      await _logAction('Sault Exported', 'Decrypted JSON export', ActivityCategory.security);
       return result;
     } catch (e) {
       _error = 'Failed to export data: $e';

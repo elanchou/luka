@@ -4,10 +4,10 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import '../services/master_key_service.dart';
 import '../services/encryption_service.dart';
-import '../providers/vault_provider.dart';
+import '../providers/sault_provider.dart';
 import '../widgets/gradient_background.dart';
-import '../widgets/vault_button.dart';
-import '../widgets/vault_text_field.dart';
+import '../widgets/sault_button.dart';
+import '../widgets/sault_text_field.dart';
 
 import '../widgets/error_snackbar.dart';
 
@@ -107,7 +107,7 @@ class _ChangeMasterPasswordScreenState extends State<ChangeMasterPasswordScreen>
 
       // Reinitialize vault with new password
       if (mounted) {
-        final vaultProvider = Provider.of<VaultProvider>(context, listen: false);
+        final vaultProvider = Provider.of<SaultProvider>(context, listen: false);
         await vaultProvider.reinitialize(newPassword);
 
         if (mounted) {
@@ -218,7 +218,7 @@ class _ChangeMasterPasswordScreenState extends State<ChangeMasterPasswordScreen>
                             ),
                           ),
                           const SizedBox(height: 8),
-                          VaultTextField(
+                          SaultTextField(
                             controller: _currentPasswordController,
                             hintText: 'Enter current password',
                             isPassword: !_showPasswords,
@@ -237,7 +237,7 @@ class _ChangeMasterPasswordScreenState extends State<ChangeMasterPasswordScreen>
                             ),
                           ),
                           const SizedBox(height: 8),
-                          VaultTextField(
+                          SaultTextField(
                             controller: _newPasswordController,
                             hintText: 'At least 8 characters',
                             isPassword: !_showPasswords,
@@ -256,7 +256,7 @@ class _ChangeMasterPasswordScreenState extends State<ChangeMasterPasswordScreen>
                             ),
                           ),
                           const SizedBox(height: 8),
-                          VaultTextField(
+                          SaultTextField(
                             controller: _confirmPasswordController,
                             hintText: 'Re-enter new password',
                             isPassword: !_showPasswords,
@@ -390,7 +390,7 @@ class _ChangeMasterPasswordScreenState extends State<ChangeMasterPasswordScreen>
                           const SizedBox(height: 24),
 
                           // Change Password Button
-                          VaultButton(
+                          SaultButton(
                             text: 'Change Password',
                             onTap: _isLoading ? null : _changePassword,
                             isLoading: _isLoading,

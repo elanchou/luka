@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'vault_toast.dart';
+import 'sault_toast.dart';
 
 class ErrorSnackbar {
   static void show(
@@ -8,7 +8,7 @@ class ErrorSnackbar {
     Duration duration = const Duration(seconds: 3),
     SnackBarAction? action,
   }) {
-    VaultToast.error(context, message);
+    SaultToast.error(context, message);
   }
 }
 
@@ -19,7 +19,7 @@ class SuccessSnackbar {
     Duration duration = const Duration(seconds: 2),
     SnackBarAction? action,
   }) {
-    VaultToast.success(context, message);
+    SaultToast.success(context, message);
   }
 }
 
@@ -30,7 +30,7 @@ class InfoSnackbar {
     Duration duration = const Duration(seconds: 2),
     SnackBarAction? action,
   }) {
-    VaultToast.info(context, message);
+    SaultToast.info(context, message);
   }
 }
 

@@ -3,11 +3,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:provider/provider.dart';
-import '../providers/vault_provider.dart';
+import '../providers/sault_provider.dart';
 import 'dart:io';
 import '../widgets/gradient_background.dart';
-import '../widgets/vault_outline_button.dart';
-import '../widgets/vault_app_bar.dart';
+import '../widgets/sault_outline_button.dart';
+import '../widgets/sault_app_bar.dart';
 
 class ExportProgressScreen extends StatefulWidget {
   const ExportProgressScreen({super.key});
@@ -69,7 +69,7 @@ class _ExportProgressScreenState extends State<ExportProgressScreen> with Single
 
     // Perform actual export
     try {
-      final exportFile = await Provider.of<VaultProvider>(context, listen: false).exportDecryptedData();
+      final exportFile = await Provider.of<SaultProvider>(context, listen: false).exportDecryptedData();
 
       if (exportFile != null) {
         _controller.animateTo(1.0, duration: const Duration(milliseconds: 400));
@@ -93,7 +93,7 @@ class _ExportProgressScreenState extends State<ExportProgressScreen> with Single
 
   void _shareFile(File file) async {
     final xFile = XFile(file.path);
-    await Share.shareXFiles([xFile], text: 'Vault Export (Decrypted)');
+    await Share.shareXFiles([xFile], text: 'Sault Export (Decrypted)');
     if (mounted) {
       Navigator.pop(context);
     }
@@ -135,7 +135,7 @@ class _ExportProgressScreenState extends State<ExportProgressScreen> with Single
     return Scaffold(
       backgroundColor: backgroundDark,
       extendBodyBehindAppBar: true,
-      appBar: VaultAppBar(
+      appBar: SaultAppBar(
         leading: const SizedBox(), // Hide back button
         titleWidget: Row(
           mainAxisSize: MainAxisSize.min,
@@ -207,7 +207,7 @@ class _ExportProgressScreenState extends State<ExportProgressScreen> with Single
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'Processing Vault...',
+                              'Processing Sault...',
                               style: GoogleFonts.spaceGrotesk(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w500,
@@ -364,7 +364,7 @@ class _ExportProgressScreenState extends State<ExportProgressScreen> with Single
                 // Footer
                 Padding(
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-                  child: VaultOutlineButton(
+                  child: SaultOutlineButton(
                     text: 'Cancel Export',
                     icon: PhosphorIconsBold.xCircle,
                     onTap: () => Navigator.pop(context),

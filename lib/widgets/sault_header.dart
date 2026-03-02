@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'vault_brand.dart';
+import 'sault_brand.dart';
 
-class VaultHeader extends StatelessWidget {
+class SaultHeader extends StatelessWidget {
   final String? title;
   final bool showUserIcon;
 
-  const VaultHeader({
+  const SaultHeader({
     super.key,
     this.title,
     this.showUserIcon = true,
@@ -18,8 +18,8 @@ class VaultHeader extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        if (title == null || title == 'VAULT')
-          const VaultBrand(fontSize: 24)
+        if (title == null || title == 'SAULT')
+          const SaultBrand(fontSize: 24)
         else
           Text(
             title!,

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
-import '../providers/vault_provider.dart';
-import '../services/vault_service.dart';
+import '../providers/sault_provider.dart';
+import '../services/sault_service.dart';
 import '../services/master_key_service.dart';
 
 class AppSplashScreen extends StatefulWidget {
@@ -123,7 +123,7 @@ class _AppSplashScreenState extends State<AppSplashScreen> with SingleTickerProv
                         // Geometric logo
                         CustomPaint(
                           size: const Size(80, 80),
-                          painter: VaultLogoPainter(),
+                          painter: SaultLogoPainter(),
                         ),
                       ],
                     ),
@@ -143,7 +143,7 @@ class _AppSplashScreenState extends State<AppSplashScreen> with SingleTickerProv
                   child: Column(
                     children: [
                       Text(
-                        'VAULT',
+                        'SAULT',
                         style: TextStyle(
                           color: const Color(0xFFe0e0e0),
                           fontSize: 12,
@@ -228,7 +228,7 @@ class _AppSplashScreenState extends State<AppSplashScreen> with SingleTickerProv
   }
 }
 
-class VaultLogoPainter extends CustomPainter {
+class SaultLogoPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()

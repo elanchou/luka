@@ -4,7 +4,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import 'dart:math' as math;
 import '../widgets/gradient_background.dart';
-import '../providers/vault_provider.dart';
+import '../providers/sault_provider.dart';
 import '../services/master_key_service.dart';
 
 class DecryptingProgressScreen extends StatefulWidget {
@@ -120,7 +120,7 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
 
       // 实际执行 PBKDF2
       if (mounted) {
-        final vaultProvider = Provider.of<VaultProvider>(context, listen: false);
+        final vaultProvider = Provider.of<SaultProvider>(context, listen: false);
 
         _controller.animateTo(0.7, duration: Duration(milliseconds: securityLevel.iterations ~/ 1000));
 
@@ -138,7 +138,7 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
       await Future.delayed(const Duration(milliseconds: 150));
       _controller.animateTo(0.8, duration: const Duration(milliseconds: 150));
 
-      final vaultProvider = Provider.of<VaultProvider>(context, listen: false);
+      final vaultProvider = Provider.of<SaultProvider>(context, listen: false);
       final secretCount = vaultProvider.secretCount;
       _addLog('[OK] Found ${secretCount} encrypted secrets', LogType.highlight);
 
@@ -250,7 +250,7 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
                           builder: (context, child) {
                             return CustomPaint(
                               size: const Size(150, 150),
-                              painter: VaultDoorPainter(
+                              painter: SaultDoorPainter(
                                 doorProgress: _doorAnimation.value,
                                 lockRotation: _lockRotation.value,
                                 isUnlocked: _isUnlocked,
@@ -388,12 +388,12 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
   }
 }
 
-class VaultDoorPainter extends CustomPainter {
+class SaultDoorPainter extends CustomPainter {
   final double doorProgress;
   final double lockRotation;
   final bool isUnlocked;
 
-  VaultDoorPainter({
+  SaultDoorPainter({
     required this.doorProgress,
     required this.lockRotation,
     required this.isUnlocked,
@@ -494,7 +494,7 @@ class VaultDoorPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(VaultDoorPainter oldDelegate) {
+  bool shouldRepaint(SaultDoorPainter oldDelegate) {
     return oldDelegate.doorProgress != doorProgress ||
            oldDelegate.lockRotation != lockRotation ||
            oldDelegate.isUnlocked != isUnlocked;

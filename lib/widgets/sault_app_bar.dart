@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-class VaultAppBar extends StatelessWidget implements PreferredSizeWidget {
+class SaultAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final Widget? leading;
   final List<Widget>? actions;
@@ -11,7 +11,7 @@ class VaultAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Widget? titleWidget;
   final double elevation;
 
-  const VaultAppBar({
+  const SaultAppBar({
     super.key,
     this.title = '',
     this.leading,

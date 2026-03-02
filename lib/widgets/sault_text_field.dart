@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class VaultTextField extends StatelessWidget {
+class SaultTextField extends StatelessWidget {
   final TextEditingController controller;
   final String? label;
   final String? placeholder;
@@ -13,7 +13,7 @@ class VaultTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final ValueChanged<String>? onChanged;
 
-  const VaultTextField({
+  const SaultTextField({
     super.key,
     required this.controller,
     this.label,

@@ -4,7 +4,7 @@ import 'package:path_provider/path_provider.dart';
 import '../models/secret_model.dart';
 import 'encryption_service.dart';
 
-class VaultService {
+class SaultService {
   final EncryptionService _encryptionService = EncryptionService();
   static const String _fileName = 'vault.enc';
   bool _isInitialized = false;
@@ -28,7 +28,7 @@ class VaultService {
 
   Future<void> saveSecrets(List<Secret> secrets) async {
     if (!_isInitialized) {
-      throw Exception('VaultService not initialized');
+      throw Exception('SaultService not initialized');
     }
 
     try {
@@ -52,7 +52,7 @@ class VaultService {
 
   Future<List<Secret>> loadSecrets() async {
     if (!_isInitialized) {
-      throw Exception('VaultService not initialized');
+      throw Exception('SaultService not initialized');
     }
 
     try {
@@ -80,7 +80,7 @@ class VaultService {
 
   Future<File?> exportDecryptedData() async {
     if (!_isInitialized) {
-      throw Exception('VaultService not initialized');
+      throw Exception('SaultService not initialized');
     }
 
     try {

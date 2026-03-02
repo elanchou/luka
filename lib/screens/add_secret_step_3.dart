@@ -3,11 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import '../providers/vault_provider.dart';
+import '../providers/sault_provider.dart';
 import '../models/secret_model.dart';
 import '../widgets/gradient_background.dart';
-import '../widgets/vault_button.dart';
-import '../widgets/vault_app_bar.dart';
+import '../widgets/sault_button.dart';
+import '../widgets/sault_app_bar.dart';
 import '../widgets/error_snackbar.dart';
 
 class AddSecretStep3 extends StatefulWidget {
@@ -79,7 +79,7 @@ class _AddSecretStep3State extends State<AddSecretStep3> {
     );
 
     final success =
-        await Provider.of<VaultProvider>(context, listen: false).addSecret(secret);
+        await Provider.of<SaultProvider>(context, listen: false).addSecret(secret);
 
     setState(() {
       _isSaving = false;
@@ -111,8 +111,8 @@ class _AddSecretStep3State extends State<AddSecretStep3> {
     return Scaffold(
       backgroundColor: backgroundDark,
       extendBodyBehindAppBar: true,
-      appBar: VaultAppBar(
-        title: 'New Vault',
+      appBar: SaultAppBar(
+        title: 'New Sault',
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
@@ -377,7 +377,7 @@ class _AddSecretStep3State extends State<AddSecretStep3> {
                 // Bottom Actions
                 Padding(
                   padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
-                  child: VaultButton(
+                  child: SaultButton(
                     text: _isSaving ? 'SAVING...' : 'CONFIRM & SAVE',
                     onTap: !_isSaving ? _confirmAndSave : null,
                     icon:

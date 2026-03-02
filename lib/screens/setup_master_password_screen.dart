@@ -3,8 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../services/master_key_service.dart';
 import '../widgets/gradient_background.dart';
-import '../widgets/vault_button.dart';
-import '../widgets/vault_text_field.dart';
+import '../widgets/sault_button.dart';
+import '../widgets/sault_text_field.dart';
 
 /// 初次设置 Master Password 的专用页面
 class SetupMasterPasswordScreen extends StatefulWidget {
@@ -122,7 +122,7 @@ class _SetupMasterPasswordScreenState extends State<SetupMasterPasswordScreen> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                'Secure Your Vault',
+                                'Secure Your Sault',
                                 style: GoogleFonts.spaceGrotesk(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
@@ -188,7 +188,7 @@ class _SetupMasterPasswordScreenState extends State<SetupMasterPasswordScreen> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        VaultTextField(
+                        SaultTextField(
                           controller: _passwordController,
                           hintText: 'At least 8 characters',
                           isPassword: !_showPassword,
@@ -207,7 +207,7 @@ class _SetupMasterPasswordScreenState extends State<SetupMasterPasswordScreen> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        VaultTextField(
+                        SaultTextField(
                           controller: _confirmPasswordController,
                           hintText: 'Re-enter password',
                           isPassword: !_showPassword,
@@ -380,7 +380,7 @@ class _SetupMasterPasswordScreenState extends State<SetupMasterPasswordScreen> {
                         const SizedBox(height: 24),
 
                         // Create Password Button
-                        VaultButton(
+                        SaultButton(
                           text: 'Create Password',
                           onTap: _isLoading ? null : _setupPassword,
                           isLoading: _isLoading,

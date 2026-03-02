@@ -13,7 +13,7 @@ class AppColors {
 }
 
 class AppConstants {
-  static const String appName = 'Vault';
+  static const String appName = 'Sault';
   static const String appVersion = '1.0.0';
   
   // Seed phrase valid word counts

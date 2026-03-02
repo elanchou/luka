@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class VaultButton extends StatelessWidget {
+class SaultButton extends StatelessWidget {
   final String text;
   final VoidCallback? onTap;
   final IconData? icon;
@@ -14,7 +14,7 @@ class VaultButton extends StatelessWidget {
   final bool isFullWidth;
   final bool isLoading;
 
-  const VaultButton({
+  const SaultButton({
     super.key,
     required this.text,
     this.onTap,
