@@ -1,0 +1,20 @@
+Sault. is a private, local-first vault for storing seed phrases, private keys, and sensitive notes on iPhone and iPad.
+
+Built for users who want calm, premium security without cloud account friction, Sault. keeps your most sensitive records encrypted on device and protected by a master password.
+
+Key features:
+- Local encrypted vault for seed phrases, private keys, and secure notes
+- Master password protection with PBKDF2-based key derivation
+- AES-encrypted local storage for sensitive content
+- Optional biometric unlock support with Face ID or Touch ID
+- Search and filter for faster retrieval
+- Activity log for important vault actions
+- Optional encrypted iCloud backup and restore flow
+- Manual export flow when you explicitly choose to share or back up your data
+
+Sault. is designed for privacy-conscious users who prefer local control, clean design, and deliberate security workflows.
+
+Important:
+- Keep your master password safe. It cannot be recovered by the developer.
+- Handle exported files carefully.
+- iCloud backup is optional and uses your own Apple account.

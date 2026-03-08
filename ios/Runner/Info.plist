@@ -23,9 +23,13 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>2</string>
+	<string>5</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Sault. uses photo library access only when you choose to export, save, or share vault-related files and images.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Sault. saves exported vault-related files and images to your photo library only when you explicitly request it.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

@@ -1,0 +1,1 @@
+seed phrase,private key,secure notes,crypto vault,offline wallet,biometric,aes,pbkdf2

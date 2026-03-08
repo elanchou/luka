@@ -1,0 +1,1 @@
+Initial public release of Sault. with local encrypted vault storage, biometric unlock, export tools, and optional iCloud backup.

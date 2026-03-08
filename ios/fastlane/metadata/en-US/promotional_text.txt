@@ -1,0 +1,1 @@
+Store seed phrases, private keys, and secure notes in a calm, local-first vault designed for deliberate security.
