@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'providers/sault_provider.dart';
 import 'services/network_monitor_service.dart';
 import 'services/icloud_backup_service.dart';
+import 'utils/constants.dart';
 import 'screens/network_blocked_screen.dart';
 import 'screens/app_splash_screen.dart';
 import 'screens/sault_onboarding_screen.dart';
@@ -57,9 +58,40 @@ class SaultApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF101d22),
-        primaryColor: const Color(0xFF13b6ec),
+        scaffoldBackgroundColor: AppColors.backgroundDark,
+        primaryColor: AppColors.primaryColor,
+        colorScheme: const ColorScheme.dark(
+          primary: AppColors.primaryColor,
+          secondary: AppColors.accentColor,
+          surface: AppColors.surfaceDark,
+          error: AppColors.dangerColor,
+        ),
         textTheme: GoogleFonts.spaceGroteskTextTheme(ThemeData.dark().textTheme),
+        dialogTheme: DialogThemeData(
+          backgroundColor: AppColors.surfaceDark,
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: const BorderSide(color: AppColors.softBorderColor),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: AppColors.backgroundElevated,
+          hintStyle: GoogleFonts.notoSans(color: AppColors.textMuted),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20),
+            borderSide: const BorderSide(color: AppColors.softBorderColor),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20),
+            borderSide: const BorderSide(color: AppColors.softBorderColor),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20),
+            borderSide: const BorderSide(color: AppColors.primaryColor),
+          ),
+        ),
         useMaterial3: true,
       ),
       builder: (context, child) {

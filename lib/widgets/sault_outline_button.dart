@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../utils/constants.dart';
 
 class SaultOutlineButton extends StatelessWidget {
   final String text;
@@ -28,45 +29,43 @@ class SaultOutlineButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Default colors
-    final defaultBorderColor = Colors.white.withValues(alpha: 0.2);
-    const defaultTextColor = Colors.white;
-
-    final brColor = borderColor ?? defaultBorderColor;
-    final txtColor = textColor ?? defaultTextColor;
+    final Color brColor = borderColor ?? AppColors.softBorderColor;
+    final Color txtColor = textColor ?? AppColors.textPrimary;
 
     return Material(
       color: Colors.transparent,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(borderRadius),
-        side: BorderSide(color: brColor),
-      ),
+      borderRadius: BorderRadius.circular(borderRadius),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
           HapticFeedback.lightImpact();
           onTap();
         },
-        hoverColor: Colors.white.withValues(alpha: 0.05),
+        hoverColor: Colors.white.withValues(alpha: 0.02),
         child: Container(
           width: isFullWidth ? double.infinity : width,
           height: height,
           alignment: Alignment.center,
           padding: const EdgeInsets.symmetric(horizontal: 24),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.025),
+            borderRadius: BorderRadius.circular(borderRadius),
+            border: Border.all(color: brColor),
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (icon != null) ...[
-                Icon(icon, color: txtColor.withValues(alpha: 0.6), size: 20),
+                Icon(icon, color: AppColors.textSecondary, size: 18),
                 const SizedBox(width: 8),
               ],
               Text(
-                text.toUpperCase(),
+                text,
                 style: GoogleFonts.spaceGrotesk(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
                   color: txtColor,
-                  letterSpacing: 0.5,
+                  letterSpacing: 0.1,
                 ),
               ),
             ],

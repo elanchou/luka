@@ -4,12 +4,13 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
-import '../services/master_key_service.dart';
 import '../providers/sault_provider.dart';
+import '../services/master_key_service.dart';
+import '../utils/constants.dart';
 import '../widgets/gradient_background.dart';
 import '../widgets/sault_app_bar.dart';
+import '../widgets/sault_button.dart';
 import '../widgets/sault_text_field.dart';
-import '../widgets/sault_brand.dart';
 
 class ResetSaultScreen extends StatefulWidget {
   const ResetSaultScreen({super.key});
@@ -18,19 +19,18 @@ class ResetSaultScreen extends StatefulWidget {
   State<ResetSaultScreen> createState() => _ResetSaultScreenState();
 }
 
-class _ResetSaultScreenState extends State<ResetSaultScreen> with SingleTickerProviderStateMixin {
-  final _passwordController = TextEditingController();
-  final _masterKeyService = MasterKeyService();
+class _ResetSaultScreenState extends State<ResetSaultScreen>
+    with SingleTickerProviderStateMixin {
+  final TextEditingController _passwordController = TextEditingController();
+  final MasterKeyService _masterKeyService = MasterKeyService();
 
   bool _isPasswordVerified = false;
   bool _isLoading = false;
   String? _errorMessage;
   bool _showPassword = false;
-
-  // Long press logic
   double _resetProgress = 0.0;
   Timer? _progressTimer;
-  late AnimationController _pulseController;
+  late final AnimationController _pulseController;
   bool _isPressing = false;
 
   @override
@@ -51,7 +51,7 @@ class _ResetSaultScreenState extends State<ResetSaultScreen> with SingleTickerPr
   }
 
   Future<void> _verifyPassword() async {
-    final password = _passwordController.text;
+    final String password = _passwordController.text;
     if (password.isEmpty) {
       setState(() => _errorMessage = 'Password required');
       return;
@@ -63,7 +63,7 @@ class _ResetSaultScreenState extends State<ResetSaultScreen> with SingleTickerPr
     });
 
     try {
-      final isValid = await _masterKeyService.verifyPassword(password);
+      final bool isValid = await _masterKeyService.verifyPassword(password);
       if (isValid) {
         HapticFeedback.mediumImpact();
         setState(() {
@@ -77,7 +77,7 @@ class _ResetSaultScreenState extends State<ResetSaultScreen> with SingleTickerPr
           _isLoading = false;
         });
       }
-    } catch (e) {
+    } catch (_) {
       setState(() {
         _errorMessage = 'Verification failed';
         _isLoading = false;
@@ -93,19 +93,8 @@ class _ResetSaultScreenState extends State<ResetSaultScreen> with SingleTickerPr
 
     _progressTimer = Timer.periodic(const Duration(milliseconds: 30), (timer) {
       setState(() {
-        _resetProgress += 0.01; // Approx 3 seconds total
-
-        // Haptic feedback during progress
-        if (timer.tick % 10 == 0) {
-          HapticFeedback.selectionClick();
-        }
-        if (_resetProgress > 0.7 && timer.tick % 5 == 0) {
-          HapticFeedback.lightImpact();
-        }
-        if (_resetProgress > 0.9) {
-          HapticFeedback.mediumImpact();
-        }
-
+        _resetProgress += 0.01;
+        if (timer.tick % 10 == 0) HapticFeedback.selectionClick();
         if (_resetProgress >= 1.0) {
           _progressTimer?.cancel();
           _performFinalReset();
@@ -127,23 +116,12 @@ class _ResetSaultScreenState extends State<ResetSaultScreen> with SingleTickerPr
 
   Future<void> _performFinalReset() async {
     HapticFeedback.heavyImpact();
-    await Future.delayed(const Duration(milliseconds: 100));
-    HapticFeedback.heavyImpact();
-
-    if (!mounted) return;
-
-    final vaultProvider = Provider.of<SaultProvider>(context, listen: false);
+    final SaultProvider vaultProvider = Provider.of<SaultProvider>(context, listen: false);
 
     try {
-      // Clear data
       await vaultProvider.clearVault();
       await _masterKeyService.reset();
-
       if (mounted) {
-        // Success haptic
-        HapticFeedback.mediumImpact();
-
-        // Navigate to onboarding and clear stack
         Navigator.of(context).pushNamedAndRemoveUntil('/onboarding', (route) => false);
       }
     } catch (e) {
@@ -157,210 +135,262 @@ class _ResetSaultScreenState extends State<ResetSaultScreen> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
-    const backgroundDark = Color(0xFF101d22);
-    const primaryColor = Color(0xFF13b6ec);
-    const dangerColor = Color(0xFFff4d4d);
-
     return Scaffold(
-      backgroundColor: backgroundDark,
+      backgroundColor: AppColors.backgroundDark,
       extendBodyBehindAppBar: true,
-      appBar: const SaultAppBar(title: 'Reset Sault'),
+      appBar: const SaultAppBar(title: 'Reset Vault'),
       body: Stack(
         children: [
           const GradientBackground(),
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (!_isPasswordVerified) ...[
-                    const Center(child: SaultBrand(fontSize: 32)),
-                    const SizedBox(height: 48),
-                    Text(
-                      'Verify Identity',
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Enter your master password to proceed with vault reset.',
-                      style: GoogleFonts.notoSans(color: Colors.grey[400], fontSize: 14),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 40),
-                    SaultTextField(
-                      controller: _passwordController,
-                      hintText: 'Master Password',
-                      isPassword: !_showPassword,
-                      textInputAction: TextInputAction.done,
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: _showPassword,
-                          onChanged: (v) => setState(() => _showPassword = v ?? false),
-                          activeColor: primaryColor,
-                        ),
-                        Text('Show password', style: GoogleFonts.notoSans(color: Colors.grey[500])),
-                      ],
-                    ),
-                    if (_errorMessage != null) ...[
-                      const SizedBox(height: 16),
-                      Text(
-                        _errorMessage!,
-                        style: GoogleFonts.notoSans(color: dangerColor, fontSize: 13),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                    const Spacer(),
-                    ElevatedButton(
-                      onPressed: _isLoading ? null : _verifyPassword,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor,
-                        foregroundColor: backgroundDark,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      child: _isLoading
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                        : Text('VERIFY', style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.bold, letterSpacing: 1)),
-                    ),
-                  ] else ...[
-                    // Final confirmation state
-                    const Center(
-                      child: Icon(PhosphorIconsBold.warningDiamond, color: dangerColor, size: 80),
-                    ),
-                    const SizedBox(height: 32),
-                    Text(
-                      'DANGER ZONE',
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: dangerColor,
-                        letterSpacing: 2,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: dangerColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: dangerColor.withValues(alpha: 0.3)),
-                      ),
-                      child: Column(
-                        children: [
-                          _WarningItem(text: 'All your 12-word seed phrases will be deleted'),
-                          const SizedBox(height: 12),
-                          _WarningItem(text: 'All local encryption keys will be wiped'),
-                          const SizedBox(height: 12),
-                          _WarningItem(text: 'This action is PERMANENT and IRREVERSIBLE'),
-                        ],
-                      ),
-                    ),
-                    const Spacer(),
-
-                    // The 3-second hold button
-                    Column(
-                      children: [
-                        Text(
-                          'HOLD FOR 3 SECONDS TO WIPE EVERYTHING',
-                          style: GoogleFonts.spaceGrotesk(
-                            fontSize: 11,
-                            color: Colors.grey[500],
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        GestureDetector(
-                          onLongPressStart: (_) => _startResetTimer(),
-                          onLongPressEnd: (_) => _cancelResetTimer(),
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              SizedBox(
-                                width: 120,
-                                height: 120,
-                                child: CircularProgressIndicator(
-                                  value: _resetProgress,
-                                  strokeWidth: 8,
-                                  color: dangerColor,
-                                  backgroundColor: Colors.white.withValues(alpha: 0.05),
-                                ),
-                              ),
-                              ScaleTransition(
-                                scale: _isPressing
-                                  ? Tween(begin: 1.0, end: 1.1).animate(_pulseController)
-                                  : const AlwaysStoppedAnimation(1.0),
-                                child: Container(
-                                  width: 90,
-                                  height: 90,
-                                  decoration: BoxDecoration(
-                                    color: _isPressing ? dangerColor : dangerColor.withValues(alpha: 0.2),
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      if (_isPressing)
-                                        BoxShadow(
-                                          color: dangerColor.withValues(alpha: 0.4),
-                                          blurRadius: 20,
-                                          spreadRadius: 5,
-                                        ),
-                                    ],
-                                  ),
-                                  child: Icon(
-                                    PhosphorIconsBold.trash,
-                                    color: _isPressing ? Colors.white : dangerColor,
-                                    size: 32,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 40),
-                  ],
-                ],
-              ),
+              padding: const EdgeInsets.all(24),
+              child: _isPasswordVerified ? _buildDangerState() : _buildVerifyState(),
             ),
           ),
         ],
       ),
     );
   }
-}
 
-class _WarningItem extends StatelessWidget {
-  final String text;
-  const _WarningItem({required this.text});
+  Widget _buildVerifyState() {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 540),
+        child: Container(
+          padding: const EdgeInsets.all(28),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.045),
+            borderRadius: BorderRadius.circular(32),
+            border: Border.all(color: AppColors.softBorderColor),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(22),
+                  color: AppColors.dangerColor.withValues(alpha: 0.10),
+                  border: Border.all(color: AppColors.dangerColor.withValues(alpha: 0.20)),
+                ),
+                child: const Icon(
+                  PhosphorIconsBold.warningDiamond,
+                  color: AppColors.dangerColor,
+                  size: 28,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Verify Before Reset',
+                style: GoogleFonts.spaceGrotesk(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                  letterSpacing: -0.8,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Enter your current master password before proceeding to the irreversible reset flow.',
+                style: GoogleFonts.notoSans(
+                  fontSize: 14,
+                  height: 1.6,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 22),
+              SaultTextField(
+                controller: _passwordController,
+                label: 'Master Password',
+                hintText: 'Enter current password',
+                isPassword: !_showPassword,
+                textInputAction: TextInputAction.done,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Checkbox(
+                    value: _showPassword,
+                    onChanged: (value) => setState(() => _showPassword = value ?? false),
+                    activeColor: AppColors.primaryColor,
+                    side: const BorderSide(color: AppColors.textMuted),
+                  ),
+                  Text(
+                    'Show password',
+                    style: GoogleFonts.notoSans(color: AppColors.textSecondary),
+                  ),
+                ],
+              ),
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  _errorMessage!,
+                  style: GoogleFonts.notoSans(
+                    color: AppColors.dangerColor,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 24),
+              SaultButton(
+                text: 'Verify Identity',
+                onTap: _isLoading ? null : _verifyPassword,
+                isLoading: _isLoading,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildDangerState() {
+    return Column(
       children: [
-        const Icon(PhosphorIconsBold.caretRight, color: Color(0xFFff4d4d), size: 16),
-        const SizedBox(width: 12),
         Expanded(
-          child: Text(
-            text,
-            style: GoogleFonts.notoSans(
-              color: Colors.white.withValues(alpha: 0.8),
-              fontSize: 14,
-              height: 1.4,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: Container(
+                padding: const EdgeInsets.all(28),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.045),
+                  borderRadius: BorderRadius.circular(32),
+                  border: Border.all(color: AppColors.softBorderColor),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      PhosphorIconsBold.warningDiamond,
+                      color: AppColors.dangerColor,
+                      size: 48,
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Permanent Reset',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                        letterSpacing: -0.8,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'This removes all secrets, activity logs, and key material from this device.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.notoSans(
+                        color: AppColors.textSecondary,
+                        height: 1.6,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    _DangerItem(text: 'All locally stored encrypted secrets will be deleted'),
+                    _DangerItem(text: 'Master password derivation data will be wiped'),
+                    _DangerItem(text: 'This action cannot be reversed'),
+                    const SizedBox(height: 28),
+                    Text(
+                      'Hold to confirm',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 12,
+                        color: AppColors.textMuted,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    GestureDetector(
+                      onLongPressStart: (_) => _startResetTimer(),
+                      onLongPressEnd: (_) => _cancelResetTimer(),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          SizedBox(
+                            width: 124,
+                            height: 124,
+                            child: CircularProgressIndicator(
+                              value: _resetProgress,
+                              strokeWidth: 7,
+                              color: AppColors.dangerColor,
+                              backgroundColor: Colors.white.withValues(alpha: 0.05),
+                            ),
+                          ),
+                          ScaleTransition(
+                            scale: _isPressing
+                                ? Tween<double>(begin: 1.0, end: 1.08).animate(_pulseController)
+                                : const AlwaysStoppedAnimation<double>(1.0),
+                            child: Container(
+                              width: 92,
+                              height: 92,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: _isPressing
+                                    ? AppColors.dangerColor
+                                    : AppColors.dangerColor.withValues(alpha: 0.16),
+                              ),
+                              child: Icon(
+                                PhosphorIconsBold.trash,
+                                color: _isPressing ? Colors.white : AppColors.dangerColor,
+                                size: 32,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (_errorMessage != null) ...[
+                      const SizedBox(height: 20),
+                      Text(
+                        _errorMessage!,
+                        style: GoogleFonts.notoSans(color: AppColors.dangerColor),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
           ),
         ),
       ],
+    );
+  }
+}
+
+class _DangerItem extends StatelessWidget {
+  final String text;
+
+  const _DangerItem({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(top: 2),
+            child: Icon(
+              PhosphorIconsBold.caretRight,
+              color: AppColors.dangerColor,
+              size: 14,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: GoogleFonts.notoSans(
+                color: AppColors.textSecondary,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

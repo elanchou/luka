@@ -15,6 +15,12 @@ class ActivityLogService {
     _isInitialized = true;
   }
 
+  Future<void> reinitialize({required String masterPassword}) async {
+    _encryptionService.clearCachedKey();
+    _isInitialized = false;
+    await init(masterPassword: masterPassword);
+  }
+
   Future<File> get _file async {
     final directory = await getApplicationDocumentsDirectory();
     return File('${directory.path}/$_fileName');
@@ -61,4 +67,6 @@ class ActivityLogService {
       await file.delete();
     }
   }
+
+  bool get isInitialized => _isInitialized;
 }

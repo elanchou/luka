@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:provider/provider.dart';
 import '../providers/sault_provider.dart';
 import 'dart:io';
+import '../utils/constants.dart';
 import '../widgets/gradient_background.dart';
 import '../widgets/sault_outline_button.dart';
 import '../widgets/sault_app_bar.dart';
@@ -128,27 +129,22 @@ class _ExportProgressScreenState extends State<ExportProgressScreen> with Single
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF13b6ec);
-    const backgroundDark = Color(0xFF101d22);
-    const surfaceDark = Color(0xFF16262c);
-
     return Scaffold(
-      backgroundColor: backgroundDark,
+      backgroundColor: AppColors.backgroundDark,
       extendBodyBehindAppBar: true,
       appBar: SaultAppBar(
         leading: const SizedBox(), // Hide back button
         titleWidget: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(PhosphorIconsBold.shieldCheck, color: primaryColor, size: 20),
+            const Icon(PhosphorIconsBold.shieldCheck, color: AppColors.primaryColor, size: 18),
             const SizedBox(width: 8),
             Text(
-              'SECURE EXPORT',
+              'Secure Export',
               style: GoogleFonts.spaceGrotesk(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[500],
-                letterSpacing: 2.0,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textSecondary,
               ),
             ),
           ],
@@ -164,134 +160,69 @@ class _ExportProgressScreenState extends State<ExportProgressScreen> with Single
               children: [
                 const Spacer(),
 
-                // Progress Section
-                AnimatedBuilder(
-                  animation: _progressAnimation,
-                  builder: (context, child) {
-                    return Column(
-                      children: [
-                        RichText(
-                          text: TextSpan(
-                            children: [
-                              TextSpan(
-                                text: _progressAnimation.value.toInt().toString(),
-                                style: GoogleFonts.spaceGrotesk(
-                                  fontSize: 80,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  height: 1.0,
-                                  letterSpacing: -2.0,
-                                ),
-                              ),
-                              TextSpan(
-                                text: '%',
-                                style: GoogleFonts.spaceGrotesk(
-                                  fontSize: 40,
-                                  color: primaryColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Container(
+                    padding: const EdgeInsets.all(28),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.045),
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(color: AppColors.softBorderColor),
+                    ),
+                    child: AnimatedBuilder(
+                      animation: _progressAnimation,
+                      builder: (context, child) {
+                        return Column(
                           children: [
-                            Container(
-                              width: 8,
-                              height: 8,
-                              decoration: const BoxDecoration(
-                                color: primaryColor,
-                                shape: BoxShape.circle,
+                            Text(
+                              '${_progressAnimation.value.toInt()}%',
+                              style: GoogleFonts.spaceGrotesk(
+                                fontSize: 56,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                                letterSpacing: -1.8,
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(height: 8),
                             Text(
-                              'Processing Sault...',
-                              style: GoogleFonts.spaceGrotesk(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: primaryColor,
-                                letterSpacing: 0.5,
+                              'Preparing decrypted export package',
+                              style: GoogleFonts.notoSans(
+                                fontSize: 14,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: 22),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(999),
+                              child: LinearProgressIndicator(
+                                value: _progressAnimation.value / 100,
+                                minHeight: 8,
+                                backgroundColor: Colors.white.withValues(alpha: 0.06),
+                                valueColor: const AlwaysStoppedAnimation<Color>(
+                                  AppColors.primaryColor,
+                                ),
                               ),
                             ),
                           ],
-                        ),
-                        const SizedBox(height: 32),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 32),
-                          child: Column(
-                            children: [
-                              Container(
-                                height: 6,
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: surfaceDark,
-                                  borderRadius: BorderRadius.circular(3),
-                                  border: Border.all(color: Colors.white.withOpacity(0.05)),
-                                ),
-                                alignment: Alignment.centerLeft,
-                                child: LayoutBuilder(
-                                  builder: (context, constraints) {
-                                    return Container(
-                                      width: constraints.maxWidth * (_progressAnimation.value / 100),
-                                      decoration: BoxDecoration(
-                                        color: primaryColor,
-                                        borderRadius: BorderRadius.circular(3),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: primaryColor.withOpacity(0.5),
-                                            blurRadius: 10,
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'DECRYPTING',
-                                    style: GoogleFonts.spaceMono(
-                                      fontSize: 10,
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                  Text(
-                                    'PLEASE WAIT',
-                                    style: GoogleFonts.spaceMono(
-                                      fontSize: 10,
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    );
-                  },
+                        );
+                      },
+                    ),
+                  ),
                 ),
 
                 const Spacer(),
 
-                // Log View
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'SYSTEM LOG',
+                        'System Log',
                         style: GoogleFonts.spaceGrotesk(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey[500],
-                          letterSpacing: 2.0,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textMuted,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -299,62 +230,27 @@ class _ExportProgressScreenState extends State<ExportProgressScreen> with Single
                         height: 160,
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          color: surfaceDark.withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white.withOpacity(0.05)),
+                          color: AppColors.backgroundElevated,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: AppColors.softBorderColor),
                         ),
-                        child: Stack(
-                          children: [
-                            // Scanlines
-                            Positioned.fill(
-                              child: Opacity(
-                                opacity: 0.05,
-                                child: Container(
-                                  decoration: const BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [Colors.black, Colors.transparent],
-                                      stops: [0.5, 0.5],
-                                      tileMode: TileMode.repeated,
-                                    ),
-                                  ),
+                        child: ListView.builder(
+                          controller: _logScrollController,
+                          padding: const EdgeInsets.all(16),
+                          itemCount: _logs.length,
+                          itemBuilder: (context, index) {
+                            final log = _logs[index];
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 6),
+                              child: Text(
+                                log.message,
+                                style: GoogleFonts.jetBrainsMono(
+                                  fontSize: 10,
+                                  color: _getColorForLogType(log.type),
                                 ),
                               ),
-                            ),
-                            ListView.builder(
-                              controller: _logScrollController,
-                              padding: const EdgeInsets.all(16),
-                              itemCount: _logs.length,
-                              itemBuilder: (context, index) {
-                                final log = _logs[index];
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 4),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        '> ',
-                                        style: GoogleFonts.spaceMono(
-                                          fontSize: 10,
-                                          color: Colors.grey[600],
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Text(
-                                          log.message,
-                                          style: GoogleFonts.spaceMono(
-                                            fontSize: 10,
-                                            color: _getColorForLogType(log.type),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
+                            );
+                          },
                         ),
                       ),
                     ],
@@ -368,8 +264,8 @@ class _ExportProgressScreenState extends State<ExportProgressScreen> with Single
                     text: 'Cancel Export',
                     icon: PhosphorIconsBold.xCircle,
                     onTap: () => Navigator.pop(context),
-                    borderColor: Colors.white.withOpacity(0.1),
-                    textColor: Colors.white,
+                    borderColor: AppColors.softBorderColor,
+                    textColor: AppColors.textPrimary,
                   ),
                 ),
               ],
@@ -383,13 +279,13 @@ class _ExportProgressScreenState extends State<ExportProgressScreen> with Single
   Color _getColorForLogType(LogType type) {
     switch (type) {
       case LogType.info:
-        return Colors.grey[400]!;
+        return AppColors.textSecondary;
       case LogType.highlight:
-        return const Color(0xFF13b6ec);
+        return AppColors.primaryColor;
       case LogType.active:
-        return const Color(0xFF13b6ec);
+        return AppColors.warningColor;
       case LogType.success:
-        return const Color(0xFF00d68f);
+        return AppColors.successColor;
     }
   }
 }
@@ -402,4 +298,3 @@ class LogEntry {
 
   LogEntry(this.message, this.type);
 }
-

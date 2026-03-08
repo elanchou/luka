@@ -10,6 +10,7 @@ import '../widgets/sault_outline_button.dart';
 import '../widgets/sault_brand.dart';
 import '../providers/sault_provider.dart';
 import '../services/icloud_backup_service.dart';
+import '../utils/constants.dart';
 import '../widgets/error_snackbar.dart';
 
 class SaultOnboardingScreen extends StatelessWidget {
@@ -104,125 +105,122 @@ class SaultOnboardingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
-    const primaryColor = Color(0xFF13b6ec);
-    const backgroundDark = Color(0xFF101d22);
-
     return Scaffold(
-      backgroundColor: backgroundDark,
+      backgroundColor: AppColors.backgroundDark,
       body: Stack(
         children: [
           const GradientBackground(),
-          Positioned.fill(
-            child: CustomPaint(
-              painter: GridPainter(
-                color: Colors.white.withValues(alpha: 0.05),
-                spacing: 40.0,
-              ),
-            ),
-          ),
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 24),
-                  const SaultBrand(fontSize: 36),
+                  const SaultBrand(fontSize: 26),
                   Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(
-                          width: size.width * 0.8,
-                          height: size.width * 0.8,
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Container(
-                                width: 200,
-                                height: 200,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: primaryColor.withValues(alpha: 0.3),
-                                    width: 1,
-                                  ),
+                    child: Center(
+                      child: Container(
+                        constraints: const BoxConstraints(maxWidth: 560),
+                        padding: const EdgeInsets.all(28),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.045),
+                          borderRadius: BorderRadius.circular(32),
+                          border: Border.all(color: AppColors.softBorderColor),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.22),
+                              blurRadius: 40,
+                              offset: const Offset(0, 20),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 64,
+                              height: 64,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(22),
+                                color: AppColors.primaryColor.withValues(alpha: 0.10),
+                                border: Border.all(
+                                  color: AppColors.primaryColor.withValues(alpha: 0.24),
                                 ),
                               ),
-                              Container(
-                                width: 140,
-                                height: 140,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.2),
-                                    width: 1,
+                              child: const Icon(
+                                PhosphorIconsBold.lockSimple,
+                                color: AppColors.primaryColor,
+                                size: 28,
+                              ),
+                            ),
+                            const SizedBox(height: 28),
+                            Text(
+                              'Private vaulting,\nrefined to essentials.',
+                              style: GoogleFonts.spaceGrotesk(
+                                fontSize: 34,
+                                height: 1.02,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                                letterSpacing: -1.2,
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            Text(
+                              'Sault keeps seed phrases, keys, and sensitive notes in a premium offline vault secured by your master password.',
+                              style: GoogleFonts.notoSans(
+                                fontSize: 15,
+                                height: 1.6,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: 26),
+                            Container(
+                              padding: const EdgeInsets.all(18),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.03),
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(color: AppColors.softBorderColor),
+                              ),
+                              child: Row(
+                                children: [
+                                  _FeatureChip(
+                                    icon: PhosphorIconsBold.shieldCheck,
+                                    label: 'PBKDF2',
                                   ),
-                                ),
-                              ),
-                              Transform.rotate(
-                                angle: 0.785,
-                                child: Container(
-                                  width: 100,
-                                  height: 100,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: primaryColor.withValues(alpha: 0.5),
-                                      width: 1,
-                                    ),
+                                  const SizedBox(width: 10),
+                                  _FeatureChip(
+                                    icon: PhosphorIconsBold.lockKey,
+                                    label: 'AES Vault',
                                   ),
-                                ),
+                                  const SizedBox(width: 10),
+                                  _FeatureChip(
+                                    icon: PhosphorIconsBold.cloud,
+                                    label: 'Backup',
+                                  ),
+                                ],
                               ),
-                              Icon(
-                                PhosphorIconsBold.lock,
-                                size: 48,
-                                color: primaryColor.withValues(alpha: 0.8),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 32),
-                        Text(
-                          'Secure Your Legacy',
-                          style: GoogleFonts.spaceGrotesk(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: -0.5,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Password-based encryption with PBKDF2. Your master password derives the encryption key.',
-                          style: GoogleFonts.notoSans(
-                            fontSize: 16,
-                            color: Colors.grey[400],
-                            height: 1.5,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 24),
                   SaultButton(
                     text: 'Create New Sault',
-                    icon: PhosphorIconsBold.plusCircle,
+                    icon: PhosphorIconsBold.arrowRight,
                     onTap: () {
                       Navigator.pushNamed(context, '/set-master-password');
                     },
-                    backgroundColor: primaryColor,
-                    textColor: backgroundDark,
+                    backgroundColor: AppColors.primaryColor,
+                    textColor: AppColors.backgroundDark,
                   ),
                   const SizedBox(height: 16),
                   SaultOutlineButton(
                     text: 'Import Sault File',
                     icon: PhosphorIconsBold.fileArrowDown,
                     onTap: () => _importVault(context),
-                    textColor: Colors.white,
+                    textColor: AppColors.textPrimary,
                   ),
                   FutureBuilder<bool>(
                     future: ICloudBackupService().hasICloudBackup(),
@@ -234,7 +232,7 @@ class SaultOnboardingScreen extends StatelessWidget {
                           text: 'Restore from iCloud',
                           icon: PhosphorIconsBold.cloudArrowDown,
                           onTap: () => _restoreFromICloud(context),
-                          textColor: Colors.white,
+                          textColor: AppColors.textPrimary,
                         ),
                       );
                     },
@@ -243,11 +241,11 @@ class SaultOnboardingScreen extends StatelessWidget {
                   Column(
                     children: [
                       Text(
-                        'YOUR KEYS, YOUR CRYPTO.',
+                        'Private by default',
                         style: GoogleFonts.spaceGrotesk(
                           fontSize: 12,
-                          color: Colors.grey[600],
-                          letterSpacing: 1.5,
+                          color: AppColors.textMuted,
+                          letterSpacing: 0.8,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -256,12 +254,11 @@ class SaultOnboardingScreen extends StatelessWidget {
                         'v1.0.2 • Master Password Encrypted',
                         style: GoogleFonts.notoSans(
                           fontSize: 10,
-                          color: Colors.grey[700],
+                          color: AppColors.textMuted,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
                 ],
               ),
             ),
@@ -272,27 +269,44 @@ class SaultOnboardingScreen extends StatelessWidget {
   }
 }
 
-class GridPainter extends CustomPainter {
-  final Color color;
-  final double spacing;
+class _FeatureChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
 
-  GridPainter({required this.color, required this.spacing});
+  const _FeatureChip({
+    required this.icon,
+    required this.label,
+  });
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 1;
-
-    for (double x = 0; x < size.width; x += spacing) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
-    }
-
-    for (double y = 0; y < size.height; y += spacing) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
-    }
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.14),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.softBorderColor),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 14, color: AppColors.primaryColor),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.spaceGrotesk(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

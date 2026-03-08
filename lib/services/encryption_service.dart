@@ -1,7 +1,6 @@
 import 'package:encrypt/encrypt.dart' as encrypt;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
-import 'dart:typed_data';
 import 'master_key_service.dart';
 
 class EncryptionService {
@@ -98,9 +97,9 @@ class EncryptionService {
     }
 
     try {
-      // Verify old password and get old key
-      final oldKey = await _masterKeyService.deriveMasterKey(oldPassword);
-      
+      // Verify old password before rewriting key metadata.
+      await _masterKeyService.deriveMasterKey(oldPassword);
+
       // Change password
       await _masterKeyService.changeMasterPassword(
         oldPassword,
@@ -183,12 +182,16 @@ class EncryptionService {
     try {
       await _storage.delete(key: _legacyKeyStorageKey);
       await _masterKeyService.reset();
-      _masterKey = null;
-      _isInitialized = false;
-      _usesPassword = false;
+      clearCachedKey();
     } catch (e) {
       throw Exception('Failed to reset encryption service: $e');
     }
+  }
+
+  void clearCachedKey() {
+    _masterKey = null;
+    _isInitialized = false;
+    _usesPassword = false;
   }
 
   bool get isInitialized => _isInitialized;

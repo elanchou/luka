@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
-import '../services/master_key_service.dart';
-import '../services/encryption_service.dart';
 import '../providers/sault_provider.dart';
+import '../services/master_key_service.dart';
+import '../utils/constants.dart';
+import '../widgets/error_snackbar.dart';
 import '../widgets/gradient_background.dart';
 import '../widgets/sault_button.dart';
 import '../widgets/sault_text_field.dart';
-
-import '../widgets/error_snackbar.dart';
 
 class ChangeMasterPasswordScreen extends StatefulWidget {
   const ChangeMasterPasswordScreen({super.key});
@@ -19,11 +18,10 @@ class ChangeMasterPasswordScreen extends StatefulWidget {
 }
 
 class _ChangeMasterPasswordScreenState extends State<ChangeMasterPasswordScreen> {
-  final _currentPasswordController = TextEditingController();
-  final _newPasswordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
-  final _masterKeyService = MasterKeyService();
-  final _encryptionService = EncryptionService();
+  final TextEditingController _currentPasswordController = TextEditingController();
+  final TextEditingController _newPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  final MasterKeyService _masterKeyService = MasterKeyService();
 
   SecurityLevel _selectedLevel = SecurityLevel.standard;
   bool _isLoading = false;
@@ -39,12 +37,12 @@ class _ChangeMasterPasswordScreenState extends State<ChangeMasterPasswordScreen>
 
   Future<void> _loadCurrentLevel() async {
     try {
-      final level = await _masterKeyService.getSecurityLevel();
+      final SecurityLevel level = await _masterKeyService.getSecurityLevel();
       setState(() {
         _selectedLevel = level;
         _isLoadingLevel = false;
       });
-    } catch (e) {
+    } catch (_) {
       setState(() => _isLoadingLevel = false);
     }
   }
@@ -58,25 +56,22 @@ class _ChangeMasterPasswordScreenState extends State<ChangeMasterPasswordScreen>
   }
 
   Future<void> _changePassword() async {
-    final currentPassword = _currentPasswordController.text;
-    final newPassword = _newPasswordController.text;
-    final confirmPassword = _confirmPasswordController.text;
+    final String currentPassword = _currentPasswordController.text;
+    final String newPassword = _newPasswordController.text;
+    final String confirmPassword = _confirmPasswordController.text;
 
     if (currentPassword.isEmpty) {
       setState(() => _errorMessage = 'Current password cannot be empty');
       return;
     }
-
     if (newPassword.isEmpty) {
       setState(() => _errorMessage = 'New password cannot be empty');
       return;
     }
-
     if (newPassword.length < 8) {
       setState(() => _errorMessage = 'New password must be at least 8 characters');
       return;
     }
-
     if (newPassword != confirmPassword) {
       setState(() => _errorMessage = 'Passwords do not match');
       return;
@@ -88,35 +83,24 @@ class _ChangeMasterPasswordScreenState extends State<ChangeMasterPasswordScreen>
     });
 
     try {
-      // Verify current password
-      final isValid = await _masterKeyService.verifyPassword(currentPassword);
-      if (!isValid) {
+      final SaultProvider vaultProvider = Provider.of<SaultProvider>(context, listen: false);
+      final bool success = await vaultProvider.changeMasterPassword(
+        oldPassword: currentPassword,
+        newPassword: newPassword,
+        securityLevel: _selectedLevel,
+      );
+
+      if (!success) {
         setState(() {
-          _errorMessage = 'Current password is incorrect';
+          _errorMessage = vaultProvider.error ?? 'Failed to change master password';
           _isLoading = false;
         });
         return;
       }
 
-      // Change master password
-      await _masterKeyService.changeMasterPassword(
-        currentPassword,
-        newPassword,
-        _selectedLevel,
-      );
-
-      // Reinitialize vault with new password
       if (mounted) {
-        final vaultProvider = Provider.of<SaultProvider>(context, listen: false);
-        await vaultProvider.reinitialize(newPassword);
-
-        if (mounted) {
-          SuccessSnackbar.show(
-            context,
-            message: 'Master password changed successfully',
-          );
-          Navigator.pop(context, true);
-        }
+        SuccessSnackbar.show(context, message: 'Master password changed successfully');
+        Navigator.pop(context, true);
       }
     } catch (e) {
       setState(() {
@@ -128,274 +112,268 @@ class _ChangeMasterPasswordScreenState extends State<ChangeMasterPasswordScreen>
 
   @override
   Widget build(BuildContext context) {
-    const backgroundDark = Color(0xFF101d22);
-    const primaryColor = Color(0xFF13b6ec);
-
     return Scaffold(
-      backgroundColor: backgroundDark,
+      backgroundColor: AppColors.backgroundDark,
       body: Stack(
         children: [
           const GradientBackground(),
           SafeArea(
             child: Column(
               children: [
-                // Header
                 Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
                   child: Row(
                     children: [
                       IconButton(
-                        icon: const Icon(PhosphorIconsBold.arrowLeft, color: Colors.white),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Change Master Password',
-                        style: GoogleFonts.spaceGrotesk(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                        icon: const Icon(
+                          PhosphorIconsBold.arrowLeft,
+                          color: AppColors.textPrimary,
                         ),
+                        onPressed: () => Navigator.pop(context),
                       ),
                     ],
                   ),
                 ),
-
                 if (_isLoadingLevel)
                   const Expanded(
                     child: Center(
-                      child: CircularProgressIndicator(color: primaryColor),
+                      child: CircularProgressIndicator(color: AppColors.primaryColor),
                     ),
                   )
                 else
                   Expanded(
                     child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Warning card
-                          Container(
-                            padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 560),
+                          child: Container(
+                            padding: const EdgeInsets.all(28),
                             decoration: BoxDecoration(
-                              color: Colors.orange.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: Colors.orange.withValues(alpha: 0.3),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  PhosphorIconsBold.warning,
-                                  color: Colors.orange[300],
-                                  size: 24,
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    'Changing your master password will re-encrypt all your vault data.',
-                                    style: GoogleFonts.notoSans(
-                                      fontSize: 13,
-                                      color: Colors.orange[200],
-                                      height: 1.4,
-                                    ),
-                                  ),
+                              color: Colors.white.withValues(alpha: 0.045),
+                              borderRadius: BorderRadius.circular(32),
+                              border: Border.all(color: AppColors.softBorderColor),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.24),
+                                  blurRadius: 36,
+                                  offset: const Offset(0, 18),
                                 ),
                               ],
                             ),
-                          ),
-
-                          const SizedBox(height: 24),
-
-                          // Current Password
-                          Text(
-                            'Current Password',
-                            style: GoogleFonts.spaceGrotesk(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.grey[400],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          SaultTextField(
-                            controller: _currentPasswordController,
-                            hintText: 'Enter current password',
-                            isPassword: !_showPasswords,
-                            textInputAction: TextInputAction.next,
-                          ),
-
-                          const SizedBox(height: 20),
-
-                          // New Password
-                          Text(
-                            'New Password',
-                            style: GoogleFonts.spaceGrotesk(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.grey[400],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          SaultTextField(
-                            controller: _newPasswordController,
-                            hintText: 'At least 8 characters',
-                            isPassword: !_showPasswords,
-                            textInputAction: TextInputAction.next,
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          // Confirm Password
-                          Text(
-                            'Confirm New Password',
-                            style: GoogleFonts.spaceGrotesk(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.grey[400],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          SaultTextField(
-                            controller: _confirmPasswordController,
-                            hintText: 'Re-enter new password',
-                            isPassword: !_showPasswords,
-                            textInputAction: TextInputAction.done,
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          // Show passwords toggle
-                          Row(
-                            children: [
-                              Checkbox(
-                                value: _showPasswords,
-                                onChanged: (value) {
-                                  setState(() => _showPasswords = value ?? false);
-                                },
-                                activeColor: primaryColor,
-                              ),
-                              Text(
-                                'Show passwords',
-                                style: GoogleFonts.notoSans(
-                                  fontSize: 14,
-                                  color: Colors.grey[400],
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 24),
-
-                          // Security Level
-                          Text(
-                            'Security Level',
-                            style: GoogleFonts.spaceGrotesk(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.grey[400],
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-
-                          ...SecurityLevel.values.map((level) {
-                            final isSelected = _selectedLevel == level;
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 8),
-                              child: InkWell(
-                                onTap: () => setState(() => _selectedLevel = level),
-                                borderRadius: BorderRadius.circular(12),
-                                child: Container(
-                                  padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: 64,
+                                  height: 64,
                                   decoration: BoxDecoration(
-                                    color: isSelected
-                                        ? primaryColor.withValues(alpha: 0.1)
-                                        : const Color(0xFF1a2c32),
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(22),
+                                    color: AppColors.primaryColor.withValues(alpha: 0.10),
                                     border: Border.all(
-                                      color: isSelected
-                                          ? primaryColor
-                                          : Colors.grey[800]!,
-                                      width: isSelected ? 2 : 1,
+                                      color: AppColors.primaryColor.withValues(alpha: 0.24),
                                     ),
                                   ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        isSelected
-                                            ? PhosphorIconsBold.checkCircle
-                                            : PhosphorIconsBold.circle,
-                                        color: isSelected
-                                            ? primaryColor
-                                            : Colors.grey[600],
+                                  child: const Icon(
+                                    PhosphorIconsBold.key,
+                                    size: 28,
+                                    color: AppColors.primaryColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                Text(
+                                  'Change Master Password',
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 30,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.textPrimary,
+                                    letterSpacing: -0.9,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Text(
+                                  'Re-encrypt your vault with a new password and, if desired, a stronger derivation level.',
+                                  style: GoogleFonts.notoSans(
+                                    fontSize: 14,
+                                    height: 1.6,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                                const SizedBox(height: 22),
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.warningColor.withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: AppColors.warningColor.withValues(alpha: 0.18),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Your vault will be decrypted with the current password and re-encrypted immediately with the new one.',
+                                    style: GoogleFonts.notoSans(
+                                      fontSize: 13,
+                                      color: AppColors.textSecondary,
+                                      height: 1.5,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                SaultTextField(
+                                  controller: _currentPasswordController,
+                                  label: 'Current Password',
+                                  hintText: 'Enter current password',
+                                  isPassword: !_showPasswords,
+                                  textInputAction: TextInputAction.next,
+                                ),
+                                const SizedBox(height: 14),
+                                SaultTextField(
+                                  controller: _newPasswordController,
+                                  label: 'New Password',
+                                  hintText: 'At least 8 characters',
+                                  isPassword: !_showPasswords,
+                                  textInputAction: TextInputAction.next,
+                                ),
+                                const SizedBox(height: 14),
+                                SaultTextField(
+                                  controller: _confirmPasswordController,
+                                  label: 'Confirm New Password',
+                                  hintText: 'Re-enter new password',
+                                  isPassword: !_showPasswords,
+                                  textInputAction: TextInputAction.done,
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    Checkbox(
+                                      value: _showPasswords,
+                                      onChanged: (value) {
+                                        setState(() => _showPasswords = value ?? false);
+                                      },
+                                      activeColor: AppColors.primaryColor,
+                                      side: const BorderSide(color: AppColors.textMuted),
+                                    ),
+                                    Text(
+                                      'Show passwords',
+                                      style: GoogleFonts.notoSans(
+                                        fontSize: 14,
+                                        color: AppColors.textSecondary,
                                       ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 18),
+                                Text(
+                                  'Security Level',
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                ...SecurityLevel.values.map((level) {
+                                  final bool isSelected = _selectedLevel == level;
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 10),
+                                    child: InkWell(
+                                      onTap: () => setState(() => _selectedLevel = level),
+                                      borderRadius: BorderRadius.circular(20),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(18),
+                                        decoration: BoxDecoration(
+                                          color: isSelected
+                                              ? AppColors.primaryColor.withValues(alpha: 0.08)
+                                              : Colors.white.withValues(alpha: 0.025),
+                                          borderRadius: BorderRadius.circular(20),
+                                          border: Border.all(
+                                            color: isSelected
+                                                ? AppColors.primaryColor.withValues(alpha: 0.26)
+                                                : AppColors.softBorderColor,
+                                          ),
+                                        ),
+                                        child: Row(
                                           children: [
-                                            Text(
-                                              level.displayName,
-                                              style: GoogleFonts.spaceGrotesk(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.w500,
-                                                color: Colors.white,
-                                              ),
+                                            Icon(
+                                              isSelected
+                                                  ? PhosphorIconsBold.checkCircle
+                                                  : PhosphorIconsBold.circle,
+                                              color: isSelected
+                                                  ? AppColors.primaryColor
+                                                  : AppColors.textMuted,
                                             ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              '${_formatNumber(level.iterations)} iterations',
-                                              style: GoogleFonts.notoSans(
-                                                fontSize: 12,
-                                                color: Colors.grey[500],
+                                            const SizedBox(width: 14),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    level.displayName,
+                                                    style: GoogleFonts.spaceGrotesk(
+                                                      fontSize: 15,
+                                                      fontWeight: FontWeight.w600,
+                                                      color: AppColors.textPrimary,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    '${_formatNumber(level.iterations)} iterations',
+                                                    style: GoogleFonts.notoSans(
+                                                      fontSize: 12,
+                                                      color: AppColors.textMuted,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
                                           ],
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-
-                          if (_errorMessage != null) ...[
-                            const SizedBox(height: 16),
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.red.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(PhosphorIconsBold.warningCircle, color: Colors.red, size: 20),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      _errorMessage!,
-                                      style: GoogleFonts.notoSans(
-                                        fontSize: 12,
-                                        color: Colors.red[200],
+                                    ),
+                                  );
+                                }),
+                                if (_errorMessage != null) ...[
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    padding: const EdgeInsets.all(14),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.dangerColor.withValues(alpha: 0.10),
+                                      borderRadius: BorderRadius.circular(18),
+                                      border: Border.all(
+                                        color: AppColors.dangerColor.withValues(alpha: 0.22),
                                       ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(
+                                          PhosphorIconsBold.warningCircle,
+                                          color: AppColors.dangerColor,
+                                          size: 18,
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Text(
+                                            _errorMessage!,
+                                            style: GoogleFonts.notoSans(
+                                              fontSize: 12,
+                                              color: AppColors.textPrimary,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
-                              ),
+                                const SizedBox(height: 24),
+                                SaultButton(
+                                  text: 'Apply New Password',
+                                  onTap: _isLoading ? null : _changePassword,
+                                  isLoading: _isLoading,
+                                ),
+                              ],
                             ),
-                          ],
-
-                          const SizedBox(height: 24),
-
-                          // Change Password Button
-                          SaultButton(
-                            text: 'Change Password',
-                            onTap: _isLoading ? null : _changePassword,
-                            isLoading: _isLoading,
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
@@ -414,4 +392,3 @@ class _ChangeMasterPasswordScreenState extends State<ChangeMasterPasswordScreen>
     );
   }
 }
-

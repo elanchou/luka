@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../services/master_key_service.dart';
+import '../utils/constants.dart';
 import '../widgets/gradient_background.dart';
 import '../widgets/sault_button.dart';
 import '../widgets/sault_text_field.dart';
 
-/// 初次设置 Master Password 的专用页面
 class SetupMasterPasswordScreen extends StatefulWidget {
   const SetupMasterPasswordScreen({super.key});
 
@@ -15,9 +15,9 @@ class SetupMasterPasswordScreen extends StatefulWidget {
 }
 
 class _SetupMasterPasswordScreenState extends State<SetupMasterPasswordScreen> {
-  final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
-  final _masterKeyService = MasterKeyService();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  final MasterKeyService _masterKeyService = MasterKeyService();
 
   SecurityLevel _selectedLevel = SecurityLevel.standard;
   bool _isLoading = false;
@@ -32,8 +32,8 @@ class _SetupMasterPasswordScreenState extends State<SetupMasterPasswordScreen> {
   }
 
   Future<void> _setupPassword() async {
-    final password = _passwordController.text;
-    final confirmPassword = _confirmPasswordController.text;
+    final String password = _passwordController.text;
+    final String confirmPassword = _confirmPasswordController.text;
 
     if (password.isEmpty) {
       setState(() => _errorMessage = 'Password cannot be empty');
@@ -57,9 +57,7 @@ class _SetupMasterPasswordScreenState extends State<SetupMasterPasswordScreen> {
 
     try {
       await _masterKeyService.setMasterPassword(password, _selectedLevel);
-
       if (mounted) {
-        // 设置成功后，导航到密码输入页面
         Navigator.of(context).pushReplacementNamed('/master-password-input');
       }
     } catch (e) {
@@ -72,355 +70,281 @@ class _SetupMasterPasswordScreenState extends State<SetupMasterPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const backgroundDark = Color(0xFF101d22);
-    const primaryColor = Color(0xFF13b6ec);
-
     return Scaffold(
-      backgroundColor: backgroundDark,
+      backgroundColor: AppColors.backgroundDark,
       body: Stack(
         children: [
           const GradientBackground(),
           SafeArea(
             child: Column(
               children: [
-                // Header
                 Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
                   child: Row(
                     children: [
                       IconButton(
-                        icon: const Icon(PhosphorIconsBold.arrowLeft, color: Colors.white),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Create Master Password',
-                        style: GoogleFonts.spaceGrotesk(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                        icon: const Icon(
+                          PhosphorIconsBold.arrowLeft,
+                          color: AppColors.textPrimary,
                         ),
+                        onPressed: () => Navigator.pop(context),
                       ),
                     ],
                   ),
                 ),
-
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Welcome message
-                        Center(
-                          child: Column(
-                            children: [
-                              Icon(
-                                PhosphorIconsBold.shieldCheck,
-                                size: 80,
-                                color: primaryColor,
+                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 560),
+                        child: Container(
+                          padding: const EdgeInsets.all(28),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.045),
+                            borderRadius: BorderRadius.circular(32),
+                            border: Border.all(color: AppColors.softBorderColor),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.24),
+                                blurRadius: 36,
+                                offset: const Offset(0, 18),
                               ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'Secure Your Sault',
-                                style: GoogleFonts.spaceGrotesk(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 64,
+                                height: 64,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(22),
+                                  color: AppColors.primaryColor.withValues(alpha: 0.10),
+                                  border: Border.all(
+                                    color: AppColors.primaryColor.withValues(alpha: 0.24),
+                                  ),
+                                ),
+                                child: const Icon(
+                                  PhosphorIconsBold.shieldCheck,
+                                  size: 28,
+                                  color: AppColors.primaryColor,
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 24),
                               Text(
-                                'Create a strong master password to protect your secrets',
+                                'Create Master Password',
+                                style: GoogleFonts.spaceGrotesk(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                  letterSpacing: -1.0,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                'This password becomes the root of your private vault. Make it memorable and strong.',
                                 style: GoogleFonts.notoSans(
                                   fontSize: 14,
-                                  color: Colors.grey[400],
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 32),
-
-                        // Info card
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1a2c32),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: primaryColor.withValues(alpha: 0.2),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                PhosphorIconsBold.info,
-                                color: primaryColor,
-                                size: 24,
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  'Your master password derives the encryption key using PBKDF2. Choose a strong, memorable password.',
-                                  style: GoogleFonts.notoSans(
-                                    fontSize: 13,
-                                    color: Colors.grey[300],
-                                    height: 1.4,
-                                  ),
+                                  height: 1.6,
+                                  color: AppColors.textSecondary,
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        // Password field
-                        Text(
-                          'Master Password',
-                          style: GoogleFonts.spaceGrotesk(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey[400],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        SaultTextField(
-                          controller: _passwordController,
-                          hintText: 'At least 8 characters',
-                          isPassword: !_showPassword,
-                          textInputAction: TextInputAction.next,
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Confirm Password
-                        Text(
-                          'Confirm Password',
-                          style: GoogleFonts.spaceGrotesk(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey[400],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        SaultTextField(
-                          controller: _confirmPasswordController,
-                          hintText: 'Re-enter password',
-                          isPassword: !_showPassword,
-                          textInputAction: TextInputAction.done,
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Show password toggle
-                        Row(
-                          children: [
-                            Checkbox(
-                              value: _showPassword,
-                              onChanged: (value) {
-                                setState(() => _showPassword = value ?? false);
-                              },
-                              activeColor: primaryColor,
-                            ),
-                            Text(
-                              'Show passwords',
-                              style: GoogleFonts.notoSans(
-                                fontSize: 14,
-                                color: Colors.grey[400],
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        // Security Level
-                        Text(
-                          'Security Level',
-                          style: GoogleFonts.spaceGrotesk(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey[400],
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-
-                        ...SecurityLevel.values.map((level) {
-                          final isSelected = _selectedLevel == level;
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: InkWell(
-                              onTap: () => setState(() => _selectedLevel = level),
-                              borderRadius: BorderRadius.circular(12),
-                              child: Container(
+                              const SizedBox(height: 24),
+                              Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? primaryColor.withValues(alpha: 0.1)
-                                      : const Color(0xFF1a2c32),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? primaryColor
-                                        : Colors.grey[800]!,
-                                    width: isSelected ? 2 : 1,
-                                  ),
+                                  color: Colors.white.withValues(alpha: 0.03),
+                                  borderRadius: BorderRadius.circular(22),
+                                  border: Border.all(color: AppColors.softBorderColor),
                                 ),
                                 child: Row(
                                   children: [
-                                    Icon(
-                                      isSelected
-                                          ? PhosphorIconsBold.checkCircle
-                                          : PhosphorIconsBold.circle,
-                                      color: isSelected
-                                          ? primaryColor
-                                          : Colors.grey[600],
+                                    const Icon(
+                                      PhosphorIconsBold.info,
+                                      color: AppColors.primaryColor,
+                                      size: 18,
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            level.displayName,
-                                            style: GoogleFonts.spaceGrotesk(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            '${_formatNumber(level.iterations)} iterations',
-                                            style: GoogleFonts.notoSans(
-                                              fontSize: 12,
-                                              color: Colors.grey[500],
-                                            ),
-                                          ),
-                                        ],
+                                      child: Text(
+                                        'Your password derives the encryption key through PBKDF2 and cannot be recovered later.',
+                                        style: GoogleFonts.notoSans(
+                                          fontSize: 13,
+                                          color: AppColors.textSecondary,
+                                          height: 1.5,
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                            ),
-                          );
-                        }).toList(),
-
-                        const SizedBox(height: 8),
-
-                        // Security info
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.orange.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: Colors.orange.withValues(alpha: 0.3),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                PhosphorIconsBold.warning,
-                                color: Colors.orange[300],
-                                size: 20,
+                              const SizedBox(height: 22),
+                              SaultTextField(
+                                controller: _passwordController,
+                                label: 'Master Password',
+                                hintText: 'At least 8 characters',
+                                isPassword: !_showPassword,
+                                textInputAction: TextInputAction.next,
                               ),
-                              const SizedBox(width: 8),
-                              Expanded(
+                              const SizedBox(height: 14),
+                              SaultTextField(
+                                controller: _confirmPasswordController,
+                                label: 'Confirm Password',
+                                hintText: 'Re-enter password',
+                                isPassword: !_showPassword,
+                                textInputAction: TextInputAction.done,
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Checkbox(
+                                    value: _showPassword,
+                                    onChanged: (value) {
+                                      setState(() => _showPassword = value ?? false);
+                                    },
+                                    activeColor: AppColors.primaryColor,
+                                    side: const BorderSide(color: AppColors.textMuted),
+                                  ),
+                                  Text(
+                                    'Show passwords',
+                                    style: GoogleFonts.notoSans(
+                                      fontSize: 14,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 18),
+                              Text(
+                                'Security Level',
+                                style: GoogleFonts.spaceGrotesk(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              ...SecurityLevel.values.map((level) {
+                                final bool isSelected = _selectedLevel == level;
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: InkWell(
+                                    onTap: () => setState(() => _selectedLevel = level),
+                                    borderRadius: BorderRadius.circular(20),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(18),
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? AppColors.primaryColor.withValues(alpha: 0.08)
+                                            : Colors.white.withValues(alpha: 0.025),
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: isSelected
+                                              ? AppColors.primaryColor.withValues(alpha: 0.26)
+                                              : AppColors.softBorderColor,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            isSelected
+                                                ? PhosphorIconsBold.checkCircle
+                                                : PhosphorIconsBold.circle,
+                                            color: isSelected
+                                                ? AppColors.primaryColor
+                                                : AppColors.textMuted,
+                                          ),
+                                          const SizedBox(width: 14),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  level.displayName,
+                                                  style: GoogleFonts.spaceGrotesk(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: AppColors.textPrimary,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  '${_formatNumber(level.iterations)} iterations',
+                                                  style: GoogleFonts.notoSans(
+                                                    fontSize: 12,
+                                                    color: AppColors.textMuted,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }),
+                              Container(
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: AppColors.warningColor.withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(18),
+                                  border: Border.all(
+                                    color: AppColors.warningColor.withValues(alpha: 0.18),
+                                  ),
+                                ),
                                 child: Text(
-                                  'Higher security levels take longer to unlock but are more resistant to attacks.',
+                                  'Higher security levels take longer to unlock, but offer stronger resistance to brute-force attacks.',
                                   style: GoogleFonts.notoSans(
-                                    fontSize: 12,
-                                    color: Colors.orange[200],
+                                    fontSize: 13,
+                                    color: AppColors.textSecondary,
+                                    height: 1.5,
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-
-                        if (_errorMessage != null) ...[
-                          const SizedBox(height: 16),
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.red.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: Colors.red.withValues(alpha: 0.3),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  PhosphorIconsBold.warningCircle,
-                                  color: Colors.red,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    _errorMessage!,
-                                    style: GoogleFonts.notoSans(
-                                      fontSize: 12,
-                                      color: Colors.red[200],
+                              if (_errorMessage != null) ...[
+                                const SizedBox(height: 16),
+                                Container(
+                                  padding: const EdgeInsets.all(14),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.dangerColor.withValues(alpha: 0.10),
+                                    borderRadius: BorderRadius.circular(18),
+                                    border: Border.all(
+                                      color: AppColors.dangerColor.withValues(alpha: 0.22),
                                     ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        PhosphorIconsBold.warningCircle,
+                                        color: AppColors.dangerColor,
+                                        size: 18,
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Text(
+                                          _errorMessage!,
+                                          style: GoogleFonts.notoSans(
+                                            fontSize: 12,
+                                            color: AppColors.textPrimary,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
-                            ),
-                          ),
-                        ],
-
-                        const SizedBox(height: 24),
-
-                        // Create Password Button
-                        SaultButton(
-                          text: 'Create Password',
-                          onTap: _isLoading ? null : _setupPassword,
-                          isLoading: _isLoading,
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Warning
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.red.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: Colors.red.withValues(alpha: 0.3),
-                            ),
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Icon(
-                                PhosphorIconsBold.lock,
-                                color: Colors.red[300],
-                                size: 20,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'Important: There is no way to recover your master password. Make sure you remember it!',
-                                  style: GoogleFonts.notoSans(
-                                    fontSize: 12,
-                                    color: Colors.red[200],
-                                    height: 1.4,
-                                  ),
-                                ),
+                              const SizedBox(height: 24),
+                              SaultButton(
+                                text: 'Create Secure Vault',
+                                onTap: _isLoading ? null : _setupPassword,
+                                isLoading: _isLoading,
                               ),
                             ],
                           ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
@@ -439,4 +363,3 @@ class _SetupMasterPasswordScreenState extends State<SetupMasterPasswordScreen> {
     );
   }
 }
-

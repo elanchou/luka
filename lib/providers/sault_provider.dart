@@ -5,12 +5,14 @@ import '../models/activity_log_model.dart';
 import '../services/sault_service.dart';
 import '../services/activity_log_service.dart';
 import '../services/icloud_backup_service.dart';
+import '../services/master_key_service.dart';
 import '../services/preferences_service.dart';
 
 class SaultProvider extends ChangeNotifier {
   final SaultService _vaultService = SaultService();
   final ActivityLogService _logService = ActivityLogService();
   final ICloudBackupService _icloudBackupService = ICloudBackupService();
+  final MasterKeyService _masterKeyService = MasterKeyService();
   PreferencesService? _preferencesService;
 
   void setPreferencesService(PreferencesService prefs) {
@@ -67,10 +69,11 @@ class SaultProvider extends ChangeNotifier {
       _error = null;
 
       if (masterPassword != null) {
+        await _masterKeyService.ensurePasswordVerifier(masterPassword);
         await _logAction('Sault Accessed', 'Security check passed', ActivityCategory.access);
       }
     } catch (e) {
-      _error = 'Failed to initialize vault: \$e';
+      _error = 'Failed to initialize vault: $e';
       _secrets = [];
       _isInitialized = false;
     } finally {
@@ -79,10 +82,11 @@ class SaultProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> reinitialize(String masterPassword) async {
+  Future<bool> reinitialize(String masterPassword) async {
     _isInitialized = false;
     _masterPassword = masterPassword;
     await init(masterPassword: masterPassword);
+    return _isInitialized;
   }
 
   void setSearchQuery(String query) {
@@ -194,6 +198,78 @@ class SaultProvider extends ChangeNotifier {
     await _logService.clearLogs();
     _logs.clear();
     notifyListeners();
+  }
+
+  Future<bool> changeMasterPassword({
+    required String oldPassword,
+    required String newPassword,
+    required SecurityLevel securityLevel,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    final Map<String, dynamic>? oldMetadata =
+        await _masterKeyService.getKeyMetadata();
+
+    try {
+      final bool isValid = await _masterKeyService.verifyPassword(oldPassword);
+      if (!isValid) {
+        _error = 'Current password is incorrect';
+        return false;
+      }
+
+      if (!_vaultService.isInitialized) {
+        await _vaultService.init(masterPassword: oldPassword);
+      }
+      if (!_logService.isInitialized) {
+        await _logService.init(masterPassword: oldPassword);
+      }
+
+      final List<Secret> currentSecrets = await _vaultService.loadSecrets();
+      final List<ActivityLog> currentLogs = await _logService.loadLogs();
+
+      await _masterKeyService.changeMasterPassword(
+        oldPassword,
+        newPassword,
+        securityLevel,
+      );
+
+      await _vaultService.reinitialize(masterPassword: newPassword);
+      await _logService.reinitialize(masterPassword: newPassword);
+
+      await _vaultService.saveSecrets(currentSecrets);
+      await _logService.saveLogs(currentLogs);
+
+      _masterPassword = newPassword;
+      _secrets = currentSecrets;
+      _logs = currentLogs;
+      _isInitialized = true;
+
+      await _logAction(
+        'Master Password Changed',
+        'Security level: ${securityLevel.displayName}',
+        ActivityCategory.security,
+      );
+
+      _triggerBackupIfEnabled();
+      return true;
+    } catch (e) {
+      if (oldMetadata != null) {
+        await _masterKeyService.restoreKeyMetadata(
+          oldMetadata['salt'] as String,
+          oldMetadata['iterations'] as int,
+          verifier: oldMetadata['verifier'] as String?,
+        );
+        await _vaultService.reinitialize(masterPassword: oldPassword);
+        await _logService.reinitialize(masterPassword: oldPassword);
+      }
+      _error = 'Failed to change master password: $e';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<File?> getEncryptedVaultFile() async {

@@ -9,6 +9,7 @@ import '../widgets/gradient_background.dart';
 import '../widgets/sault_button.dart';
 import '../widgets/sault_text_field.dart';
 import '../widgets/sault_brand.dart';
+import '../utils/constants.dart';
 
 class MasterPasswordInputScreen extends StatefulWidget {
   const MasterPasswordInputScreen({super.key});
@@ -46,135 +47,144 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
       arguments: {'masterPassword': password},
     );
   }
-  Widget build(BuildContext context) {
-    const backgroundDark = Color(0xFF101d22);
-    const primaryColor = Color(0xFF13b6ec);
 
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundDark,
+      backgroundColor: AppColors.backgroundDark,
       body: Stack(
         children: [
           const GradientBackground(),
           SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Logo/Brand
-                  const SaultBrand(
-                    fontSize: 48,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                  ),
-                  const SizedBox(height: 48),
-
-                  // Title
-                  Text(
-                    'Enter Master Password',
-                    style: GoogleFonts.spaceGrotesk(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Unlock your vault',
-                    style: GoogleFonts.notoSans(
-                      fontSize: 14,
-                      color: Colors.grey[400],
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-
-                  const SizedBox(height: 48),
-
-                  // Password field
-                  SaultTextField(
-                    controller: _passwordController,
-                    hintText: 'Enter your master password',
-                    isPassword: !_showPassword,
-                    textInputAction: TextInputAction.done,
-                    onChanged: (_) => setState(() => _errorMessage = null),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Show password toggle
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: _showPassword,
-                        onChanged: (value) {
-                          setState(() => _showPassword = value ?? false);
-                        },
-                        activeColor: primaryColor,
-                      ),
-                      Text(
-                        'Show password',
-                        style: GoogleFonts.notoSans(
-                          fontSize: 14,
-                          color: Colors.grey[400],
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 520),
+                  child: Container(
+                    padding: const EdgeInsets.all(28),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.045),
+                      borderRadius: BorderRadius.circular(32),
+                      border: Border.all(color: AppColors.softBorderColor),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.24),
+                          blurRadius: 36,
+                          offset: const Offset(0, 18),
                         ),
-                      ),
-                    ],
-                  ),
-
-                  if (_errorMessage != null) ...[
-                    const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(PhosphorIconsBold.warningCircle, color: Colors.red, size: 20),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              _errorMessage!,
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SaultBrand(
+                          fontSize: 24,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                        ),
+                        const SizedBox(height: 32),
+                        Text(
+                          'Enter Master Password',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 30,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                            letterSpacing: -0.8,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'Authenticate to access your encrypted vault.',
+                          style: GoogleFonts.notoSans(
+                            fontSize: 14,
+                            color: AppColors.textSecondary,
+                            height: 1.6,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 28),
+                        SaultTextField(
+                          controller: _passwordController,
+                          label: 'Master Password',
+                          hintText: 'Enter your master password',
+                          isPassword: !_showPassword,
+                          textInputAction: TextInputAction.done,
+                          onChanged: (_) => setState(() => _errorMessage = null),
+                        ),
+                        const SizedBox(height: 14),
+                        Row(
+                          children: [
+                            Checkbox(
+                              value: _showPassword,
+                              onChanged: (value) {
+                                setState(() => _showPassword = value ?? false);
+                              },
+                              activeColor: AppColors.primaryColor,
+                              side: const BorderSide(color: AppColors.textMuted),
+                            ),
+                            Text(
+                              'Show password',
                               style: GoogleFonts.notoSans(
-                                fontSize: 12,
-                                color: Colors.red[200],
+                                fontSize: 14,
+                                color: AppColors.textSecondary,
                               ),
+                            ),
+                          ],
+                        ),
+                        if (_errorMessage != null) ...[
+                          const SizedBox(height: 12),
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: AppColors.dangerColor.withValues(alpha: 0.10),
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(
+                                color: AppColors.dangerColor.withValues(alpha: 0.22),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  PhosphorIconsBold.warningCircle,
+                                  color: AppColors.dangerColor,
+                                  size: 18,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    _errorMessage!,
+                                    style: GoogleFonts.notoSans(
+                                      fontSize: 12,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
-                      ),
-                    ),
-                  ],
-
-                  const SizedBox(height: 32),
-
-                  // Unlock button
-                  SaultButton(
-                    text: 'Unlock Sault',
-                    onTap: _isLoading ? null : _unlock,
-                    isLoading: _isLoading,
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Reset option
-                  TextButton(
-                    onPressed: () {
-                      // Show warning dialog
-                      _showResetDialog();
-                    },
-                    child: Text(
-                      'Forgot Password?',
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 14,
-                        color: Colors.grey[500],
-                      ),
+                        const SizedBox(height: 24),
+                        SaultButton(
+                          text: 'Unlock Sault',
+                          onTap: _isLoading ? null : _unlock,
+                          isLoading: _isLoading,
+                        ),
+                        const SizedBox(height: 12),
+                        TextButton(
+                          onPressed: _showResetDialog,
+                          child: Text(
+                            'Forgot Password?',
+                            style: GoogleFonts.spaceGrotesk(
+                              fontSize: 14,
+                              color: AppColors.textMuted,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -231,4 +241,3 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
     );
   }
 }
-

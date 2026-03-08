@@ -4,14 +4,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:file_picker/file_picker.dart';
-import 'dart:io';
 import '../widgets/gradient_background.dart';
 import '../services/master_key_service.dart';
 import '../services/icloud_backup_service.dart';
 import '../services/preferences_service.dart';
 import '../providers/sault_provider.dart';
+import '../utils/constants.dart';
 import '../widgets/error_snackbar.dart';
+import '../widgets/sault_header.dart';
 
 class SystemSettingsScreen extends StatefulWidget {
   const SystemSettingsScreen({super.key});
@@ -53,9 +53,8 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const backgroundDark = Color(0xFF101d22);
     return Scaffold(
-      backgroundColor: backgroundDark,
+      backgroundColor: AppColors.backgroundDark,
       body: Stack(
         children: [
           const GradientBackground(),
@@ -63,28 +62,47 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const SizedBox(width: 24),
-                      Text(
-                        'Settings',
-                        style: GoogleFonts.spaceGrotesk(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: -0.2,
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
+                  child: const SaultHeader(
+                    title: 'Settings',
+                    showUserIcon: false,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+                  child: Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.04),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: AppColors.softBorderColor),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          PhosphorIconsBold.shieldCheck,
+                          color: AppColors.primaryColor,
+                          size: 18,
                         ),
-                      ),
-                      const SizedBox(width: 24),
-                    ],
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'System preferences for vault access, backups, and local device behavior.',
+                            style: GoogleFonts.notoSans(
+                              color: AppColors.textSecondary,
+                              fontSize: 13,
+                              height: 1.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 if (_isLoading)
                   const Expanded(
                     child: Center(
-                      child: CircularProgressIndicator(color: Color(0xFF13b6ec)),
+                      child: CircularProgressIndicator(color: AppColors.primaryColor),
                     ),
                   )
                 else
@@ -452,7 +470,7 @@ class _SettingsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final titleColor = color ?? Colors.grey[600];
+    final Color titleColor = color ?? AppColors.textMuted;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -462,18 +480,18 @@ class _SettingsSection extends StatelessWidget {
             title,
             style: GoogleFonts.spaceGrotesk(
               fontSize: 12,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w700,
               color: titleColor,
-              letterSpacing: 1.5,
+              letterSpacing: 0.8,
             ),
           ),
         ),
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF1a2c32),
-            borderRadius: BorderRadius.circular(16),
+            color: Colors.white.withValues(alpha: 0.045),
+            borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: color?.withValues(alpha: 0.3) ?? const Color(0xFF283539),
+              color: color?.withValues(alpha: 0.25) ?? AppColors.softBorderColor,
             ),
           ),
           child: Column(children: children),
@@ -502,23 +520,24 @@ class _SettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF13b6ec);
     return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(24),
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(18.0),
             child: Row(
               children: [
                 Container(
-                  width: 40,
-                  height: 40,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF283539),
-                    shape: BoxShape.circle,
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.backgroundElevated,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.softBorderColor),
                   ),
-                  child: Icon(icon, color: primaryColor, size: 20),
+                  child: Icon(icon, color: AppColors.primaryColor, size: 18),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -529,8 +548,8 @@ class _SettingsTile extends StatelessWidget {
                         title,
                         style: GoogleFonts.spaceGrotesk(
                           fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       if (subtitle != null)
@@ -538,8 +557,8 @@ class _SettingsTile extends StatelessWidget {
                           subtitle!,
                           style: GoogleFonts.spaceGrotesk(
                             fontSize: 11,
-                            color: Colors.grey[500],
-                            letterSpacing: 1.0,
+                            color: AppColors.textMuted,
+                            letterSpacing: 0.6,
                           ),
                         ),
                     ],
@@ -554,7 +573,7 @@ class _SettingsTile extends StatelessWidget {
               height: 1,
               thickness: 1,
               indent: 68,
-              color: const Color(0xFF283539),
+              color: AppColors.softBorderColor,
             ),
         ],
       ),
@@ -569,7 +588,6 @@ class _SettingsSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF13b6ec);
     return GestureDetector(
       onTap: () => onChanged?.call(!value),
       child: Container(
@@ -577,7 +595,7 @@ class _SettingsSwitch extends StatelessWidget {
         height: 28,
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          color: value ? primaryColor : const Color(0xFF344247),
+          color: value ? AppColors.primaryColor : AppColors.surfaceHighlight,
           borderRadius: BorderRadius.circular(14),
         ),
         alignment: value ? Alignment.centerRight : Alignment.centerLeft,
@@ -599,7 +617,7 @@ class _TrailingArrow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Icon(PhosphorIconsBold.caretRight, color: Colors.grey[600], size: 20);
+    return const Icon(PhosphorIconsBold.caretRight, color: AppColors.textMuted, size: 18);
   }
 }
 
@@ -615,7 +633,7 @@ class _TrailingTextWithArrow extends StatelessWidget {
           text,
           style: GoogleFonts.notoSans(
             fontSize: 14,
-            color: Colors.grey[500],
+            color: AppColors.textSecondary,
           ),
         ),
         const SizedBox(width: 4),
@@ -635,9 +653,8 @@ class _TrailingText extends StatelessWidget {
       text,
       style: GoogleFonts.notoSans(
         fontSize: 14,
-        color: Colors.grey[500],
+        color: AppColors.textSecondary,
       ),
     );
   }
 }
-

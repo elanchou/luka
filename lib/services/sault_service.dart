@@ -17,8 +17,14 @@ class SaultService {
       _isInitialized = true;
     } catch (e) {
       _isInitialized = false;
-      throw Exception('Failed to initialize vault service: \$e');
+      throw Exception('Failed to initialize vault service: $e');
     }
+  }
+
+  Future<void> reinitialize({required String masterPassword}) async {
+    _encryptionService.clearCachedKey();
+    _isInitialized = false;
+    await init(masterPassword: masterPassword);
   }
 
   Future<File> get _file async {
@@ -46,7 +52,7 @@ class SaultService {
       final encryptedString = _encryptionService.encryptData(jsonString);
       await file.writeAsString(encryptedString);
     } catch (e) {
-      throw Exception('Failed to save secrets: \$e');
+      throw Exception('Failed to save secrets: $e');
     }
   }
 
@@ -73,8 +79,7 @@ class SaultService {
       }
       return [];
     } catch (e) {
-      print('Error loading secrets: \$e');
-      return [];
+      throw Exception('Failed to load secrets: $e');
     }
   }
 
@@ -101,7 +106,7 @@ class SaultService {
 
       return exportFile;
     } catch (e) {
-      print('Error exporting data: \$e');
+      print('Error exporting data: $e');
       return null;
     }
   }
@@ -113,7 +118,7 @@ class SaultService {
         await file.delete();
       }
     } catch (e) {
-      throw Exception('Failed to clear vault: \$e');
+      throw Exception('Failed to clear vault: $e');
     }
   }
 

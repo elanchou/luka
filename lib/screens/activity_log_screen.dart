@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
-import '../widgets/gradient_background.dart';
-import '../providers/sault_provider.dart';
 import '../models/activity_log_model.dart';
+import '../providers/sault_provider.dart';
+import '../utils/constants.dart';
+import '../widgets/gradient_background.dart';
+import '../widgets/sault_header.dart';
 
 class ActivityLogScreen extends StatelessWidget {
   const ActivityLogScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    const backgroundDark = Color(0xFF101d22);
     return Scaffold(
-      backgroundColor: backgroundDark,
+      backgroundColor: AppColors.backgroundDark,
       body: Stack(
         children: [
           const GradientBackground(),
@@ -34,127 +35,127 @@ class ActivityLogBody extends StatefulWidget {
 
 class _ActivityLogBodyState extends State<ActivityLogBody> {
   int _selectedFilterIndex = 0;
-  final List<String> _filters = ['All', 'Security', 'Access', 'System'];
+  final List<String> _filters = <String>['All', 'Security', 'Access', 'System'];
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF13b6ec);
-    const successColor = Color(0xFF00d68f);
-    const dangerColor = Color(0xFFff3b30);
-
     return SafeArea(
-      child: Column(
-        children: [
-          // Header
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      'Activity Log',
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
+      child: Consumer<SaultProvider>(
+        builder: (context, provider, _) {
+          final List<ActivityLog> logs = provider.logs.where((log) {
+            if (_selectedFilterIndex == 0) return true;
+            final ActivityCategory filterCategory =
+                ActivityCategory.values[_selectedFilterIndex - 1];
+            return log.category == filterCategory;
+          }).toList();
+
+          return ListView(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+            children: [
+              const SaultHeader(title: 'Activity', showUserIcon: false),
+              const SizedBox(height: 18),
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.04),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: AppColors.softBorderColor),
+                ),
+                child: Text(
+                  'A local record of authentication, exports, updates, and operational security events.',
+                  style: GoogleFonts.notoSans(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                    height: 1.5,
                   ),
                 ),
-                const SizedBox(width: 48), // Spacer for centering
-              ],
-            ),
-          ),
-
-          // Filters
-          SizedBox(
-            height: 48,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              itemCount: _filters.length,
-              itemBuilder: (context, index) {
-                final isSelected = _selectedFilterIndex == index;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: ActionChip(
-                    label: Text(
-                      _filters[index],
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: isSelected ? Colors.white : Colors.grey[400],
-                      ),
-                    ),
-                    backgroundColor: isSelected ? primaryColor : Colors.white.withOpacity(0.05),
-                    side: BorderSide.none,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _selectedFilterIndex = index;
-                      });
-                    },
-                  ),
-                );
-              },
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Timeline
-          Expanded(
-            child: Consumer<SaultProvider>(
-              builder: (context, provider, child) {
-                final logs = provider.logs.where((log) {
-                  if (_selectedFilterIndex == 0) return true;
-                  final filterCategory = ActivityCategory.values[_selectedFilterIndex - 1];
-                  return log.category == filterCategory;
-                }).toList();
-
-                if (logs.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'No activities found',
-                      style: GoogleFonts.notoSans(color: Colors.grey[600]),
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  itemCount: logs.length,
+              ),
+              const SizedBox(height: 18),
+              SizedBox(
+                height: 42,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _filters.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 10),
                   itemBuilder: (context, index) {
-                    final log = logs[index];
-                    final showDivider = index == 0 ||
-                                       !_isSameDay(log.timestamp, logs[index-1].timestamp);
-
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (showDivider)
-                          _DateDivider(label: _getRelativeDate(log.timestamp)),
-                        _TimelineItem(
-                          title: log.title,
-                          time: DateFormat('HH:mm').format(log.timestamp),
-                          description: log.description,
-                          icon: _getCategoryIcon(log.category),
-                          color: log.isSuccess ? successColor : dangerColor,
-                          isFirst: showDivider,
-                          isLast: index == logs.length - 1 ||
-                                 !_isSameDay(log.timestamp, logs[index+1].timestamp),
+                    final bool isSelected = _selectedFilterIndex == index;
+                    return ChoiceChip(
+                      selected: isSelected,
+                      showCheckmark: false,
+                      label: Text(
+                        _filters[index],
+                        style: GoogleFonts.spaceGrotesk(
+                          color: isSelected ? AppColors.backgroundDark : AppColors.textSecondary,
+                          fontWeight: FontWeight.w600,
                         ),
-                      ],
+                      ),
+                      selectedColor: AppColors.primaryColor,
+                      backgroundColor: Colors.white.withValues(alpha: 0.04),
+                      side: const BorderSide(color: AppColors.softBorderColor),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      onSelected: (_) => setState(() => _selectedFilterIndex = index),
                     );
                   },
-                );
-              },
-            ),
-          ),
-        ],
+                ),
+              ),
+              const SizedBox(height: 22),
+              if (logs.isEmpty)
+                Container(
+                  padding: const EdgeInsets.all(28),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.03),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: AppColors.softBorderColor),
+                  ),
+                  child: Column(
+                    children: [
+                      const Icon(
+                        PhosphorIconsBold.clockCounterClockwise,
+                        color: AppColors.primaryColor,
+                        size: 28,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'No activity yet',
+                        style: GoogleFonts.spaceGrotesk(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                ...List<Widget>.generate(logs.length, (index) {
+                  final ActivityLog log = logs[index];
+                  final bool showDate = index == 0 ||
+                      !_isSameDay(log.timestamp, logs[index - 1].timestamp);
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (showDate)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12, top: 4),
+                          child: Text(
+                            _getRelativeDate(log.timestamp),
+                            style: GoogleFonts.spaceGrotesk(
+                              color: AppColors.textMuted,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      _ActivityTile(log: log),
+                      const SizedBox(height: 12),
+                    ],
+                  );
+                }),
+            ],
+          );
+        },
       ),
     );
   }
@@ -164,184 +165,124 @@ class _ActivityLogBodyState extends State<ActivityLogBody> {
   }
 
   String _getRelativeDate(DateTime date) {
-    final now = DateTime.now();
-    if (_isSameDay(date, now)) return 'TODAY';
-    if (_isSameDay(date, now.subtract(const Duration(days: 1)))) return 'YESTERDAY';
-    return DateFormat('MMM d, yyyy').format(date).toUpperCase();
-  }
-
-  IconData _getCategoryIcon(ActivityCategory category) {
-    switch (category) {
-      case ActivityCategory.security: return PhosphorIconsBold.shieldCheck;
-      case ActivityCategory.access: return PhosphorIconsBold.userFocus;
-      case ActivityCategory.transfers: return PhosphorIconsBold.swap;
-      case ActivityCategory.system: return PhosphorIconsBold.cpu;
-    }
+    final DateTime now = DateTime.now();
+    if (_isSameDay(date, now)) return 'Today';
+    if (_isSameDay(date, now.subtract(const Duration(days: 1)))) return 'Yesterday';
+    return DateFormat('MMM d, yyyy').format(date);
   }
 }
 
-class _DateDivider extends StatelessWidget {
-  final String label;
+class _ActivityTile extends StatelessWidget {
+  final ActivityLog log;
 
-  const _DateDivider({required this.label});
+  const _ActivityTile({required this.log});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Row(
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.spaceGrotesk(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[600],
-              letterSpacing: 1.5,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Container(
-              height: 1,
-              color: Colors.white.withOpacity(0.1),
-            ),
-          ),
-        ],
+    final _ActivityVisual visual = _visualFor(log.category, log.isSuccess);
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: AppColors.softBorderColor),
       ),
-    );
-  }
-}
-
-class _TimelineItem extends StatelessWidget {
-  final String title;
-  final String time;
-  final String description;
-  final IconData? icon;
-  final Color color;
-  final bool isFirst;
-  final bool isLast;
-
-  const _TimelineItem({
-    required this.title,
-    required this.time,
-    required this.description,
-    this.icon,
-    required this.color,
-    this.isFirst = false,
-    this.isLast = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    const backgroundDark = Color(0xFF101d22);
-
-    return IntrinsicHeight(
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Timeline Line & Dot
-          SizedBox(
-            width: 24,
-            child: Stack(
-              alignment: Alignment.topCenter,
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: visual.color.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: visual.color.withValues(alpha: 0.16)),
+            ),
+            child: Icon(visual.icon, size: 18, color: visual.color),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (!isLast)
-                  Positioned(
-                    top: isFirst ? 12 : 0,
-                    bottom: 0,
-                    child: Container(
-                      width: 1,
-                      color: Colors.white.withOpacity(0.1),
-                    ),
-                  ),
-                if (!isFirst)
-                  Positioned(
-                    top: 0,
-                    height: 12,
-                    child: Container(
-                      width: 1,
-                      color: Colors.white.withOpacity(0.1),
-                    ),
-                  ),
-                Container(
-                  margin: const EdgeInsets.only(top: 8),
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    color: color,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: color.withOpacity(0.4),
-                        blurRadius: 8,
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        log.title,
+                        style: GoogleFonts.spaceGrotesk(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                        ),
                       ),
-                    ],
-                    border: Border.all(
-                      color: backgroundDark,
-                      width: 2,
                     ),
+                    Text(
+                      DateFormat('HH:mm').format(log.timestamp),
+                      style: GoogleFonts.notoSans(
+                        color: AppColors.textMuted,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  log.description,
+                  style: GoogleFonts.notoSans(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                    height: 1.5,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 16),
-          // Content
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        title,
-                        style: GoogleFonts.spaceGrotesk(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Text(
-                        time,
-                        style: GoogleFonts.spaceMono(
-                          fontSize: 12,
-                          color: Colors.grey[500],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      if (icon != null) ...[
-                        Icon(
-                          icon,
-                          size: 14,
-                          color: Colors.grey[400],
-                        ),
-                        const SizedBox(width: 6),
-                      ],
-                      Text(
-                        description,
-                        style: GoogleFonts.notoSans(
-                          fontSize: 14,
-                          color: Colors.grey[400],
-                          fontWeight: FontWeight.w300,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
         ],
       ),
     );
   }
+
+  _ActivityVisual _visualFor(ActivityCategory category, bool isSuccess) {
+    if (!isSuccess) {
+      return const _ActivityVisual(
+        icon: PhosphorIconsBold.warningCircle,
+        color: AppColors.dangerColor,
+      );
+    }
+
+    switch (category) {
+      case ActivityCategory.security:
+        return const _ActivityVisual(
+          icon: PhosphorIconsBold.shieldCheck,
+          color: AppColors.primaryColor,
+        );
+      case ActivityCategory.access:
+        return const _ActivityVisual(
+          icon: PhosphorIconsBold.fingerprint,
+          color: AppColors.accentColor,
+        );
+      case ActivityCategory.transfers:
+        return const _ActivityVisual(
+          icon: PhosphorIconsBold.swap,
+          color: AppColors.warningColor,
+        );
+      case ActivityCategory.system:
+        return const _ActivityVisual(
+          icon: PhosphorIconsBold.cpu,
+          color: AppColors.successColor,
+        );
+    }
+  }
 }
 
+class _ActivityVisual {
+  final IconData icon;
+  final Color color;
+
+  const _ActivityVisual({
+    required this.icon,
+    required this.color,
+  });
+}

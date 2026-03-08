@@ -1,16 +1,16 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'dart:ui';
 import 'package:intl/intl.dart';
-import '../models/secret_model.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
+import '../models/secret_model.dart';
 import '../providers/sault_provider.dart';
+import '../utils/constants.dart';
 import '../widgets/gradient_background.dart';
 import '../widgets/sault_app_bar.dart';
 import '../widgets/sault_brand.dart';
-import '../widgets/error_snackbar.dart';
 
 class SeedPhraseDetailView extends StatefulWidget {
   const SeedPhraseDetailView({super.key});
@@ -24,73 +24,60 @@ class _SeedPhraseDetailViewState extends State<SeedPhraseDetailView> {
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF13b6ec);
-    const backgroundDark = Color(0xFF101d22);
-    const surfaceDark = Color(0xFF16262c);
-    const surfaceHighlight = Color(0xFF1f363d);
-
-    final secret = ModalRoute.of(context)!.settings.arguments as Secret;
-
-    List<String> seedWords = [];
-    if (secret.type == SecretType.seedPhrase) {
-      seedWords = secret.content.split(' ');
-    } else {
-      seedWords = [secret.content];
-    }
-
-    final formattedDate = DateFormat('MMM d, yyyy').format(secret.createdAt);
+    final Secret secret = ModalRoute.of(context)!.settings.arguments as Secret;
+    final List<String> seedWords =
+        secret.type == SecretType.seedPhrase ? secret.content.split(' ') : <String>[secret.content];
+    final String formattedDate = DateFormat('MMM d, yyyy').format(secret.createdAt);
 
     return Scaffold(
-      backgroundColor: backgroundDark,
+      backgroundColor: AppColors.backgroundDark,
       extendBodyBehindAppBar: true,
       appBar: SaultAppBar(
-        titleWidget: const SaultBrand(fontSize: 16),
+        titleWidget: const SaultBrand(fontSize: 14),
         actions: [
           IconButton(
-            icon: const Icon(PhosphorIconsBold.trash, size: 22),
-            color: Colors.white.withValues(alpha: 0.5),
+            icon: const Icon(
+              PhosphorIconsBold.trash,
+              size: 20,
+              color: AppColors.textMuted,
+            ),
             onPressed: () async {
-              final confirm = await showDialog<bool>(
+              final bool? confirm = await showDialog<bool>(
                 context: context,
                 builder: (context) => AlertDialog(
-                  backgroundColor: surfaceDark,
                   title: Text(
-                    'Delete Secret?',
+                    'Delete secret?',
                     style: GoogleFonts.spaceGrotesk(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   content: Text(
                     'This action cannot be undone.',
-                    style: GoogleFonts.notoSans(color: Colors.grey[400]),
+                    style: GoogleFonts.notoSans(color: AppColors.textSecondary),
                   ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context, false),
                       child: Text(
                         'Cancel',
-                        style: GoogleFonts.spaceGrotesk(color: Colors.grey[400]),
+                        style: GoogleFonts.spaceGrotesk(color: AppColors.textSecondary),
                       ),
                     ),
                     TextButton(
-                      onPressed: () {
-                        HapticFeedback.heavyImpact();
-                        Navigator.pop(context, true);
-                      },
-                      style: TextButton.styleFrom(foregroundColor: Colors.red),
+                      onPressed: () => Navigator.pop(context, true),
                       child: Text(
                         'Delete',
-                        style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.bold),
+                        style: GoogleFonts.spaceGrotesk(color: AppColors.dangerColor),
                       ),
                     ),
                   ],
                 ),
               );
 
-              if (confirm == true) {
+              if (confirm == true && mounted) {
+                await Provider.of<SaultProvider>(context, listen: false).deleteSecret(secret.id);
                 if (mounted) {
-                  await Provider.of<SaultProvider>(context, listen: false).deleteSecret(secret.id);
                   Navigator.pop(context);
                 }
               }
@@ -102,214 +89,180 @@ class _SeedPhraseDetailViewState extends State<SeedPhraseDetailView> {
         children: [
           const GradientBackground(),
           SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-              child: Column(
-                children: [
-                  // Information Header Card
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: surfaceDark.withValues(alpha: 0.4),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-                    ),
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 64,
-                          height: 64,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                primaryColor.withValues(alpha: 0.2),
-                                primaryColor.withValues(alpha: 0.05),
-                              ],
-                            ),
-                            border: Border.all(color: primaryColor.withValues(alpha: 0.2)),
-                          ),
-                          child: Icon(
-                            secret.type == SecretType.seedPhrase
-                                ? PhosphorIconsBold.wallet
-                                : PhosphorIconsBold.key,
-                            size: 32,
-                            color: primaryColor,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Text(
-                          secret.name,
-                          style: GoogleFonts.spaceGrotesk(
-                            fontSize: 26,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(PhosphorIconsBold.globe, size: 14, color: Colors.grey[500]),
-                            const SizedBox(width: 6),
-                            Text(
-                              secret.network.toUpperCase(),
-                              style: GoogleFonts.spaceMono(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey[500],
-                                letterSpacing: 1.0,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Container(width: 4, height: 4, decoration: BoxDecoration(color: Colors.grey[700], shape: BoxShape.circle)),
-                            const SizedBox(width: 12),
-                            Icon(PhosphorIconsBold.calendarBlank, size: 14, color: Colors.grey[500]),
-                            const SizedBox(width: 6),
-                            Text(
-                              formattedDate,
-                              style: GoogleFonts.spaceMono(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey[500],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.045),
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(color: AppColors.softBorderColor),
                   ),
-                  const SizedBox(height: 32),
-
-                  // Seed Grid or Content View with Reveal Toggle
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: AppColors.primaryColor.withValues(alpha: 0.10),
+                          border: Border.all(
+                            color: AppColors.primaryColor.withValues(alpha: 0.22),
+                          ),
+                        ),
+                        child: Icon(
+                          secret.type == SecretType.seedPhrase
+                              ? PhosphorIconsBold.wallet
+                              : PhosphorIconsBold.lockKey,
+                          color: AppColors.primaryColor,
+                          size: 26,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        secret.name,
+                        style: GoogleFonts.spaceGrotesk(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                          letterSpacing: -1.0,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: [
+                          _MetaPill(
+                            icon: PhosphorIconsBold.globe,
+                            label: secret.network.isEmpty ? 'Private vault' : secret.network,
+                          ),
+                          _MetaPill(
+                            icon: PhosphorIconsBold.calendarBlank,
+                            label: formattedDate,
+                          ),
+                          _MetaPill(
+                            icon: PhosphorIconsBold.fingerprint,
+                            label: secret.typeLabel,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'Protected Content',
+                  style: GoogleFonts.spaceGrotesk(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    setState(() => _isVisible = !_isVisible);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(22),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: _isVisible ? [
-                        BoxShadow(
-                          color: primaryColor.withValues(alpha: 0.1),
-                          blurRadius: 40,
-                          spreadRadius: -10,
-                        )
-                      ] : [],
+                      color: AppColors.backgroundElevated,
+                      borderRadius: BorderRadius.circular(28),
+                      border: Border.all(color: AppColors.softBorderColor),
                     ),
-                    child: GestureDetector(
-                    onTap: () {
-                      HapticFeedback.lightImpact();
-                      setState(() => _isVisible = !_isVisible);
-                    },
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        // Content
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: ImageFiltered(
-                            imageFilter: ImageFilter.blur(
-                              sigmaX: _isVisible ? 0 : 16,
-                              sigmaY: _isVisible ? 0 : 16,
-                            ),
-                            child: secret.type == SecretType.seedPhrase
-                                ? Container(
-                                    decoration: BoxDecoration(
-                                      color: surfaceDark.withValues(alpha: 0.8),
-                                      borderRadius: BorderRadius.circular(24),
-                                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-                                    ),
-                                    child: GridView.builder(
-                                      padding: const EdgeInsets.all(20),
-                                      shrinkWrap: true,
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 2,
-                                        childAspectRatio: 2.8,
-                                        crossAxisSpacing: 12,
-                                        mainAxisSpacing: 12,
-                                      ),
-                                      itemCount: seedWords.length,
-                                      itemBuilder: (context, index) {
-                                        return Container(
-                                          decoration: BoxDecoration(
-                                            color: Colors.black.withValues(alpha: 0.2),
-                                            borderRadius: BorderRadius.circular(12),
-                                            border: Border.all(color: Colors.white.withValues(alpha: 0.03)),
-                                          ),
-                                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                                          child: Row(
-                                            children: [
-                                              Text(
-                                                (index + 1).toString(),
-                                                style: GoogleFonts.spaceMono(
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: primaryColor.withValues(alpha: 0.5),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 12),
-                                              Expanded(
-                                                child: Text(
-                                                  _isVisible ? seedWords[index] : '••••••••',
-                                                  style: GoogleFonts.spaceGrotesk(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Colors.white,
-                                                  ),
-                                                  overflow: TextOverflow.ellipsis,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  )
-                                : Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.all(32),
-                                    decoration: BoxDecoration(
-                                      color: surfaceDark.withValues(alpha: 0.8),
-                                      borderRadius: BorderRadius.circular(24),
-                                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-                                    ),
-                                    child: Text(
-                                      _isVisible ? secret.content : '••••••••••••••••••••••••',
-                                      style: GoogleFonts.jetBrainsMono(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        height: 1.6,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
+                        ImageFiltered(
+                          imageFilter: ImageFilter.blur(
+                            sigmaX: _isVisible ? 0 : 14,
+                            sigmaY: _isVisible ? 0 : 14,
                           ),
+                          child: secret.type == SecretType.seedPhrase
+                              ? GridView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    crossAxisSpacing: 12,
+                                    mainAxisSpacing: 12,
+                                    childAspectRatio: 2.9,
+                                  ),
+                                  itemCount: seedWords.length,
+                                  itemBuilder: (context, index) {
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(alpha: 0.03),
+                                        borderRadius: BorderRadius.circular(18),
+                                        border: Border.all(color: AppColors.softBorderColor),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Text(
+                                            '${index + 1}',
+                                            style: GoogleFonts.spaceGrotesk(
+                                              color: AppColors.primaryColor,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Text(
+                                              _isVisible ? seedWords[index] : '••••••••',
+                                              overflow: TextOverflow.ellipsis,
+                                              style: GoogleFonts.spaceGrotesk(
+                                                color: AppColors.textPrimary,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                )
+                              : Text(
+                                  _isVisible ? secret.content : '••••••••••••••••••••••••',
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.jetBrainsMono(
+                                    color: AppColors.textPrimary,
+                                    fontSize: 16,
+                                    height: 1.6,
+                                  ),
+                                ),
                         ),
-
-                        // Overlay Message when Hidden
                         if (!_isVisible)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                             decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.5),
-                              borderRadius: BorderRadius.circular(30),
-                              border: Border.all(color: primaryColor.withValues(alpha: 0.3)),
+                              color: Colors.black.withValues(alpha: 0.38),
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                color: AppColors.primaryColor.withValues(alpha: 0.20),
+                              ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(PhosphorIconsBold.eye, color: primaryColor, size: 18),
-                                const SizedBox(width: 12),
+                                const Icon(
+                                  PhosphorIconsBold.eye,
+                                  color: AppColors.primaryColor,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 10),
                                 Text(
-                                  'TAP TO REVEAL',
+                                  'Tap to reveal',
                                   style: GoogleFonts.spaceGrotesk(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: primaryColor,
-                                    letterSpacing: 1.0,
+                                    color: AppColors.textPrimary,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ],
@@ -318,108 +271,49 @@ class _SeedPhraseDetailViewState extends State<SeedPhraseDetailView> {
                       ],
                     ),
                   ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Warning
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.red.withValues(alpha: 0.2)),
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Icon(
-                              PhosphorIconsBold.warningDiamond,
-                              color: Color(0xFFff4d4d),
-                              size: 20,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                'STRICT SECURITY PROTOCOL ACTIVE',
-                                style: GoogleFonts.spaceGrotesk(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: const Color(0xFFff4d4d),
-                                  letterSpacing: 1.0,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Copying is disabled to prevent clipboard monitoring. Do not take screenshots. Hand-write this phrase and store it in a physical vault.',
-                          style: GoogleFonts.notoSans(
-                            fontSize: 12,
-                            color: Colors.grey[400],
-                            height: 1.5,
-                          ),
-                        ),
-                      ],
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.dangerColor.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppColors.dangerColor.withValues(alpha: 0.16),
                     ),
                   ),
-
-                  const SizedBox(height: 32),
-
-                  // Actions
-                  Column(
-                    children: [
-                      _ActionButton(
-                        icon: _isVisible ? PhosphorIconsBold.eyeSlash : PhosphorIconsBold.eye,
-                        label: _isVisible ? 'HIDE CONTENT' : 'REVEAL CONTENT',
-                        onTap: () {
-                          HapticFeedback.mediumImpact();
-                          setState(() => _isVisible = !_isVisible);
-                        },
-                        primaryColor: _isVisible ? const Color(0xFFff4d4d) : primaryColor,
-                      ),
-                      const SizedBox(height: 16),
-                      TextButton.icon(
-                        onPressed: () => Navigator.pop(context),
-                        icon: Icon(PhosphorIconsBold.arrowLeft, size: 16, color: Colors.grey[600]),
-                        label: Text(
-                          'RETURN TO DASHBOARD',
-                          style: GoogleFonts.spaceGrotesk(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey[600],
-                            letterSpacing: 1.2,
-                          ),
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    'Avoid screenshots, clipboard copies, and cloud notes. Store this information only in locations you fully control.',
+                    style: GoogleFonts.notoSans(
+                      color: AppColors.textSecondary,
+                      fontSize: 13,
+                      height: 1.6,
+                    ),
                   ),
-
-                  const SizedBox(height: 32),
-
-                  // Verification Badge
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(PhosphorIconsBold.shieldCheck, size: 16, color: primaryColor),
-                      const SizedBox(width: 8),
-                      Text(
-                        'AIR-GAPPED STORAGE',
-                        style: GoogleFonts.spaceGrotesk(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey[500],
-                          letterSpacing: 2.0,
-                        ),
-                      ),
-                    ],
+                ),
+                const SizedBox(height: 18),
+                FilledButton(
+                  onPressed: () {
+                    HapticFeedback.mediumImpact();
+                    setState(() => _isVisible = !_isVisible);
+                  },
+                  style: FilledButton.styleFrom(
+                    backgroundColor: _isVisible ? AppColors.surfaceHighlight : AppColors.primaryColor,
+                    foregroundColor: _isVisible ? AppColors.textPrimary : AppColors.backgroundDark,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(22),
+                    ),
                   ),
-                  const SizedBox(height: 32),
-                ],
-              ),
+                  child: Text(
+                    _isVisible ? 'Hide Content' : 'Reveal Content',
+                    style: GoogleFonts.spaceGrotesk(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -428,54 +322,38 @@ class _SeedPhraseDetailViewState extends State<SeedPhraseDetailView> {
   }
 }
 
-class _ActionButton extends StatelessWidget {
+class _MetaPill extends StatelessWidget {
   final IconData icon;
   final String label;
-  final VoidCallback onTap;
-  final Color primaryColor;
-  final bool isOutline;
 
-  const _ActionButton({
+  const _MetaPill({
     required this.icon,
     required this.label,
-    required this.onTap,
-    required this.primaryColor,
-    this.isOutline = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: isOutline ? Colors.transparent : primaryColor.withValues(alpha: 0.1),
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isOutline ? primaryColor.withValues(alpha: 0.3) : primaryColor.withValues(alpha: 0.5),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.03),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.softBorderColor),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: AppColors.primaryColor),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: GoogleFonts.notoSans(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 20, color: isOutline ? primaryColor : primaryColor),
-              const SizedBox(width: 12),
-              Text(
-                label,
-                style: GoogleFonts.spaceGrotesk(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: isOutline ? primaryColor : primaryColor,
-                  letterSpacing: 1.0,
-                ),
-              ),
-            ],
-          ),
-        ),
+        ],
       ),
     );
   }

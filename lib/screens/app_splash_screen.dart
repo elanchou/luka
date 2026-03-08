@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'dart:async';
-import '../providers/sault_provider.dart';
-import '../services/sault_service.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../services/master_key_service.dart';
+import '../utils/constants.dart';
+import '../widgets/gradient_background.dart';
+import '../widgets/sault_brand.dart';
 
 class AppSplashScreen extends StatefulWidget {
   const AppSplashScreen({super.key});
@@ -12,52 +13,45 @@ class AppSplashScreen extends StatefulWidget {
   State<AppSplashScreen> createState() => _AppSplashScreenState();
 }
 
-class _AppSplashScreenState extends State<AppSplashScreen> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
+class _AppSplashScreenState extends State<AppSplashScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _fadeAnimation;
+  late final Animation<double> _slideAnimation;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 1200),
       vsync: this,
-    );
+    )..forward();
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    _fadeAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOut,
     );
-
-    _scaleAnimation = Tween<double>(begin: 0.98, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    _slideAnimation = Tween<double>(begin: 18, end: 0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
     );
-
-    _controller.forward();
 
     _checkVaultStatus();
   }
 
-
   Future<void> _checkVaultStatus() async {
     await Future.delayed(const Duration(milliseconds: 1500));
-
     if (!mounted) return;
 
     try {
-      final masterKeyService = MasterKeyService();
-      final hasPassword = await masterKeyService.hasPassword();
+      final MasterKeyService masterKeyService = MasterKeyService();
+      final bool hasPassword = await masterKeyService.hasPassword();
+      if (!mounted) return;
 
-      if (mounted) {
-        if (hasPassword) {
-          // 已经设置过密码 -> 直接进入密码输入页
-          Navigator.pushReplacementNamed(context, '/master-password-input');
-        } else {
-          // 没有设置密码 -> 进入欢迎页
-          Navigator.pushReplacementNamed(context, '/onboarding');
-        }
-      }
-    } catch (e) {
+      Navigator.pushReplacementNamed(
+        context,
+        hasPassword ? '/master-password-input' : '/onboarding',
+      );
+    } catch (_) {
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/onboarding');
       }
@@ -70,151 +64,92 @@ class _AppSplashScreenState extends State<AppSplashScreen> with SingleTickerProv
     super.dispose();
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.backgroundDark,
       body: Stack(
         children: [
-          // Subtle gradient background
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  center: Alignment.center,
-                  radius: 1.0,
-                  colors: [
-                    Colors.white.withOpacity(0.05),
-                    Colors.transparent,
-                    Colors.transparent,
-                  ],
-                  stops: const [0.0, 0.5, 1.0],
-                ),
-              ),
-            ),
-          ),
-
-          // Main content
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Logo with animations
-                FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: ScaleTransition(
-                    scale: _scaleAnimation,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        // Glow effect
-                        Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: RadialGradient(
-                              colors: [
-                                const Color(0xFF1990e6).withOpacity(0.2),
-                                Colors.transparent,
-                              ],
-                            ),
-                          ),
-                        ),
-                        // Geometric logo
-                        CustomPaint(
-                          size: const Size(80, 80),
-                          painter: SaultLogoPainter(),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 64),
-
-                // Title
-                FadeTransition(
-                  opacity: Tween<double>(begin: 0.0, end: 1.0).animate(
-                    CurvedAnimation(
-                      parent: _controller,
-                      curve: const Interval(0.3, 1.0, curve: Curves.easeOut),
-                    ),
-                  ),
+          const GradientBackground(),
+          SafeArea(
+            child: Center(
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: AnimatedBuilder(
+                  animation: _slideAnimation,
+                  builder: (context, child) {
+                    return Transform.translate(
+                      offset: Offset(0, _slideAnimation.value),
+                      child: child,
+                    );
+                  },
                   child: Column(
-                    children: [
-                      Text(
-                        'SAULT',
-                        style: TextStyle(
-                          color: const Color(0xFFe0e0e0),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 14.4,
-                          height: 1.0,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'SECURE STORAGE',
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 10,
-                          fontWeight: FontWeight.w300,
-                          letterSpacing: 2.0,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Loading indicator at bottom
-          Positioned(
-            bottom: 48,
-            left: 0,
-            right: 0,
-            child: FadeTransition(
-              opacity: Tween<double>(begin: 0.0, end: 1.0).animate(
-                CurvedAnimation(
-                  parent: _controller,
-                  curve: const Interval(0.6, 1.0, curve: Curves.easeOut),
-                ),
-              ),
-              child: Center(
-                child: SizedBox(
-                  width: 48,
-                  height: 1,
-                  child: Stack(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
+                        width: 96,
+                        height: 96,
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.transparent,
-                              const Color(0xFF333333),
-                              Colors.transparent,
-                            ],
-                          ),
+                          borderRadius: BorderRadius.circular(30),
+                          color: Colors.white.withValues(alpha: 0.04),
+                          border: Border.all(color: AppColors.softBorderColor),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.22),
+                              blurRadius: 36,
+                              offset: const Offset(0, 16),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.lock_outline_rounded,
+                          color: AppColors.primaryColor,
+                          size: 36,
                         ),
                       ),
-                      TweenAnimationBuilder<double>(
-                        tween: Tween(begin: 0.0, end: 1.0),
-                        duration: const Duration(seconds: 4),
-                        curve: Curves.easeInOut,
-                        builder: (context, value, child) {
-                          return Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.transparent,
-                                  const Color(0xFF1990e6).withOpacity(0.5),
-                                  Colors.transparent,
-                                ],
+                      const SizedBox(height: 28),
+                      const SaultBrand(fontSize: 28, mainAxisAlignment: MainAxisAlignment.center),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Private storage for sensitive assets',
+                        style: GoogleFonts.notoSans(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 64),
+                      SizedBox(
+                        width: 120,
+                        child: Column(
+                          children: [
+                            Container(
+                              height: 2,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(999),
+                                color: Colors.white.withValues(alpha: 0.06),
+                              ),
+                              child: FractionallySizedBox(
+                                widthFactor: 0.6,
+                                alignment: Alignment.centerLeft,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(999),
+                                    color: AppColors.primaryColor,
+                                  ),
+                                ),
                               ),
                             ),
-                          );
-                        },
+                            const SizedBox(height: 14),
+                            Text(
+                              'Preparing vault',
+                              style: GoogleFonts.spaceGrotesk(
+                                fontSize: 12,
+                                color: AppColors.textMuted,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -226,58 +161,4 @@ class _AppSplashScreenState extends State<AppSplashScreen> with SingleTickerProv
       ),
     );
   }
-}
-
-class SaultLogoPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withOpacity(0.9)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
-
-    final center = Offset(size.width / 2, size.height / 2);
-
-    // Draw rotated square (diamond shape)
-    final squareSize = 31.0;
-    canvas.save();
-    canvas.translate(center.dx, center.dy);
-    canvas.rotate(0.785398); // 45 degrees
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromCenter(center: Offset.zero, width: squareSize, height: squareSize),
-        const Radius.circular(2),
-      ),
-      paint,
-    );
-    canvas.restore();
-
-    // Draw center circle
-    canvas.drawCircle(center, 8, paint);
-
-    // Draw lines from circle
-    canvas.drawLine(
-      Offset(center.dx, center.dy - 8),
-      Offset(center.dx, center.dy - 16),
-      paint,
-    );
-    canvas.drawLine(
-      Offset(center.dx, center.dy + 8),
-      Offset(center.dx, center.dy + 16),
-      paint,
-    );
-    canvas.drawLine(
-      Offset(center.dx - 8, center.dy),
-      Offset(center.dx - 16, center.dy),
-      paint,
-    );
-    canvas.drawLine(
-      Offset(center.dx + 8, center.dy),
-      Offset(center.dx + 16, center.dy),
-      paint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

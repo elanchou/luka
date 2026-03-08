@@ -98,6 +98,7 @@ class MasterKeyService {
   static const _saltKey = 'vault_master_salt';
   static const _iterationsKey = 'vault_pbkdf2_iterations';
   static const _hasPasswordKey = 'vault_has_password';
+  static const _passwordVerifierKey = 'vault_password_verifier';
   static const _keyLength = 32; // 256 bits
   static const _saltLength = 32; // 256 bits
 
@@ -123,6 +124,11 @@ class MasterKeyService {
     try {
       // Generate random salt
       final salt = encrypt.IV.fromSecureRandom(_saltLength);
+      final Uint8List derivedKey = await _deriveKeyBytes(
+        password,
+        salt.bytes,
+        securityLevel.iterations,
+      );
 
       // Store salt and iterations
       await _storage.write(
@@ -134,6 +140,10 @@ class MasterKeyService {
         value: securityLevel.iterations.toString(),
       );
       await _storage.write(key: _hasPasswordKey, value: 'true');
+      await _storage.write(
+        key: _passwordVerifierKey,
+        value: _encodePasswordVerifier(derivedKey),
+      );
     } catch (e) {
       throw Exception('Failed to set master password: $e');
     }
@@ -157,16 +167,7 @@ class MasterKeyService {
       final salt = base64.decode(saltBase64);
       final iterations = int.parse(iterationsStr);
 
-      // Derive key using PBKDF2 in a separate isolate
-      final derivedKey = await compute(
-        _pbkdf2Work,
-        _PBKDF2Params(
-          password: password,
-          salt: salt,
-          iterations: iterations,
-          keyLength: _keyLength,
-        ),
-      );
+      final derivedKey = await _deriveKeyBytes(password, salt, iterations);
 
       return encrypt.Key(derivedKey);
     } catch (e) {
@@ -214,11 +215,34 @@ class MasterKeyService {
   /// Verify master password
   Future<bool> verifyPassword(String password) async {
     try {
-      await deriveMasterKey(password);
-      return true;
+      final encrypt.Key derivedKey = await deriveMasterKey(password);
+      final String? storedVerifier = await _storage.read(key: _passwordVerifierKey);
+
+      // Legacy fallback: allow decrypt path to validate, then persist verifier on success.
+      if (storedVerifier == null || storedVerifier.isEmpty) {
+        return true;
+      }
+
+      return _constantTimeEquals(
+        storedVerifier,
+        _encodePasswordVerifier(derivedKey.bytes),
+      );
     } catch (e) {
       return false;
     }
+  }
+
+  Future<void> ensurePasswordVerifier(String password) async {
+    final String? storedVerifier = await _storage.read(key: _passwordVerifierKey);
+    if (storedVerifier != null && storedVerifier.isNotEmpty) {
+      return;
+    }
+
+    final encrypt.Key derivedKey = await deriveMasterKey(password);
+    await _storage.write(
+      key: _passwordVerifierKey,
+      value: _encodePasswordVerifier(derivedKey.bytes),
+    );
   }
 
   /// Change master password
@@ -250,10 +274,12 @@ class MasterKeyService {
     try {
       final saltBase64 = await _storage.read(key: _saltKey);
       final iterationsStr = await _storage.read(key: _iterationsKey);
+      final verifier = await _storage.read(key: _passwordVerifierKey);
       if (saltBase64 == null || iterationsStr == null) return null;
       return {
         'salt': saltBase64,
         'iterations': int.parse(iterationsStr),
+        if (verifier != null) 'verifier': verifier,
       };
     } catch (e) {
       return null;
@@ -261,10 +287,19 @@ class MasterKeyService {
   }
 
   /// Restore salt and iterations from backup metadata
-  Future<void> restoreKeyMetadata(String saltBase64, int iterations) async {
+  Future<void> restoreKeyMetadata(
+    String saltBase64,
+    int iterations, {
+    String? verifier,
+  }) async {
     await _storage.write(key: _saltKey, value: saltBase64);
     await _storage.write(key: _iterationsKey, value: iterations.toString());
     await _storage.write(key: _hasPasswordKey, value: 'true');
+    if (verifier != null && verifier.isNotEmpty) {
+      await _storage.write(key: _passwordVerifierKey, value: verifier);
+    } else {
+      await _storage.delete(key: _passwordVerifierKey);
+    }
   }
 
   /// Reset all master password data
@@ -273,9 +308,44 @@ class MasterKeyService {
       await _storage.delete(key: _saltKey);
       await _storage.delete(key: _iterationsKey);
       await _storage.delete(key: _hasPasswordKey);
+      await _storage.delete(key: _passwordVerifierKey);
     } catch (e) {
       throw Exception('Failed to reset master key service: $e');
     }
   }
-}
 
+  Future<Uint8List> _deriveKeyBytes(
+    String password,
+    List<int> salt,
+    int iterations,
+  ) async {
+    return compute(
+      _pbkdf2Work,
+      _PBKDF2Params(
+        password: password,
+        salt: Uint8List.fromList(salt),
+        iterations: iterations,
+        keyLength: _keyLength,
+      ),
+    );
+  }
+
+  String _encodePasswordVerifier(List<int> keyBytes) {
+    return base64.encode(sha256.convert(keyBytes).bytes);
+  }
+
+  bool _constantTimeEquals(String left, String right) {
+    final List<int> leftBytes = utf8.encode(left);
+    final List<int> rightBytes = utf8.encode(right);
+
+    if (leftBytes.length != rightBytes.length) {
+      return false;
+    }
+
+    int mismatch = 0;
+    for (int i = 0; i < leftBytes.length; i++) {
+      mismatch |= leftBytes[i] ^ rightBytes[i];
+    }
+    return mismatch == 0;
+  }
+}

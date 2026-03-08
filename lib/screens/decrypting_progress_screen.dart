@@ -1,26 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
-import 'dart:math' as math;
 import '../widgets/gradient_background.dart';
 import '../providers/sault_provider.dart';
 import '../services/master_key_service.dart';
+import '../utils/constants.dart';
 
 class DecryptingProgressScreen extends StatefulWidget {
   const DecryptingProgressScreen({super.key});
 
   @override
-  State<DecryptingProgressScreen> createState() => _DecryptingProgressScreenState();
+  State<DecryptingProgressScreen> createState() =>
+      _DecryptingProgressScreenState();
 }
 
-class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> with TickerProviderStateMixin {
+class _DecryptingProgressScreenState extends State<DecryptingProgressScreen>
+    with TickerProviderStateMixin {
   late String _masterPassword;
   late AnimationController _controller;
-  late AnimationController _vaultController;
+  late AnimationController _veilController;
   late Animation<double> _progressAnimation;
-  late Animation<double> _doorAnimation;
-  late Animation<double> _lockRotation;
+  late Animation<double> _focusAnimation;
+  late Animation<double> _pulseAnimation;
+  late Animation<double> _shimmerAnimation;
   final ScrollController _logScrollController = ScrollController();
 
   final List<LogEntry> _logs = [];
@@ -37,24 +39,28 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
       vsync: this,
     );
 
-    _vaultController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+    _veilController = AnimationController(
+      duration: const Duration(milliseconds: 1400),
       vsync: this,
-    );
+    )..repeat(reverse: true);
 
     _progressAnimation = Tween<double>(begin: 0.0, end: 100.0).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
 
-    _doorAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _vaultController, curve: Curves.easeInOut),
+    _focusAnimation = Tween<double>(begin: 0.18, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic),
     );
 
-    _lockRotation = Tween<double>(begin: 0.0, end: 2 * math.pi).animate(
+    _pulseAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
-        parent: _vaultController,
-        curve: const Interval(0.0, 0.3, curve: Curves.easeOut),
+        parent: _veilController,
+        curve: Curves.easeInOut,
       ),
+    );
+
+    _shimmerAnimation = Tween<double>(begin: -1.0, end: 1.0).animate(
+      CurvedAnimation(parent: _veilController, curve: Curves.easeInOut),
     );
 
     _controller.addListener(() {
@@ -64,7 +70,7 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
 
       if (_controller.value >= 0.95 && !_isUnlocked) {
         _isUnlocked = true;
-        _vaultController.forward();
+        _veilController.stop();
       }
     });
   }
@@ -73,7 +79,8 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_decryptStarted) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       _masterPassword = args?['masterPassword'] ?? '';
       _decryptStarted = true;
       _startDecryptProcess();
@@ -82,6 +89,11 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
 
   Future<void> _startDecryptProcess() async {
     try {
+      final SaultProvider vaultProvider = Provider.of<SaultProvider>(
+        context,
+        listen: false,
+      );
+
       // Step 0: Verify Master Password
       _updateStep('Verifying master password...', 0.0);
       _addLog('[AUTH] Verifying master password', LogType.active);
@@ -107,7 +119,9 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
       await Future.delayed(const Duration(milliseconds: 150));
       _controller.animateTo(0.2, duration: const Duration(milliseconds: 150));
 
-      _addLog('[OK] Security Level: ${securityLevel.displayName} (${_formatNumber(securityLevel.iterations)} iterations)', LogType.highlight);
+      _addLog(
+          '[OK] Security Level: ${securityLevel.displayName} (${_formatNumber(securityLevel.iterations)} iterations)',
+          LogType.highlight);
 
       // Step 3: PBKDF2 密钥派生
       _updateStep('Deriving encryption key (PBKDF2)...', 0.2);
@@ -120,14 +134,17 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
 
       // 实际执行 PBKDF2
       if (mounted) {
-        final vaultProvider = Provider.of<SaultProvider>(context, listen: false);
+        _controller.animateTo(0.7,
+            duration: Duration(milliseconds: securityLevel.iterations ~/ 1000));
 
-        _controller.animateTo(0.7, duration: Duration(milliseconds: securityLevel.iterations ~/ 1000));
-
-        await vaultProvider.reinitialize(_masterPassword);
+        final bool unlocked = await vaultProvider.reinitialize(_masterPassword);
+        if (!unlocked) {
+          throw Exception(vaultProvider.error ?? 'Incorrect master password');
+        }
 
         final keyDerivationTime = DateTime.now().difference(keyDerivationStart);
-        _addLog('[OK] Key derived in ${keyDerivationTime.inMilliseconds}ms', LogType.success);
+        _addLog('[OK] Key derived in ${keyDerivationTime.inMilliseconds}ms',
+            LogType.success);
       }
 
       _controller.animateTo(0.75, duration: const Duration(milliseconds: 100));
@@ -138,9 +155,8 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
       await Future.delayed(const Duration(milliseconds: 150));
       _controller.animateTo(0.8, duration: const Duration(milliseconds: 150));
 
-      final vaultProvider = Provider.of<SaultProvider>(context, listen: false);
       final secretCount = vaultProvider.secretCount;
-      _addLog('[OK] Found ${secretCount} encrypted secrets', LogType.highlight);
+      _addLog('[OK] Found $secretCount encrypted secrets', LogType.highlight);
 
       // Step 5: AES 解密
       _updateStep('Decrypting vault (AES-256-CBC)...', 0.8);
@@ -148,7 +164,8 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
       await Future.delayed(const Duration(milliseconds: 200));
       _controller.animateTo(0.9, duration: const Duration(milliseconds: 200));
 
-      _addLog('[OK] ${secretCount} secrets decrypted successfully', LogType.success);
+      _addLog(
+          '[OK] $secretCount secrets decrypted successfully', LogType.success);
 
       // Step 6: JSON 解析
       _updateStep('Parsing vault data...', 0.9);
@@ -217,19 +234,15 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
   @override
   void dispose() {
     _controller.dispose();
-    _vaultController.dispose();
+    _veilController.dispose();
     _logScrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    const backgroundDark = Color(0xFF101d22);
-    const primaryColor = Color(0xFF13b6ec);
-    const successColor = Color(0xFF00d68f);
-
     return Scaffold(
-      backgroundColor: backgroundDark,
+      backgroundColor: AppColors.backgroundDark,
       body: Stack(
         children: [
           const GradientBackground(),
@@ -246,54 +259,96 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         AnimatedBuilder(
-                          animation: Listenable.merge([_doorAnimation, _lockRotation]),
+                          animation: Listenable.merge([
+                            _controller,
+                            _veilController,
+                          ]),
                           builder: (context, child) {
                             return CustomPaint(
-                              size: const Size(150, 150),
-                              painter: SaultDoorPainter(
-                                doorProgress: _doorAnimation.value,
-                                lockRotation: _lockRotation.value,
+                              size: const Size(210, 210),
+                              painter: LightVeilPainter(
+                                progress: _currentProgress / 100,
+                                focus: _focusAnimation.value,
+                                pulse: _pulseAnimation.value,
+                                shimmer: _shimmerAnimation.value,
                                 isUnlocked: _isUnlocked,
                               ),
                             );
                           },
                         ),
-                        const SizedBox(height: 32),
-
-                        // Current step
+                        const SizedBox(height: 28),
                         Text(
                           _currentStep,
                           style: GoogleFonts.spaceGrotesk(
-                            fontSize: 18,
+                            fontSize: 24,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
+                            letterSpacing: -0.6,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          _isUnlocked
+                              ? 'Your private vault is ready.'
+                              : 'Decrypting local records with your master key.',
+                          style: GoogleFonts.notoSans(
+                            fontSize: 14,
+                            color: AppColors.textSecondary,
+                            height: 1.6,
                           ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 24),
-
-                        // Progress bar
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 40),
                           child: Column(
                             children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: LinearProgressIndicator(
-                                  value: _currentProgress / 100,
-                                  backgroundColor: Colors.white.withOpacity(0.1),
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    _isUnlocked ? successColor : primaryColor,
+                              Container(
+                                height: 4,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(999),
+                                  color: Colors.white.withValues(alpha: 0.06),
+                                ),
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: FractionallySizedBox(
+                                    widthFactor: (_currentProgress / 100)
+                                        .clamp(0.0, 1.0),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadius.circular(999),
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            AppColors.accentColor
+                                                .withValues(alpha: 0.88),
+                                            _isUnlocked
+                                                ? Colors.white
+                                                    .withValues(alpha: 0.92)
+                                                : AppColors.primaryColor,
+                                          ],
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: AppColors.primaryColor
+                                                .withValues(alpha: 0.24),
+                                            blurRadius: 18,
+                                            spreadRadius: 1,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
-                                  minHeight: 8,
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 14),
                               Text(
-                                '${_currentProgress.toStringAsFixed(0)}%',
-                                style: GoogleFonts.spaceGrotesk(
-                                  fontSize: 14,
-                                  color: Colors.grey[400],
+                                '${_currentProgress.toStringAsFixed(0)}% complete',
+                                style: GoogleFonts.notoSans(
+                                  fontSize: 13,
+                                  color: AppColors.textMuted,
+                                  letterSpacing: 0.2,
                                 ),
                               ),
                             ],
@@ -304,40 +359,39 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
                   ),
                 ),
 
-                // Log console
                 Expanded(
                   flex: 2,
                   child: Container(
-                    margin: const EdgeInsets.all(20),
-                    padding: const EdgeInsets.all(16),
+                    margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                    padding: const EdgeInsets.fromLTRB(18, 18, 18, 12),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.white.withValues(alpha: 0.03),
+                      borderRadius: BorderRadius.circular(24),
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.1),
+                        color:
+                            AppColors.softBorderColor.withValues(alpha: 0.85),
                       ),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Icon(
-                              PhosphorIconsBold.terminal,
-                              color: primaryColor,
-                              size: 16,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'DECRYPTION LOG',
-                              style: GoogleFonts.spaceGrotesk(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey[500],
-                                letterSpacing: 1.2,
-                              ),
-                            ),
-                          ],
+                        Text(
+                          'Status trace',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textSecondary,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'A quiet view of each step while the vault opens.',
+                          style: GoogleFonts.notoSans(
+                            fontSize: 12,
+                            color: AppColors.textMuted,
+                            height: 1.5,
+                          ),
                         ),
                         const SizedBox(height: 12),
                         Expanded(
@@ -346,14 +400,26 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
                             itemCount: _logs.length,
                             itemBuilder: (context, index) {
                               final log = _logs[index];
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 4),
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 10),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.02),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: _getLogColor(log.type)
+                                        .withValues(alpha: 0.18),
+                                  ),
+                                ),
                                 child: Text(
                                   log.message,
-                                  style: GoogleFonts.jetBrainsMono(
-                                    fontSize: 11,
+                                  style: GoogleFonts.notoSans(
+                                    fontSize: 12,
                                     color: _getLogColor(log.type),
-                                    height: 1.4,
+                                    height: 1.45,
                                   ),
                                 ),
                               );
@@ -375,129 +441,160 @@ class _DecryptingProgressScreenState extends State<DecryptingProgressScreen> wit
   Color _getLogColor(LogType type) {
     switch (type) {
       case LogType.info:
-        return Colors.grey[400]!;
+        return AppColors.textSecondary;
       case LogType.highlight:
-        return const Color(0xFF13b6ec);
+        return AppColors.primaryColor;
       case LogType.active:
-        return Colors.orange[300]!;
+        return AppColors.warningColor;
       case LogType.success:
-        return const Color(0xFF00d68f);
+        return AppColors.successColor;
       case LogType.error:
-        return Colors.red[400]!;
+        return AppColors.dangerColor;
     }
   }
 }
 
-class SaultDoorPainter extends CustomPainter {
-  final double doorProgress;
-  final double lockRotation;
+class LightVeilPainter extends CustomPainter {
+  final double progress;
+  final double focus;
+  final double pulse;
+  final double shimmer;
   final bool isUnlocked;
 
-  SaultDoorPainter({
-    required this.doorProgress,
-    required this.lockRotation,
+  LightVeilPainter({
+    required this.progress,
+    required this.focus,
+    required this.pulse,
+    required this.shimmer,
     required this.isUnlocked,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2 - 10;
-    const primaryColor = Color(0xFF13b6ec);
-    const successColor = Color(0xFF00d68f);
-    const surfaceColor = Color(0xFF1a2c32);
+    final double glowRadius = size.width * 0.34;
+    final double outerRadius = size.width * 0.44;
+    final double pulseShift = (pulse - 0.5) * 14;
+    final double veilOpacity = (0.28 + progress * 0.34).clamp(0.0, 0.65);
 
-    // Draw vault body
-    final bodyPaint = Paint()
-      ..color = surfaceColor
-      ..style = PaintingStyle.fill;
+    final Rect glowRect = Rect.fromCenter(
+      center: center.translate(0, -4),
+      width: size.width * (0.78 + focus * 0.08),
+      height: size.height * (0.92 + focus * 0.06),
+    );
 
-    canvas.drawCircle(center, radius, bodyPaint);
+    final Paint ambientGlow = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          AppColors.primaryColor.withValues(alpha: 0.18 + progress * 0.12),
+          AppColors.accentColor.withValues(alpha: 0.08 + progress * 0.08),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.42, 1.0],
+      ).createShader(Rect.fromCircle(center: center, radius: outerRadius + 22))
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 36);
 
-    // Draw vault outer ring
-    final outerRingPaint = Paint()
-      ..color = isUnlocked ? successColor : primaryColor
+    canvas.drawCircle(center, outerRadius + 10, ambientGlow);
+
+    final Paint veilPaint = Paint()
+      ..shader = RadialGradient(
+        center: const Alignment(0, -0.08),
+        radius: 0.92,
+        colors: [
+          Colors.white.withValues(alpha: 0.10 + progress * 0.08),
+          AppColors.accentColor.withValues(alpha: veilOpacity),
+          AppColors.primaryColor.withValues(alpha: 0.12 + progress * 0.08),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.18, 0.56, 1.0],
+      ).createShader(glowRect);
+
+    final RRect veil = RRect.fromRectAndRadius(
+      glowRect,
+      Radius.elliptical(glowRect.width * 0.48, glowRect.height * 0.48),
+    );
+    canvas.drawRRect(veil, veilPaint);
+
+    final Paint innerGlow = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          Colors.white.withValues(alpha: isUnlocked ? 0.62 : 0.28),
+          AppColors.accentColor.withValues(alpha: 0.18 + progress * 0.14),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.24, 1.0],
+      ).createShader(Rect.fromCircle(center: center, radius: glowRadius));
+
+    canvas.drawCircle(center, glowRadius * (0.32 + focus * 0.08), innerGlow);
+
+    final Paint haloPaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 3;
+      ..strokeWidth = 1.2
+      ..color = Colors.white.withValues(alpha: 0.08 + progress * 0.12);
 
-    canvas.drawCircle(center, radius, outerRingPaint);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: center.translate(0, pulseShift),
+        width: size.width * 0.54,
+        height: size.height * 0.68,
+      ),
+      haloPaint,
+    );
 
-    // Draw inner decorative rings
-    final innerRingPaint = Paint()
-      ..color = Colors.white.withOpacity(0.1)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: center.translate(0, -pulseShift * 0.8),
+        width: size.width * 0.66,
+        height: size.height * 0.80,
+      ),
+      haloPaint
+        ..color =
+            AppColors.primaryColor.withValues(alpha: 0.10 + progress * 0.10),
+    );
 
-    canvas.drawCircle(center, radius - 10, innerRingPaint);
-    canvas.drawCircle(center, radius - 20, innerRingPaint);
+    final Rect shimmerRect = Rect.fromLTWH(0, 0, size.width, size.height);
+    final Paint shimmerPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment(-1.0 + shimmer * 0.7, -0.3),
+        end: Alignment(1.0 + shimmer * 0.7, 0.5),
+        colors: [
+          Colors.transparent,
+          Colors.white.withValues(alpha: 0.0),
+          Colors.white.withValues(alpha: 0.12 + progress * 0.05),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.36, 0.52, 1.0],
+      ).createShader(shimmerRect)
+      ..blendMode = BlendMode.screen;
 
-    // Draw vault door
     canvas.save();
-    canvas.translate(center.dx, center.dy);
-    final doorAngle = doorProgress * math.pi * 0.5;
-    canvas.rotate(doorAngle);
-
-    final doorPaint = Paint()
-      ..color = surfaceColor
-      ..style = PaintingStyle.fill;
-
-    final doorPath = Path()
-      ..moveTo(0, -radius)
-      ..arcTo(
-        Rect.fromCircle(center: Offset.zero, radius: radius),
-        -math.pi / 2,
-        math.pi,
-        false,
-      )
-      ..lineTo(0, -radius)
-      ..close();
-
-    canvas.drawPath(doorPath, doorPaint);
-
-    final doorBorderPaint = Paint()
-      ..color = isUnlocked ? successColor : primaryColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-
-    canvas.drawPath(doorPath, doorBorderPaint);
-    canvas.restore();
-
-    // Draw lock/dial
-    canvas.save();
-    canvas.translate(center.dx, center.dy);
-    canvas.rotate(lockRotation);
-
-    final lockPaint = Paint()
-      ..color = isUnlocked ? successColor : primaryColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-
-    canvas.drawCircle(Offset.zero, 15, lockPaint);
-    canvas.drawCircle(Offset.zero, 8, lockPaint);
-
-    for (int i = 0; i < 8; i++) {
-      final angle = (math.pi * 2 / 8) * i;
-      final start = Offset(math.cos(angle) * 15, math.sin(angle) * 15);
-      final end = Offset(math.cos(angle) * 20, math.sin(angle) * 20);
-      canvas.drawLine(start, end, lockPaint);
-    }
-
-    canvas.drawLine(Offset.zero, const Offset(0, -25), lockPaint);
+    canvas.clipRRect(veil);
+    canvas.drawRect(shimmerRect, shimmerPaint);
     canvas.restore();
 
     if (isUnlocked) {
-      final glowPaint = Paint()
-        ..color = successColor.withOpacity(0.2)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20);
-      canvas.drawCircle(center, radius + 5, glowPaint);
+      final Paint confirmationPaint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.2
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..color = Colors.white.withValues(alpha: 0.92);
+
+      final Path checkPath = Path()
+        ..moveTo(center.dx - 16, center.dy + 2)
+        ..lineTo(center.dx - 4, center.dy + 14)
+        ..lineTo(center.dx + 18, center.dy - 12);
+      canvas.drawPath(checkPath, confirmationPaint);
     }
   }
 
   @override
-  bool shouldRepaint(SaultDoorPainter oldDelegate) {
-    return oldDelegate.doorProgress != doorProgress ||
-           oldDelegate.lockRotation != lockRotation ||
-           oldDelegate.isUnlocked != isUnlocked;
+  bool shouldRepaint(LightVeilPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.focus != focus ||
+        oldDelegate.pulse != pulse ||
+        oldDelegate.shimmer != shimmer ||
+        oldDelegate.isUnlocked != isUnlocked;
   }
 }
 
@@ -509,4 +606,3 @@ class LogEntry {
 }
 
 enum LogType { info, highlight, active, success, error }
-

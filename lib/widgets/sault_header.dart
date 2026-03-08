@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import '../utils/constants.dart';
 import 'sault_brand.dart';
 
 class SaultHeader extends StatelessWidget {
@@ -17,34 +18,58 @@ class SaultHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (title == null || title == 'SAULT')
-          const SaultBrand(fontSize: 24)
-        else
-          Text(
-            title!,
-            style: GoogleFonts.spaceGrotesk(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              letterSpacing: 4.0,
-            ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (title == null || title == 'SAULT')
+                const SaultBrand(fontSize: 20)
+              else
+                Text(
+                  title!,
+                  style: GoogleFonts.spaceGrotesk(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                    letterSpacing: -0.4,
+                  ),
+                ),
+              const SizedBox(height: 6),
+              Text(
+                'Private access only',
+                style: GoogleFonts.notoSans(
+                  fontSize: 12,
+                  color: AppColors.textMuted,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
           ),
+        ),
         if (showUserIcon)
           Container(
-            width: 40,
-            height: 40,
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(18),
+              color: Colors.white.withValues(alpha: 0.04),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.1),
+                color: AppColors.softBorderColor,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.16),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
             child: const Icon(
               PhosphorIconsBold.user,
-              color: Colors.white,
-              size: 20,
+              color: AppColors.textSecondary,
+              size: 18,
             ),
           ),
       ],

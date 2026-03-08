@@ -2,16 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'dart:ui';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
-import '../providers/sault_provider.dart';
 import '../models/secret_model.dart';
-import 'activity_log_screen.dart';
-import 'system_settings_screen.dart';
+import '../providers/sault_provider.dart';
+import '../utils/constants.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/gradient_background.dart';
 import '../widgets/sault_header.dart';
+import 'activity_log_screen.dart';
+import 'system_settings_screen.dart';
 
 class MainSaultDashboard extends StatefulWidget {
   const MainSaultDashboard({super.key});
@@ -23,22 +22,19 @@ class MainSaultDashboard extends StatefulWidget {
 class _MainSaultDashboardState extends State<MainSaultDashboard> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = [
-    const _DashboardHome(),
-    const ActivityLogBody(),
-    const SystemSettingsScreen(),
+  final List<Widget> _pages = const [
+    _DashboardHome(),
+    ActivityLogBody(),
+    SystemSettingsScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF13b6ec);
-    const backgroundDark = Color(0xFF101d22);
-
-    final bottomPadding = MediaQuery.of(context).padding.bottom + 8.0;
-    final navBarHeight = 80.0 + bottomPadding;
+    final double bottomPadding = MediaQuery.of(context).padding.bottom + 8.0;
+    final double navBarHeight = 84.0 + bottomPadding;
 
     return Scaffold(
-      backgroundColor: backgroundDark,
+      backgroundColor: AppColors.backgroundDark,
       body: Stack(
         children: [
           const GradientBackground(),
@@ -62,26 +58,38 @@ class _MainSaultDashboardState extends State<MainSaultDashboard> {
           ),
           if (_currentIndex == 0)
             Positioned(
-              bottom: 96 + bottomPadding,
-              right: 24,
+              bottom: 102 + bottomPadding,
+              right: 28,
               child: Material(
-                color: primaryColor,
-                shape: const CircleBorder(),
-                elevation: 10,
-                shadowColor: primaryColor.withOpacity(0.4),
+                color: Colors.transparent,
                 child: InkWell(
-                  onTap: () {
-                    Navigator.pushNamed(context, '/add-secret-1');
-                  },
-                  customBorder: const CircleBorder(),
-                  child: Container(
-                    width: 56,
-                    height: 56,
-                    alignment: Alignment.center,
-                    child: Icon(
+                  onTap: () => Navigator.pushNamed(context, '/add-secret-1'),
+                  borderRadius: BorderRadius.circular(24),
+                  child: Ink(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(24),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          AppColors.primaryColor,
+                          AppColors.primaryColor.withValues(alpha: 0.82),
+                        ],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.24),
+                          blurRadius: 28,
+                          offset: const Offset(0, 16),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
                       PhosphorIconsBold.plus,
-                      color: backgroundDark,
-                      size: 32,
+                      color: AppColors.backgroundDark,
+                      size: 28,
                     ),
                   ),
                 ),
@@ -98,147 +106,183 @@ class _DashboardHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF13b6ec);
-
     return SafeArea(
       bottom: false,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Header Section
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
-            child: Column(
-              children: [
-                const SaultHeader(),
-                const SizedBox(height: 24),
-                // Search Bar
-                Container(
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.1),
+      child: Consumer<SaultProvider>(
+        builder: (context, vault, _) {
+          return ListView(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 36),
+            children: [
+              const SaultHeader(),
+              const SizedBox(height: 24),
+              Container(
+                padding: const EdgeInsets.all(22),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.045),
+                  borderRadius: BorderRadius.circular(28),
+                  border: Border.all(color: AppColors.softBorderColor),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.22),
+                      blurRadius: 32,
+                      offset: const Offset(0, 18),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Vault Overview',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      '${vault.secretCount}',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 44,
+                        height: 1.0,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                        letterSpacing: -1.8,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      vault.secretCount == 1 ? 'secured item' : 'secured items',
+                      style: GoogleFonts.notoSans(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    Row(
+                      children: [
+                        _StatPill(
+                          icon: PhosphorIconsBold.lockKey,
+                          label: 'Encrypted',
+                        ),
+                        const SizedBox(width: 10),
+                        _StatPill(
+                          icon: PhosphorIconsBold.clockCounterClockwise,
+                          label: '${vault.logs.length} logs',
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 18),
+              Container(
+                height: 56,
+                padding: const EdgeInsets.symmetric(horizontal: 18),
+                decoration: BoxDecoration(
+                  color: AppColors.backgroundElevated,
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(color: AppColors.softBorderColor),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      PhosphorIconsBold.magnifyingGlass,
+                      color: AppColors.textMuted,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        onChanged: context.read<SaultProvider>().setSearchQuery,
+                        style: GoogleFonts.notoSans(
+                          color: AppColors.textPrimary,
+                          fontSize: 14,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Search your vault',
+                          hintStyle: GoogleFonts.notoSans(
+                            color: AppColors.textMuted,
+                            fontSize: 14,
+                          ),
+                          border: InputBorder.none,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 22),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Items',
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
                     ),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
+                  Text(
+                    '${vault.secrets.length} visible',
+                    style: GoogleFonts.notoSans(
+                      fontSize: 12,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              if (vault.isLoading)
+                const Padding(
+                  padding: EdgeInsets.only(top: 48),
+                  child: Center(
+                    child: CircularProgressIndicator(color: AppColors.primaryColor),
+                  ),
+                )
+              else if (vault.secrets.isEmpty)
+                Container(
+                  padding: const EdgeInsets.all(28),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.03),
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(color: AppColors.softBorderColor),
+                  ),
+                  child: Column(
                     children: [
-                      Icon(
-                        PhosphorIconsBold.magnifyingGlass,
-                        color: primaryColor.withValues(alpha: 0.5),
-                        size: 20,
+                      const Icon(
+                        PhosphorIconsBold.vault,
+                        size: 28,
+                        color: AppColors.primaryColor,
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: TextField(
-                          onChanged: (value) {
-                            context.read<SaultProvider>().setSearchQuery(value);
-                          },
-                          style: GoogleFonts.spaceGrotesk(
-                            fontSize: 14,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: 'Search encrypted vault...',
-                            hintStyle: GoogleFonts.spaceGrotesk(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.w500,
-                            ),
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.zero,
-                          ),
+                      const SizedBox(height: 14),
+                      Text(
+                        'No secrets yet',
+                        style: GoogleFonts.spaceGrotesk(
+                          color: AppColors.textPrimary,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Use the add button to store a seed phrase, private key, or secure note.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.notoSans(
+                          color: AppColors.textSecondary,
+                          height: 1.6,
                         ),
                       ),
                     ],
                   ),
-                ),
-              ],
-            ),
-          ),
-
-          // List Content
-          Expanded(
-            child: Consumer<SaultProvider>(
-              builder: (context, vault, child) {
-                if (vault.isLoading) {
-                  return const Center(child: CircularProgressIndicator(color: primaryColor));
-                }
-
-                if (vault.secrets.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'No secrets yet.\nTap + to add one.',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.spaceGrotesk(
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 40), // Reduced bottom padding as container has padding
-                  itemCount: vault.secrets.length + 1, // +1 for header
-                  itemBuilder: (context, index) {
-                    if (index == 0) {
-                      // Filter Header
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'ALL SECRETS',
-                              style: GoogleFonts.spaceGrotesk(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey[600],
-                                letterSpacing: 1.5,
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: primaryColor.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: primaryColor.withValues(alpha: 0.2)),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(PhosphorIconsBold.funnel, size: 12, color: primaryColor),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    'FILTER',
-                                    style: GoogleFonts.spaceGrotesk(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: primaryColor,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    final secret = vault.secrets[index - 1];
-                    return _VaultItem(
-                      secret: secret,
-                      route: '/seed-detail',
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
+                )
+              else
+                ...vault.secrets.map((secret) => _VaultItem(secret: secret)),
+            ],
+          );
+        },
       ),
     );
   }
@@ -246,150 +290,173 @@ class _DashboardHome extends StatelessWidget {
 
 class _VaultItem extends StatelessWidget {
   final Secret secret;
-  final String? route;
 
   const _VaultItem({
     required this.secret,
-    this.route,
   });
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF13b6ec);
-    const surfaceColor = Color(0xFF1a2c32);
-
-    IconData icon;
-    Color iconBgColor;
-    switch (secret.type) {
-      case SecretType.seedPhrase:
-        icon = PhosphorIconsBold.wallet;
-        iconBgColor = const Color(0xFF00d68f);
-        break;
-      case SecretType.privateKey:
-        icon = PhosphorIconsBold.key;
-        iconBgColor = primaryColor;
-        break;
-      case SecretType.note:
-        icon = PhosphorIconsBold.notepad;
-        iconBgColor = const Color(0xFFffaa00);
-        break;
-      default:
-        icon = PhosphorIconsBold.lockKey;
-        iconBgColor = Colors.grey;
-    }
-
-    final formattedDate = DateFormat('MMM d, yyyy').format(secret.createdAt);
+    final _VaultVisual visual = _visualFor(secret.type);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: Container(
-        decoration: BoxDecoration(
-          color: surfaceColor.withValues(alpha: 0.6),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.05),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            Navigator.pushNamed(
+              context,
+              '/seed-detail',
+              arguments: secret,
+            );
+          },
+          borderRadius: BorderRadius.circular(24),
+          child: Ink(
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.04),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: AppColors.softBorderColor),
             ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                HapticFeedback.lightImpact();
-                Navigator.pushNamed(
-                  context,
-                  '/seed-detail',
-                  arguments: secret,
-                );
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: iconBgColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: iconBgColor.withValues(alpha: 0.2),
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: visual.color.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: visual.color.withValues(alpha: 0.18)),
+                    ),
+                    child: Icon(
+                      visual.icon,
+                      color: visual.color,
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          secret.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
                         ),
-                      ),
-                      child: Icon(
-                        icon,
-                        color: iconBgColor,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            secret.name,
-                            style: GoogleFonts.spaceGrotesk(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              letterSpacing: 0.2,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        const SizedBox(height: 4),
+                        Text(
+                          secret.typeLabel,
+                          style: GoogleFonts.notoSans(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
                           ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Text(
-                                secret.typeLabel.toUpperCase(),
-                                style: GoogleFonts.spaceMono(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey[500],
-                                  letterSpacing: 1.0,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Container(
-                                width: 3,
-                                height: 3,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[700],
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                secret.network,
-                                style: GoogleFonts.spaceGrotesk(
-                                  fontSize: 11,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                            ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          secret.network.isEmpty ? 'Private vault item' : secret.network,
+                          style: GoogleFonts.notoSans(
+                            fontSize: 12,
+                            color: AppColors.textMuted,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                    Icon(
-                      PhosphorIconsBold.caretRight,
-                      color: Colors.grey[700],
-                      size: 18,
-                    ),
-                  ],
-                ),
+                  ),
+                  const Icon(
+                    PhosphorIconsBold.caretRight,
+                    color: AppColors.textMuted,
+                    size: 18,
+                  ),
+                ],
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  _VaultVisual _visualFor(SecretType type) {
+    switch (type) {
+      case SecretType.seedPhrase:
+        return const _VaultVisual(
+          icon: PhosphorIconsBold.wallet,
+          color: AppColors.primaryColor,
+        );
+      case SecretType.privateKey:
+        return const _VaultVisual(
+          icon: PhosphorIconsBold.key,
+          color: AppColors.accentColor,
+        );
+      case SecretType.note:
+        return const _VaultVisual(
+          icon: PhosphorIconsBold.notepad,
+          color: AppColors.warningColor,
+        );
+      case SecretType.other:
+        return const _VaultVisual(
+          icon: PhosphorIconsBold.lockKey,
+          color: AppColors.textSecondary,
+        );
+    }
+  }
+}
+
+class _VaultVisual {
+  final IconData icon;
+  final Color color;
+
+  const _VaultVisual({
+    required this.icon,
+    required this.color,
+  });
+}
+
+class _StatPill extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _StatPill({
+    required this.icon,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.03),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.softBorderColor),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 14, color: AppColors.primaryColor),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.notoSans(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

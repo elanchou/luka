@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../utils/constants.dart';
 
 class SaultTextField extends StatelessWidget {
   final TextEditingController controller;
@@ -29,10 +30,6 @@ class SaultTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF13b6ec);
-    const labelColor = Color(0xFF5f747a);
-    const inputBorderColor = Color(0xFF283539);
-
     // Support both naming conventions
     final bool shouldObscure = isPassword ?? obscureText;
     final String? displayHint = hintText ?? placeholder;
@@ -42,44 +39,53 @@ class SaultTextField extends StatelessWidget {
       children: [
         if (label != null) ...[
           Text(
-            label!.toUpperCase(),
+            label!,
             style: GoogleFonts.spaceGrotesk(
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              color: labelColor,
-              letterSpacing: 1.5,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textMuted,
+              letterSpacing: 0.2,
             ),
           ),
           const SizedBox(height: 8),
         ],
-        TextField(
-          controller: controller,
-          obscureText: shouldObscure,
-          keyboardType: keyboardType,
-          textInputAction: textInputAction,
-          onChanged: onChanged,
-          style: GoogleFonts.spaceGrotesk(
-            fontSize: 20,
-            color: Colors.white,
-            fontWeight: FontWeight.normal,
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: AppColors.backgroundElevated,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.softBorderColor),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.14),
+                blurRadius: 22,
+                offset: const Offset(0, 10),
+              ),
+            ],
           ),
-          decoration: InputDecoration(
-            hintText: displayHint,
-            hintStyle: GoogleFonts.spaceGrotesk(
-              color: inputBorderColor,
+          child: TextField(
+            controller: controller,
+            obscureText: shouldObscure,
+            keyboardType: keyboardType,
+            textInputAction: textInputAction,
+            onChanged: onChanged,
+            style: GoogleFonts.spaceGrotesk(
+              fontSize: 16,
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w500,
             ),
-            enabledBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: inputBorderColor),
+            decoration: InputDecoration(
+              hintText: displayHint,
+              hintStyle: GoogleFonts.notoSans(
+                color: AppColors.textMuted,
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+              border: InputBorder.none,
+              suffixIcon: suffixIcon != null
+                  ? Icon(suffixIcon, color: AppColors.textMuted, size: 18)
+                  : null,
             ),
-            focusedBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: primaryColor),
-            ),
-            contentPadding: const EdgeInsets.symmetric(vertical: 12),
-            suffixIcon: suffixIcon != null
-                ? Icon(suffixIcon, color: inputBorderColor)
-                : null,
+            cursorColor: AppColors.primaryColor,
           ),
-          cursorColor: primaryColor,
         ),
       ],
     );

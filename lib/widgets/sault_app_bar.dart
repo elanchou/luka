@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import '../utils/constants.dart';
 
 class SaultAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -30,12 +31,13 @@ class SaultAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       backgroundColor: backgroundColor,
       elevation: elevation,
+      surfaceTintColor: Colors.transparent,
       centerTitle: centerTitle,
       leading: leading ??
           (Navigator.canPop(context)
               ? IconButton(
                   icon: const Icon(PhosphorIconsBold.arrowLeft, size: 20),
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   onPressed: () => Navigator.pop(context),
                 )
               : null),
@@ -44,8 +46,8 @@ class SaultAppBar extends StatelessWidget implements PreferredSizeWidget {
             title,
             style: GoogleFonts.spaceGrotesk(
               fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
             ),
           ),
       actions: actions,

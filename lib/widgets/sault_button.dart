@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../utils/constants.dart';
 
 class SaultButton extends StatelessWidget {
   final String text;
@@ -30,15 +31,11 @@ class SaultButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Default colors
-    const defaultPrimaryColor = Color(0xFF13b6ec);
-    const defaultBackgroundDark = Color(0xFF101d22);
-
-    final bgColor = backgroundColor ?? defaultPrimaryColor;
-    final txtColor = textColor ?? defaultBackgroundDark;
+    final Color bgColor = backgroundColor ?? AppColors.primaryColor;
+    final Color txtColor = textColor ?? AppColors.backgroundDark;
     final isDisabled = onTap == null;
 
-    Widget buttonContent = isLoading
+    final Widget buttonContent = isLoading
         ? SizedBox(
             width: 20,
             height: 20,
@@ -57,12 +54,12 @@ class SaultButton extends StatelessWidget {
               ],
               Flexible(
                 child: Text(
-                  text.toUpperCase(),
+                  text,
                   style: GoogleFonts.spaceGrotesk(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
                     color: txtColor,
-                    letterSpacing: 0.5,
+                    letterSpacing: 0.1,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -71,13 +68,10 @@ class SaultButton extends StatelessWidget {
           );
 
     return Material(
-      color: isDisabled
-          ? bgColor.withValues(alpha: 0.3)
-          : bgColor,
+      color: Colors.transparent,
       borderRadius: BorderRadius.circular(borderRadius),
       clipBehavior: Clip.antiAlias,
-      elevation: isDisabled ? 0 : 4,
-      shadowColor: bgColor.withValues(alpha: 0.25),
+      elevation: 0,
       child: InkWell(
         onTap: isLoading || isDisabled ? null : () {
           HapticFeedback.lightImpact();
@@ -88,6 +82,30 @@ class SaultButton extends StatelessWidget {
           height: height,
           alignment: Alignment.center,
           padding: const EdgeInsets.symmetric(horizontal: 24),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(borderRadius),
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                (isDisabled ? bgColor.withValues(alpha: 0.45) : bgColor),
+                (isDisabled ? bgColor.withValues(alpha: 0.34) : bgColor.withValues(alpha: 0.86)),
+              ],
+            ),
+            border: Border.all(
+              color: isDisabled
+                  ? bgColor.withValues(alpha: 0.10)
+                  : bgColor.withValues(alpha: 0.35),
+            ),
+            boxShadow: [
+              if (!isDisabled)
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.22),
+                  blurRadius: 24,
+                  offset: const Offset(0, 12),
+                ),
+            ],
+          ),
           child: buttonContent,
         ),
       ),
