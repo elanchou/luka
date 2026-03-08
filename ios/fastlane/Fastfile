@@ -65,4 +65,24 @@ platform :ios do
       skip_waiting_for_build_processing: true,
     )
   end
+
+  desc "Submit the latest build for App Store review"
+  lane :submit_release do
+    upload_to_app_store(
+      api_key: @api_key,
+      force: true,
+      skip_binary_upload: true,
+      skip_metadata: true,
+      skip_screenshots: true,
+      submit_for_review: true,
+      automatic_release: false,
+      phased_release: false,
+      precheck_include_in_app_purchases: false,
+      submission_information: {
+        add_id_info_uses_idfa: false,
+        export_compliance_uses_encryption: true,
+        export_compliance_is_exempt: true,
+      },
+    )
+  end
 end
