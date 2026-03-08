@@ -21,7 +21,7 @@ class ICloudBackupService extends ChangeNotifier {
   factory ICloudBackupService() => _instance;
   ICloudBackupService._internal();
 
-  static const String _containerId = 'iCloud.me.elanchou.vault';
+  static const String _containerId = 'iCloud.me.elanchou.sault';
   static const String _vaultFileName = 'vault.enc';
   static const String _activityFileName = 'activity.enc';
   static const String _metaFileName = 'vault_meta.json';
@@ -168,6 +168,7 @@ class ICloudBackupService extends ChangeNotifier {
       await _masterKeyService.restoreKeyMetadata(
         metaJson['salt'] as String,
         metaJson['iterations'] as int,
+        verifier: metaJson['verifier'] as String?,
       );
 
       // Download vault.enc
