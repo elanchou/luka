@@ -31,6 +31,14 @@ Build and upload to App Store
 
 Build and upload to TestFlight
 
+### ios submit_release
+
+```sh
+[bundle exec] fastlane ios submit_release
+```
+
+Submit the latest build for App Store review
+
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
