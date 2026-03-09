@@ -1,7 +1,9 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'dart:ui';
+
 import '../utils/constants.dart';
 
 class SeedWordAutocomplete extends StatefulWidget {
@@ -27,9 +29,9 @@ class SeedWordAutocomplete extends StatefulWidget {
 }
 
 class _SeedWordAutocompleteState extends State<SeedWordAutocomplete> {
+  final LayerLink _layerLink = LayerLink();
   List<String> _suggestions = [];
   OverlayEntry? _overlayEntry;
-  final LayerLink _layerLink = LayerLink();
 
   @override
   void initState() {
@@ -47,25 +49,19 @@ class _SeedWordAutocompleteState extends State<SeedWordAutocomplete> {
   }
 
   void _onTextChanged() {
-    final text = widget.controller.text.toLowerCase().trim();
+    final String text = widget.controller.text.toLowerCase().trim();
 
     if (text.isEmpty) {
-      setState(() {
-        _suggestions = [];
-      });
+      setState(() => _suggestions = []);
       _removeOverlay();
+      widget.onChanged?.call();
       return;
     }
 
-    // Find matching words
-    final matches = widget.wordList
-        .where((word) => word.startsWith(text))
-        .take(5)
-        .toList();
+    final List<String> matches =
+        widget.wordList.where((word) => word.startsWith(text)).take(5).toList();
 
-    setState(() {
-      _suggestions = matches;
-    });
+    setState(() => _suggestions = matches);
 
     if (matches.isNotEmpty && widget.focusNode.hasFocus) {
       _showOverlay();
@@ -89,11 +85,11 @@ class _SeedWordAutocompleteState extends State<SeedWordAutocomplete> {
 
     _overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
-        width: 200,
+        width: 220,
         child: CompositedTransformFollower(
           link: _layerLink,
           showWhenUnlinked: false,
-          offset: const Offset(0, 50),
+          offset: const Offset(0, 58),
           child: Material(
             color: Colors.transparent,
             child: _buildSuggestionsList(),
@@ -112,21 +108,19 @@ class _SeedWordAutocompleteState extends State<SeedWordAutocomplete> {
 
   Widget _buildSuggestionsList() {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(20),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.surfaceDark.withValues(alpha: 0.95),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
+            color: AppColors.surfaceDark.withValues(alpha: 0.96),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.softBorderColor),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
+                blurRadius: 24,
+                offset: const Offset(0, 14),
               ),
             ],
           ),
@@ -139,8 +133,8 @@ class _SeedWordAutocompleteState extends State<SeedWordAutocomplete> {
               color: Colors.white.withValues(alpha: 0.05),
             ),
             itemBuilder: (context, index) {
-              final word = _suggestions[index];
-              final currentText = widget.controller.text.toLowerCase();
+              final String word = _suggestions[index];
+              final String currentText = widget.controller.text.toLowerCase();
 
               return InkWell(
                 onTap: () {
@@ -149,27 +143,24 @@ class _SeedWordAutocompleteState extends State<SeedWordAutocomplete> {
                   widget.onSubmitted?.call();
                 },
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   child: Row(
                     children: [
                       Container(
-                        width: 24,
-                        height: 24,
+                        width: 28,
+                        height: 28,
                         decoration: BoxDecoration(
-                          color: AppColors.primaryColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(6),
+                          color: AppColors.primaryColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(9),
                         ),
-                        child: Center(
-                          child: Text(
-                            '${index + 1}',
-                            style: GoogleFonts.spaceGrotesk(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.primaryColor,
-                            ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          '${index + 1}',
+                          style: GoogleFonts.spaceMono(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primaryColor,
                           ),
                         ),
                       ),
@@ -182,7 +173,7 @@ class _SeedWordAutocompleteState extends State<SeedWordAutocomplete> {
                                 text: word.substring(0, currentText.length),
                                 style: GoogleFonts.spaceGrotesk(
                                   fontSize: 14,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w700,
                                   color: AppColors.primaryColor,
                                 ),
                               ),
@@ -190,17 +181,18 @@ class _SeedWordAutocompleteState extends State<SeedWordAutocomplete> {
                                 text: word.substring(currentText.length),
                                 style: GoogleFonts.spaceGrotesk(
                                   fontSize: 14,
-                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.textPrimary,
                                 ),
                               ),
                             ],
                           ),
                         ),
                       ),
-                      Icon(
-                        PhosphorIconsBold.caretRight,
+                      const Icon(
+                        PhosphorIconsBold.arrowUpRight,
                         size: 14,
-                        color: Colors.white.withValues(alpha: 0.3),
+                        color: AppColors.textMuted,
                       ),
                     ],
                   ),
@@ -215,46 +207,46 @@ class _SeedWordAutocompleteState extends State<SeedWordAutocomplete> {
 
   @override
   Widget build(BuildContext context) {
-    final isValid = _suggestions.contains(widget.controller.text.toLowerCase().trim());
-    final hasText = widget.controller.text.isNotEmpty;
+    final String currentText = widget.controller.text.toLowerCase().trim();
+    final bool hasText = currentText.isNotEmpty;
+    final bool isExactMatch = widget.wordList.contains(currentText);
+
+    Color borderColor = AppColors.softBorderColor;
+    if (widget.focusNode.hasFocus) {
+      borderColor = AppColors.primaryColor.withValues(alpha: 0.65);
+    } else if (hasText && isExactMatch) {
+      borderColor = AppColors.successColor.withValues(alpha: 0.55);
+    } else if (hasText && !isExactMatch) {
+      borderColor = AppColors.dangerColor.withValues(alpha: 0.45);
+    }
 
     return CompositedTransformTarget(
       link: _layerLink,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.03),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: widget.focusNode.hasFocus
-                ? AppColors.primaryColor.withValues(alpha: 0.5)
-                : (hasText && isValid)
-                    ? AppColors.successColor.withValues(alpha: 0.3)
-                    : (hasText && !isValid)
-                        ? AppColors.dangerColor.withValues(alpha: 0.3)
-                        : Colors.white.withValues(alpha: 0.1),
-            width: 1.5,
-          ),
+          color: AppColors.backgroundElevated,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: borderColor),
         ),
         child: Row(
           children: [
             Container(
-              width: 40,
-              height: 48,
+              width: 42,
+              height: 54,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.02),
                 borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  bottomLeft: Radius.circular(12),
+                  topLeft: Radius.circular(20),
+                  bottomLeft: Radius.circular(20),
                 ),
               ),
-              child: Center(
-                child: Text(
-                  '${widget.wordNumber}',
-                  style: GoogleFonts.spaceMono(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[600],
-                  ),
+              child: Text(
+                '${widget.wordNumber}',
+                style: GoogleFonts.spaceMono(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.labelColor,
                 ),
               ),
             ),
@@ -267,33 +259,33 @@ class _SeedWordAutocompleteState extends State<SeedWordAutocomplete> {
                 enableSuggestions: false,
                 style: GoogleFonts.spaceGrotesk(
                   fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
                 ),
                 decoration: InputDecoration(
                   hintText: 'word',
                   hintStyle: GoogleFonts.spaceGrotesk(
                     fontSize: 15,
-                    color: Colors.grey[600],
+                    color: AppColors.textMuted,
                   ),
                   border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 14,
-                  ),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                 ),
                 onSubmitted: (_) => widget.onSubmitted?.call(),
               ),
             ),
             if (hasText)
               Padding(
-                padding: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.only(right: 10),
                 child: Icon(
-                  isValid ? PhosphorIconsBold.checkCircle : PhosphorIconsBold.warningCircle,
+                  isExactMatch
+                      ? PhosphorIconsBold.checkCircle
+                      : PhosphorIconsBold.warningCircle,
                   size: 18,
-                  color: isValid
+                  color: isExactMatch
                       ? AppColors.successColor
-                      : AppColors.dangerColor.withValues(alpha: 0.5),
+                      : AppColors.dangerColor,
                 ),
               ),
           ],
@@ -302,4 +294,3 @@ class _SeedWordAutocompleteState extends State<SeedWordAutocomplete> {
     );
   }
 }
-

@@ -54,18 +54,22 @@ class SaultOutlineButton extends StatelessWidget {
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               if (icon != null) ...[
                 Icon(icon, color: AppColors.textSecondary, size: 18),
                 const SizedBox(width: 8),
               ],
-              Text(
-                text,
-                style: GoogleFonts.spaceGrotesk(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: txtColor,
-                  letterSpacing: 0.1,
+              Flexible(
+                child: Text(
+                  text,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.spaceGrotesk(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: txtColor,
+                    letterSpacing: 0.1,
+                  ),
                 ),
               ),
             ],

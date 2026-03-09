@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:bip39/src/wordlists/english.dart';
-import '../widgets/gradient_background.dart';
-import '../widgets/sault_button.dart';
-import '../widgets/sault_app_bar.dart';
-import '../widgets/seed_word_autocomplete.dart';
-import '../widgets/error_snackbar.dart';
+
+import '../utils/bip39_english_wordlist.dart';
+import '../utils/constants.dart';
 import '../utils/validators.dart';
+import '../widgets/add_secret_flow_widgets.dart';
+import '../widgets/error_snackbar.dart';
+import '../widgets/gradient_background.dart';
+import '../widgets/sault_app_bar.dart';
+import '../widgets/sault_button.dart';
+import '../widgets/sault_outline_button.dart';
+import '../widgets/seed_word_autocomplete.dart';
 
 class AddSecretStep2 extends StatefulWidget {
   const AddSecretStep2({super.key});
@@ -22,74 +26,72 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
   late String _network;
   late String _icon;
 
-  // Get BIP39 word list (2048 words)
-  final List<String> _bip39Words = WORDLIST;
+  final List<String> _bip39Words = bip39EnglishWordlist;
+  final List<int> _availableWordCounts = AppConstants.validSeedPhraseCounts;
 
-  // Available word counts
-  final List<int> _availableWordCounts = [12, 15, 18, 21, 24];
   int _selectedWordCount = 12;
-
   List<TextEditingController> _controllers = [];
   List<FocusNode> _focusNodes = [];
-
   bool _initialized = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (!_initialized) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-      if (args != null) {
-        _secretName = args['name'] ?? 'Unknown';
-        _network = args['network'] ?? 'Unknown';
-        _icon = args['icon'] ?? 'wallet';
-        final wordCount = args['wordCount'] as int?;
-        if (wordCount != null && _availableWordCounts.contains(wordCount)) {
-          _selectedWordCount = wordCount;
-        }
-      } else {
-        _secretName = 'Unknown';
-        _network = 'Unknown';
-        _icon = 'wallet';
-      }
-      _initializeInputs();
-      _initialized = true;
-    }
-  }
+    if (_initialized) return;
 
-  @override
-  void initState() {
-    super.initState();
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    _secretName = args?['name'] ?? 'Unknown';
+    _network = args?['network'] ?? 'Unknown';
+    _icon = args?['icon'] ?? 'wallet';
+
+    final int? wordCount = args?['wordCount'] as int?;
+    if (wordCount != null && _availableWordCounts.contains(wordCount)) {
+      _selectedWordCount = wordCount;
+    }
+
+    _initializeInputs();
+    _initialized = true;
   }
 
   void _initializeInputs() {
-    // Dispose existing controllers and focus nodes
-    for (var controller in _controllers) {
+    for (final controller in _controllers) {
       controller.dispose();
     }
-    for (var node in _focusNodes) {
+    for (final node in _focusNodes) {
       node.dispose();
     }
 
-    // Create new controllers and focus nodes
-    _controllers = List.generate(
-      _selectedWordCount,
-      (index) => TextEditingController(),
-    );
+    _controllers =
+        List.generate(_selectedWordCount, (_) => TextEditingController());
+    _focusNodes = List.generate(_selectedWordCount, (_) => FocusNode());
 
-    _focusNodes = List.generate(
-      _selectedWordCount,
-      (index) => FocusNode(),
-    );
-
-    // Set focus listeners
     for (int i = 0; i < _selectedWordCount; i++) {
-      final index = i; // Capture for closure
+      final int index = i;
       _focusNodes[i].addListener(() {
         if (_focusNodes[index].hasFocus) {
           setState(() {});
         }
       });
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final controller in _controllers) {
+      controller.dispose();
+    }
+    for (final node in _focusNodes) {
+      node.dispose();
+    }
+    super.dispose();
+  }
+
+  void _focusNext(int currentIndex) {
+    if (currentIndex < _selectedWordCount - 1) {
+      _focusNodes[currentIndex + 1].requestFocus();
+    } else {
+      _focusNodes[currentIndex].unfocus();
     }
   }
 
@@ -100,31 +102,71 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
     });
   }
 
-  @override
-  void dispose() {
-    for (var controller in _controllers) {
-      controller.dispose();
-    }
-    for (var node in _focusNodes) {
-      node.dispose();
-    }
-    super.dispose();
+  int _getValidWordCount() {
+    return _controllers.where((controller) {
+      final String word = controller.text.trim().toLowerCase();
+      return word.isNotEmpty && _bip39Words.contains(word);
+    }).length;
   }
 
-  void _focusNext(int currentIndex) {
-    if (currentIndex < _selectedWordCount - 1) {
-      _focusNodes[currentIndex + 1].requestFocus();
-    } else {
-      // Last word - unfocus to hide keyboard
-      _focusNodes[currentIndex].unfocus();
+  Future<void> _pasteFromClipboard() async {
+    final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+    final String rawText = clipboardData?.text?.trim() ?? '';
+
+    if (rawText.isEmpty) {
+      if (mounted) {
+        ErrorSnackbar.show(context, message: 'Clipboard is empty');
+      }
+      return;
     }
+
+    final List<String> words = rawText
+        .split(RegExp(r'\s+'))
+        .map((word) => word.toLowerCase().trim())
+        .where((word) => word.isNotEmpty)
+        .toList();
+
+    if (words.isEmpty) {
+      if (mounted) {
+        ErrorSnackbar.show(context,
+            message: 'No valid words found in clipboard');
+      }
+      return;
+    }
+
+    if (_availableWordCounts.contains(words.length) &&
+        words.length != _selectedWordCount) {
+      setState(() {
+        _selectedWordCount = words.length;
+        _initializeInputs();
+      });
+    }
+
+    final int fillCount =
+        words.length < _selectedWordCount ? words.length : _selectedWordCount;
+    for (int i = 0; i < fillCount; i++) {
+      _controllers[i].text = words[i];
+    }
+
+    setState(() {});
+
+    if (mounted) {
+      SuccessSnackbar.show(context, message: '$fillCount words pasted');
+    }
+  }
+
+  void _clearAll() {
+    for (final controller in _controllers) {
+      controller.clear();
+    }
+    setState(() {});
   }
 
   void _proceedToConfirm() {
-    // Collect all words
-    final words = _controllers.map((c) => c.text.trim().toLowerCase()).toList();
+    final List<String> words = _controllers
+        .map((controller) => controller.text.trim().toLowerCase())
+        .toList();
 
-    // Use validator
     final validationResult = Validators.validateSeedPhrase(words, _bip39Words);
 
     if (!validationResult.isValid) {
@@ -138,7 +180,6 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
       return;
     }
 
-    // Navigate to Step 3 for confirmation
     Navigator.pushNamed(
       context,
       '/add-secret-3',
@@ -152,91 +193,20 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
     );
   }
 
-  Future<void> _pasteFromClipboard() async {
-    final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
-    if (clipboardData == null || clipboardData.text == null || clipboardData.text!.trim().isEmpty) {
-      if (mounted) {
-        ErrorSnackbar.show(context, message: 'Clipboard is empty');
-      }
-      return;
-    }
-
-    final words = clipboardData.text!.trim().split(RegExp(r'\s+'));
-    final cleanWords = words.map((w) => w.toLowerCase().trim()).where((w) => w.isNotEmpty).toList();
-
-    if (cleanWords.isEmpty) {
-      if (mounted) {
-        ErrorSnackbar.show(context, message: 'No valid words found in clipboard');
-      }
-      return;
-    }
-
-    // Auto-switch word count if pasted count matches an available option
-    if (_availableWordCounts.contains(cleanWords.length) && cleanWords.length != _selectedWordCount) {
-      setState(() {
-        _selectedWordCount = cleanWords.length;
-        _initializeInputs();
-      });
-    }
-
-    // Fill controllers
-    final fillCount = cleanWords.length < _selectedWordCount ? cleanWords.length : _selectedWordCount;
-    for (int i = 0; i < fillCount; i++) {
-      _controllers[i].text = cleanWords[i];
-    }
-
-    setState(() {});
-
-    if (mounted) {
-      SuccessSnackbar.show(context, message: '$fillCount words pasted');
-    }
-  }
-
-  void _clearAll() {
-    for (var controller in _controllers) {
-      controller.clear();
-    }
-    setState(() {});
-  }
-
-  int _getValidWordCount() {
-    return _controllers.where((c) {
-      final word = c.text.trim().toLowerCase();
-      return word.isNotEmpty && _bip39Words.contains(word);
-    }).length;
-  }
-
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF13b6ec);
-    const backgroundDark = Color(0xFF101d22);
-    final validCount = _getValidWordCount();
+    final int validCount = _getValidWordCount();
+    final double progress = validCount / _selectedWordCount;
 
     return Scaffold(
-      backgroundColor: backgroundDark,
+      backgroundColor: AppColors.backgroundDark,
       extendBodyBehindAppBar: true,
-      appBar: SaultAppBar(
+      appBar: const SaultAppBar(
         title: 'New Sault',
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  'Step 2/3',
-                  style: GoogleFonts.spaceGrotesk(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF9db2b9),
-                  ),
-                ),
-              ),
-            ),
+            padding: EdgeInsets.only(right: 20),
+            child: Center(child: AddSecretStepIndicator(step: 2)),
           ),
         ],
       ),
@@ -248,304 +218,137 @@ class _AddSecretStep2State extends State<AddSecretStep2> {
               children: [
                 Expanded(
                   child: ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
                     children: [
-                      // Headline
-                      Text(
-                        'Enter your seed phrase',
-                        style: GoogleFonts.spaceGrotesk(
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Start typing and select from suggestions. Choose your preferred word count below.',
-                        style: GoogleFonts.notoSans(
-                          fontSize: 16,
-                          color: Colors.grey[400],
-                          height: 1.5,
-                        ),
+                      const AddSecretHero(
+                        eyebrow: 'SEED PHRASE ENTRY',
+                        title: 'Enter each recovery word carefully',
+                        description:
+                            'Use autocomplete, paste from a trusted source, or type manually. We validate the phrase before it moves to final review.',
                       ),
                       const SizedBox(height: 24),
-
-                      // Word Count Selector
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.03),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.1),
-                          ),
-                        ),
+                      AddSecretPanel(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
                               children: [
-                                Icon(
-                                  PhosphorIconsBold.listNumbers,
-                                  color: primaryColor,
-                                  size: 20,
+                                AddSecretInlineStat(
+                                  icon: PhosphorIconsBold.identificationCard,
+                                  label: 'RECORD',
+                                  value: _secretName,
                                 ),
                                 const SizedBox(width: 12),
-                                Text(
-                                  'Word Count',
-                                  style: GoogleFonts.spaceGrotesk(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
+                                AddSecretInlineStat(
+                                  icon: PhosphorIconsBold.globe,
+                                  label: 'NETWORK',
+                                  value: _network,
                                 ),
                               ],
                             ),
+                            const SizedBox(height: 18),
+                            const AddSecretSectionLabel('WORD COUNT'),
                             const SizedBox(height: 12),
                             Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
+                              spacing: 10,
+                              runSpacing: 10,
                               children: _availableWordCounts.map((count) {
-                                final isSelected = count == _selectedWordCount;
-                                return GestureDetector(
+                                return AddSecretOptionChip(
+                                  label: '$count words',
+                                  isSelected: count == _selectedWordCount,
                                   onTap: () => _changeWordCount(count),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 8,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? primaryColor
-                                          : Colors.white.withValues(alpha: 0.05),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                        color: isSelected
-                                            ? primaryColor
-                                            : Colors.white.withValues(alpha: 0.1),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      '$count',
-                                      style: GoogleFonts.spaceGrotesk(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        color: isSelected
-                                            ? backgroundDark
-                                            : Colors.white.withValues(alpha: 0.7),
-                                      ),
-                                    ),
-                                  ),
                                 );
                               }).toList(),
                             ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Progress Indicator
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.03),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.1),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              PhosphorIconsBold.listChecks,
-                              color: primaryColor,
-                              size: 20,
+                            const SizedBox(height: 18),
+                            const AddSecretSectionLabel('PROGRESS'),
+                            const SizedBox(height: 10),
+                            Text(
+                              '$validCount of $_selectedWordCount words are currently valid',
+                              style: GoogleFonts.notoSans(
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
+                              ),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Progress: $validCount/$_selectedWordCount valid words',
-                                    style: GoogleFonts.spaceGrotesk(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(4),
-                                    child: LinearProgressIndicator(
-                                      value: validCount / _selectedWordCount,
-                                      backgroundColor: Colors.white.withValues(alpha: 0.1),
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        validCount == _selectedWordCount
-                                            ? const Color(0xFF00d68f)
-                                            : primaryColor,
-                                      ),
-                                      minHeight: 6,
-                                    ),
-                                  ),
-                                ],
+                            const SizedBox(height: 10),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(999),
+                              child: LinearProgressIndicator(
+                                value: progress,
+                                minHeight: 8,
+                                backgroundColor:
+                                    Colors.white.withValues(alpha: 0.06),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  validCount == _selectedWordCount
+                                      ? AppColors.successColor
+                                      : AppColors.primaryColor,
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      // Paste / Clear row
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
                       Row(
                         children: [
                           Expanded(
-                            child: GestureDetector(
+                            child: SaultOutlineButton(
+                              text: 'Paste words',
+                              icon: PhosphorIconsBold.clipboard,
                               onTap: _pasteFromClipboard,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.03),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.1),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      PhosphorIconsBold.clipboard,
-                                      color: primaryColor,
-                                      size: 16,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'PASTE',
-                                      style: GoogleFonts.spaceGrotesk(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: primaryColor,
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
                             ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: GestureDetector(
+                            child: SaultOutlineButton(
+                              text: 'Clear all',
+                              icon: PhosphorIconsBold.eraser,
                               onTap: _clearAll,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.03),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.1),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      PhosphorIconsBold.eraser,
-                                      color: Colors.white.withValues(alpha: 0.5),
-                                      size: 16,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'CLEAR',
-                                      style: GoogleFonts.spaceGrotesk(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white.withValues(alpha: 0.5),
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 24),
-
-                      // Grid of Input Cells with Autocomplete
-                      GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 16,
-                          childAspectRatio: 3.5,
-                        ),
-                        itemCount: _selectedWordCount,
-                        itemBuilder: (context, index) {
-                          return SeedWordAutocomplete(
-                            controller: _controllers[index],
-                            focusNode: _focusNodes[index],
-                            wordList: _bip39Words,
-                            wordNumber: index + 1,
-                            onSubmitted: () => _focusNext(index),
-                            onChanged: () {
-                              setState(() {});
-                            },
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Helpful Tip
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: primaryColor.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: primaryColor.withValues(alpha: 0.2),
+                      const SizedBox(height: 16),
+                      AddSecretPanel(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+                        child: GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 14,
+                            childAspectRatio: 2.95,
                           ),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Icon(
-                              PhosphorIconsBold.lightbulb,
-                              color: primaryColor,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                'Tip: Words are auto-suggested as you type. Select from the dropdown to quickly fill in each word.',
-                                style: GoogleFonts.spaceGrotesk(
-                                  fontSize: 13,
-                                  color: Colors.white.withValues(alpha: 0.8),
-                                  height: 1.4,
-                                ),
-                              ),
-                            ),
-                          ],
+                          itemCount: _selectedWordCount,
+                          itemBuilder: (context, index) {
+                            return SeedWordAutocomplete(
+                              controller: _controllers[index],
+                              focusNode: _focusNodes[index],
+                              wordList: _bip39Words,
+                              wordNumber: index + 1,
+                              onSubmitted: () => _focusNext(index),
+                              onChanged: () => setState(() {}),
+                            );
+                          },
                         ),
                       ),
-                      const SizedBox(height: 100),
+                      const SizedBox(height: 18),
+                      const AddSecretNotice(
+                        icon: PhosphorIconsBold.lightbulb,
+                        text:
+                            'Only use recovery phrases you trust and control. Autocomplete is local and based on the BIP39 English word list.',
+                      ),
                     ],
                   ),
                 ),
-
-                // Action Button
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
+                  padding: const EdgeInsets.fromLTRB(24, 10, 24, 18),
                   child: SaultButton(
-                    text: 'REVIEW',
-                    onTap: validCount == _selectedWordCount ? _proceedToConfirm : null,
+                    text: 'Review and confirm',
                     icon: PhosphorIconsBold.arrowRight,
-                    backgroundColor: primaryColor,
-                    textColor: backgroundDark,
+                    onTap: _proceedToConfirm,
                   ),
                 ),
               ],
