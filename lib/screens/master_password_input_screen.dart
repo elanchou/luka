@@ -10,12 +10,14 @@ import '../widgets/sault_button.dart';
 import '../widgets/sault_text_field.dart';
 import '../widgets/sault_brand.dart';
 import '../utils/constants.dart';
+import '../widgets/sault_dialog.dart';
 
 class MasterPasswordInputScreen extends StatefulWidget {
   const MasterPasswordInputScreen({super.key});
 
   @override
-  State<MasterPasswordInputScreen> createState() => _MasterPasswordInputScreenState();
+  State<MasterPasswordInputScreen> createState() =>
+      _MasterPasswordInputScreenState();
 }
 
 class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
@@ -30,7 +32,6 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
     _passwordController.dispose();
     super.dispose();
   }
-
 
   Future<void> _unlock() async {
     final password = _passwordController.text;
@@ -110,7 +111,8 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
                           hintText: 'Enter your master password',
                           isPassword: !_showPassword,
                           textInputAction: TextInputAction.done,
-                          onChanged: (_) => setState(() => _errorMessage = null),
+                          onChanged: (_) =>
+                              setState(() => _errorMessage = null),
                         ),
                         const SizedBox(height: 14),
                         Row(
@@ -121,7 +123,8 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
                                 setState(() => _showPassword = value ?? false);
                               },
                               activeColor: AppColors.primaryColor,
-                              side: const BorderSide(color: AppColors.textMuted),
+                              side:
+                                  const BorderSide(color: AppColors.textMuted),
                             ),
                             Text(
                               'Show password',
@@ -137,10 +140,12 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
                           Container(
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
-                              color: AppColors.dangerColor.withValues(alpha: 0.10),
+                              color:
+                                  AppColors.dangerColor.withValues(alpha: 0.10),
                               borderRadius: BorderRadius.circular(18),
                               border: Border.all(
-                                color: AppColors.dangerColor.withValues(alpha: 0.22),
+                                color: AppColors.dangerColor
+                                    .withValues(alpha: 0.22),
                               ),
                             ),
                             child: Row(
@@ -194,50 +199,30 @@ class _MasterPasswordInputScreenState extends State<MasterPasswordInputScreen> {
   }
 
   void _showResetDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1a2c32),
-        title: Text(
-          'Reset Sault?',
-          style: GoogleFonts.spaceGrotesk(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        content: Text(
+    showSaultDialog<bool>(
+      context,
+      title: 'Reset Sault?',
+      message:
           'If you forgot your master password, you will need to reset the vault. This will delete all your secrets permanently.',
-          style: GoogleFonts.notoSans(
-            color: Colors.grey[300],
-            fontSize: 14,
-          ),
+      icon: PhosphorIconsBold.warningOctagon,
+      tone: SaultDialogTone.danger,
+      actions: const <SaultDialogAction<bool>>[
+        SaultDialogAction<bool>(label: 'Cancel', value: false),
+        SaultDialogAction<bool>(
+          label: 'Reset Sault',
+          value: true,
+          isDestructive: true,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.spaceGrotesk(color: Colors.grey[400]),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              // Reset vault
-              final vaultProvider = Provider.of<SaultProvider>(context, listen: false);
-              await vaultProvider.clearVault();
-              await _masterKeyService.reset();
-              if (mounted) {
-                Navigator.of(context).pushReplacementNamed('/onboarding');
-              }
-            },
-            child: Text(
-              'Reset Sault',
-              style: GoogleFonts.spaceGrotesk(color: Colors.red),
-            ),
-          ),
-        ],
-      ),
-    );
+      ],
+    ).then((bool? shouldReset) async {
+      if (shouldReset != true) return;
+      if (!mounted) return;
+
+      final vaultProvider = Provider.of<SaultProvider>(context, listen: false);
+      await vaultProvider.clearVault();
+      await _masterKeyService.reset();
+      if (!mounted) return;
+      Navigator.of(context).pushReplacementNamed('/onboarding');
+    });
   }
 }

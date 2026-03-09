@@ -12,6 +12,7 @@ import '../providers/sault_provider.dart';
 import '../utils/constants.dart';
 import '../widgets/error_snackbar.dart';
 import '../widgets/sault_header.dart';
+import '../widgets/sault_dialog.dart';
 
 class SystemSettingsScreen extends StatefulWidget {
   const SystemSettingsScreen({super.key});
@@ -61,9 +62,9 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
           SafeArea(
             child: Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
-                  child: const SaultHeader(
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(24, 20, 24, 8),
+                  child: SaultHeader(
                     title: 'Settings',
                     showUserIcon: false,
                   ),
@@ -102,13 +103,15 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                 if (_isLoading)
                   const Expanded(
                     child: Center(
-                      child: CircularProgressIndicator(color: AppColors.primaryColor),
+                      child: CircularProgressIndicator(
+                          color: AppColors.primaryColor),
                     ),
                   )
                 else
                   Expanded(
                     child: ListView(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 8),
                       children: [
                         _SettingsSection(
                           title: 'SECURITY',
@@ -141,7 +144,8 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                             const _SettingsTile(
                               icon: PhosphorIconsBold.timer,
                               title: 'Auto-Lock Timer',
-                              trailing: _TrailingTextWithArrow(text: 'Immediate'),
+                              trailing:
+                                  _TrailingTextWithArrow(text: 'Immediate'),
                               isLast: true,
                             ),
                           ],
@@ -161,10 +165,12 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                                   value: _icloudEnabled && icloud.isAvailable,
                                   onChanged: icloud.isAvailable
                                       ? (val) async {
-                                          await _preferencesService.setICloudBackupEnabled(val);
+                                          await _preferencesService
+                                              .setICloudBackupEnabled(val);
                                           setState(() => _icloudEnabled = val);
                                           if (val) {
-                                            icloud.backupToICloud(prefs: _preferencesService);
+                                            icloud.backupToICloud(
+                                                prefs: _preferencesService);
                                           }
                                         }
                                       : null,
@@ -176,7 +182,9 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                                 icon: PhosphorIconsBold.clockCounterClockwise,
                                 title: 'Last Backup',
                                 trailing: _TrailingText(
-                                  text: _formatLastBackupTime(icloud.lastBackupTime ?? _preferencesService.getLastBackupTime()),
+                                  text: _formatLastBackupTime(icloud
+                                          .lastBackupTime ??
+                                      _preferencesService.getLastBackupTime()),
                                 ),
                               ),
                             ),
@@ -184,7 +192,8 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                               builder: (context, icloud, _) => _SettingsTile(
                                 icon: PhosphorIconsBold.cloudCheck,
                                 title: 'Backup Now',
-                                trailing: icloud.status == ICloudBackupStatus.backingUp
+                                trailing: icloud.status ==
+                                        ICloudBackupStatus.backingUp
                                     ? const SizedBox(
                                         width: 20,
                                         height: 20,
@@ -194,16 +203,21 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                                         ),
                                       )
                                     : const _TrailingArrow(),
-                                onTap: icloud.status == ICloudBackupStatus.backingUp
+                                onTap: icloud.status ==
+                                        ICloudBackupStatus.backingUp
                                     ? null
                                     : () async {
-                                        final success = await icloud.backupToICloud(prefs: _preferencesService);
-                                        if (mounted) {
-                                          if (success) {
-                                            SuccessSnackbar.show(context, message: 'Backup to iCloud complete');
-                                          } else {
-                                            ErrorSnackbar.show(context, message: 'Backup failed');
-                                          }
+                                        final success =
+                                            await icloud.backupToICloud(
+                                                prefs: _preferencesService);
+                                        if (!context.mounted) return;
+                                        if (success) {
+                                          SuccessSnackbar.show(context,
+                                              message:
+                                                  'Backup to iCloud complete');
+                                        } else {
+                                          ErrorSnackbar.show(context,
+                                              message: 'Backup failed');
                                         }
                                       },
                               ),
@@ -221,14 +235,18 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                               subtitle: 'ENCRYPTED FILE',
                               trailing: const _TrailingArrow(),
                               onTap: () async {
-                                final vaultProvider = Provider.of<SaultProvider>(context, listen: false);
-                                final file = await vaultProvider.getEncryptedVaultFile();
+                                final vaultProvider =
+                                    Provider.of<SaultProvider>(context,
+                                        listen: false);
+                                final file =
+                                    await vaultProvider.getEncryptedVaultFile();
                                 if (file != null) {
-                                  await Share.shareXFiles([XFile(file.path)], text: 'Sault Backup');
+                                  await Share.shareXFiles([XFile(file.path)],
+                                      text: 'Sault Backup');
                                 } else {
-                                  if (mounted) {
-                                    ErrorSnackbar.show(context, message: 'Vault file not found');
-                                  }
+                                  if (!context.mounted) return;
+                                  ErrorSnackbar.show(context,
+                                      message: 'Vault file not found');
                                 }
                               },
                             ),
@@ -238,28 +256,35 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                               subtitle: 'WIPE HISTORY',
                               trailing: const _TrailingArrow(),
                               onTap: () async {
-                                final confirm = await showDialog<bool>(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    backgroundColor: const Color(0xFF1a2c32),
-                                    title: Text('Clear Logs?', style: GoogleFonts.spaceGrotesk(color: Colors.white, fontWeight: FontWeight.bold)),
-                                    content: Text('Delete all activity history? This cannot be undone.', style: GoogleFonts.notoSans(color: Colors.grey[300])),
-                                    actions: [
-                                      TextButton(onPressed: () => Navigator.pop(context, false), child: Text('Cancel', style: GoogleFonts.spaceGrotesk(color: Colors.grey[400]))),
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(context, true),
-                                        child: Text('Clear', style: GoogleFonts.spaceGrotesk(color: Colors.red)),
-                                      ),
-                                    ],
-                                  ),
+                                final confirm = await showSaultDialog<bool>(
+                                  context,
+                                  title: 'Clear Logs?',
+                                  message:
+                                      'Delete all activity history? This cannot be undone.',
+                                  icon: PhosphorIconsBold.broom,
+                                  tone: SaultDialogTone.danger,
+                                  actions: const <SaultDialogAction<bool>>[
+                                    SaultDialogAction<bool>(
+                                      label: 'Cancel',
+                                      value: false,
+                                    ),
+                                    SaultDialogAction<bool>(
+                                      label: 'Clear',
+                                      value: true,
+                                      isDestructive: true,
+                                    ),
+                                  ],
                                 );
 
-                                if (confirm == true && mounted) {
-                                  final vaultProvider = Provider.of<SaultProvider>(context, listen: false);
+                                if (confirm == true) {
+                                  if (!context.mounted) return;
+                                  final vaultProvider =
+                                      Provider.of<SaultProvider>(context,
+                                          listen: false);
                                   await vaultProvider.clearLogs();
-                                  if (mounted) {
-                                    SuccessSnackbar.show(context, message: 'Activity logs cleared');
-                                  }
+                                  if (!context.mounted) return;
+                                  SuccessSnackbar.show(context,
+                                      message: 'Activity logs cleared');
                                 }
                               },
                               isLast: true,
@@ -302,13 +327,17 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
                               icon: PhosphorIconsBold.shieldCheck,
                               title: 'Privacy Policy',
                               trailing: const _TrailingArrow(),
-                              onTap: () => SuccessSnackbar.show(context, message: 'Privacy Policy is locally enforced.'),
+                              onTap: () => SuccessSnackbar.show(context,
+                                  message:
+                                      'Privacy Policy is locally enforced.'),
                             ),
                             _SettingsTile(
                               icon: PhosphorIconsBold.fileText,
                               title: 'Terms of Service',
                               trailing: const _TrailingArrow(),
-                              onTap: () => SuccessSnackbar.show(context, message: 'Terms of Service: Your data, your responsibility.'),
+                              onTap: () => SuccessSnackbar.show(context,
+                                  message:
+                                      'Terms of Service: Your data, your responsibility.'),
                               isLast: true,
                             ),
                           ],
@@ -354,39 +383,34 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
   }
 
   void _showRestoreConfirmation() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1a2c32),
-        title: Text(
-          'Restore from iCloud?',
-          style: GoogleFonts.spaceGrotesk(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        content: Text(
+    showSaultDialog<bool>(
+      context,
+      title: 'Restore from iCloud?',
+      message:
           'This will replace your current vault with the iCloud backup. You will need to re-enter your master password.',
-          style: GoogleFonts.notoSans(color: Colors.grey[300]),
+      icon: PhosphorIconsBold.cloudArrowDown,
+      tone: SaultDialogTone.info,
+      actions: const <SaultDialogAction<bool>>[
+        SaultDialogAction<bool>(label: 'Cancel', value: false),
+        SaultDialogAction<bool>(
+          label: 'Restore',
+          value: true,
+          isPrimary: true,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel', style: GoogleFonts.spaceGrotesk(color: Colors.grey[400])),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text('Restore', style: GoogleFonts.spaceGrotesk(color: const Color(0xFF13b6ec))),
-          ),
-        ],
-      ),
+      ],
     ).then((confirm) async {
       if (confirm == true && mounted) {
         final icloud = ICloudBackupService();
         final success = await icloud.restoreFromICloud();
         if (mounted) {
           if (success) {
-            SuccessSnackbar.show(context, message: 'Sault restored. Please log in.');
-            Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+            SuccessSnackbar.show(context,
+                message: 'Sault restored. Please log in.');
+            Navigator.of(context)
+                .pushNamedAndRemoveUntil('/', (route) => false);
           } else {
-            ErrorSnackbar.show(context, message: 'Restore failed: ${icloud.lastError}');
+            ErrorSnackbar.show(context,
+                message: 'Restore failed: ${icloud.lastError}');
           }
         }
       }
@@ -394,58 +418,43 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
   }
 
   void _showSecurityInfo() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1a2c32),
-        title: Text(
-          'Security Level',
-          style: GoogleFonts.spaceGrotesk(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+    showSaultDialog<void>(
+      context,
+      title: 'Security Level',
+      icon: PhosphorIconsBold.shieldCheck,
+      tone: SaultDialogTone.info,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Current Level: ${_currentSecurityLevel.displayName}',
+            style: GoogleFonts.spaceGrotesk(
+              color: AppColors.primaryColor,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Current Level: ${_currentSecurityLevel.displayName}',
-              style: GoogleFonts.spaceGrotesk(
-                color: const Color(0xFF13b6ec),
-                fontWeight: FontWeight.w500,
-              ),
+          const SizedBox(height: 8),
+          Text(
+            'Iterations: ${_formatNumber(_currentSecurityLevel.iterations)}',
+            style: GoogleFonts.notoSans(
+              color: AppColors.textSecondary,
+              fontSize: 13,
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Iterations: ${_formatNumber(_currentSecurityLevel.iterations)}',
-              style: GoogleFonts.notoSans(
-                color: Colors.grey[400],
-                fontSize: 13,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'To change security level, use "Change Master Password" above.',
-              style: GoogleFonts.notoSans(
-                color: Colors.grey[500],
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'OK',
-              style: GoogleFonts.spaceGrotesk(
-                color: const Color(0xFF13b6ec),
-              ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'To change security level, use "Change Master Password" above.',
+            style: GoogleFonts.notoSans(
+              color: AppColors.textMuted,
+              fontSize: 12,
             ),
           ),
         ],
       ),
+      actions: const <SaultDialogAction<void>>[
+        SaultDialogAction<void>(label: 'OK', isPrimary: true),
+      ],
     );
   }
 
@@ -491,7 +500,8 @@ class _SettingsSection extends StatelessWidget {
             color: Colors.white.withValues(alpha: 0.045),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: color?.withValues(alpha: 0.25) ?? AppColors.softBorderColor,
+              color:
+                  color?.withValues(alpha: 0.25) ?? AppColors.softBorderColor,
             ),
           ),
           child: Column(children: children),
@@ -569,7 +579,7 @@ class _SettingsTile extends StatelessWidget {
             ),
           ),
           if (!isLast)
-            Divider(
+            const Divider(
               height: 1,
               thickness: 1,
               indent: 68,
@@ -617,7 +627,8 @@ class _TrailingArrow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Icon(PhosphorIconsBold.caretRight, color: AppColors.textMuted, size: 18);
+    return const Icon(PhosphorIconsBold.caretRight,
+        color: AppColors.textMuted, size: 18);
   }
 }
 

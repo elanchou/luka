@@ -12,34 +12,27 @@ import '../providers/sault_provider.dart';
 import '../services/icloud_backup_service.dart';
 import '../utils/constants.dart';
 import '../widgets/error_snackbar.dart';
+import '../widgets/sault_dialog.dart';
 
 class SaultOnboardingScreen extends StatelessWidget {
   const SaultOnboardingScreen({super.key});
 
   Future<void> _restoreFromICloud(BuildContext context) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1a2c32),
-        title: Text(
-          'Restore from iCloud?',
-          style: GoogleFonts.spaceGrotesk(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        content: Text(
+    final confirm = await showSaultDialog<bool>(
+      context,
+      title: 'Restore from iCloud?',
+      message:
           'This will restore your vault from iCloud backup. You will need the original master password to unlock it.',
-          style: GoogleFonts.notoSans(color: Colors.grey[300]),
+      icon: PhosphorIconsBold.cloudArrowDown,
+      tone: SaultDialogTone.info,
+      actions: const <SaultDialogAction<bool>>[
+        SaultDialogAction<bool>(label: 'Cancel', value: false),
+        SaultDialogAction<bool>(
+          label: 'Restore',
+          value: true,
+          isPrimary: true,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel', style: GoogleFonts.spaceGrotesk(color: Colors.grey[400])),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text('Restore', style: GoogleFonts.spaceGrotesk(color: const Color(0xFF13b6ec))),
-          ),
-        ],
-      ),
+      ],
     );
 
     if (confirm == true && context.mounted) {
@@ -47,10 +40,12 @@ class SaultOnboardingScreen extends StatelessWidget {
       final success = await icloud.restoreFromICloud();
       if (context.mounted) {
         if (success) {
-          SuccessSnackbar.show(context, message: 'Sault restored. Please log in.');
+          SuccessSnackbar.show(context,
+              message: 'Sault restored. Please log in.');
           Navigator.of(context).pushReplacementNamed('/');
         } else {
-          ErrorSnackbar.show(context, message: 'Restore failed: ${icloud.lastError}');
+          ErrorSnackbar.show(context,
+              message: 'Restore failed: ${icloud.lastError}');
         }
       }
     }
@@ -61,37 +56,31 @@ class SaultOnboardingScreen extends StatelessWidget {
     if (result != null && result.files.single.path != null) {
       if (!context.mounted) return;
 
-      final confirm = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          backgroundColor: const Color(0xFF1a2c32),
-          title: Text(
-            'Import Sault?',
-            style: GoogleFonts.spaceGrotesk(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
-          content: Text(
+      final confirm = await showSaultDialog<bool>(
+        context,
+        title: 'Import Sault?',
+        message:
             'This will load an existing encrypted vault file. You will need the original master password to unlock it.',
-            style: GoogleFonts.notoSans(color: Colors.grey[300]),
+        icon: PhosphorIconsBold.downloadSimple,
+        tone: SaultDialogTone.info,
+        actions: const <SaultDialogAction<bool>>[
+          SaultDialogAction<bool>(label: 'Cancel', value: false),
+          SaultDialogAction<bool>(
+            label: 'Import',
+            value: true,
+            isPrimary: true,
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text('Cancel', style: GoogleFonts.spaceGrotesk(color: Colors.grey[400])),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text('Import', style: GoogleFonts.spaceGrotesk(color: const Color(0xFF13b6ec))),
-            ),
-          ],
-        ),
+        ],
       );
 
       if (confirm == true && context.mounted) {
         try {
-          final vaultProvider = Provider.of<SaultProvider>(context, listen: false);
+          final vaultProvider =
+              Provider.of<SaultProvider>(context, listen: false);
           await vaultProvider.importVault(File(result.files.single.path!));
           if (context.mounted) {
-            SuccessSnackbar.show(context, message: 'Sault imported. Please log in.');
+            SuccessSnackbar.show(context,
+                message: 'Sault imported. Please log in.');
             Navigator.of(context).pushReplacementNamed('/');
           }
         } catch (e) {
@@ -112,7 +101,8 @@ class SaultOnboardingScreen extends StatelessWidget {
           const GradientBackground(),
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -143,9 +133,11 @@ class SaultOnboardingScreen extends StatelessWidget {
                               height: 64,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(22),
-                                color: AppColors.primaryColor.withValues(alpha: 0.10),
+                                color: AppColors.primaryColor
+                                    .withValues(alpha: 0.10),
                                 border: Border.all(
-                                  color: AppColors.primaryColor.withValues(alpha: 0.24),
+                                  color: AppColors.primaryColor
+                                      .withValues(alpha: 0.24),
                                 ),
                               ),
                               child: const Icon(
@@ -180,20 +172,21 @@ class SaultOnboardingScreen extends StatelessWidget {
                               decoration: BoxDecoration(
                                 color: Colors.white.withValues(alpha: 0.03),
                                 borderRadius: BorderRadius.circular(24),
-                                border: Border.all(color: AppColors.softBorderColor),
+                                border: Border.all(
+                                    color: AppColors.softBorderColor),
                               ),
-                              child: Row(
+                              child: const Row(
                                 children: [
                                   _FeatureChip(
                                     icon: PhosphorIconsBold.shieldCheck,
                                     label: 'PBKDF2',
                                   ),
-                                  const SizedBox(width: 10),
+                                  SizedBox(width: 10),
                                   _FeatureChip(
                                     icon: PhosphorIconsBold.lockKey,
                                     label: 'AES Vault',
                                   ),
-                                  const SizedBox(width: 10),
+                                  SizedBox(width: 10),
                                   _FeatureChip(
                                     icon: PhosphorIconsBold.cloud,
                                     label: 'Backup',

@@ -83,22 +83,28 @@ class _SeedWordAutocompleteState extends State<SeedWordAutocomplete> {
   void _showOverlay() {
     _removeOverlay();
 
+    final OverlayState? overlay = Overlay.maybeOf(context, rootOverlay: true);
+    if (overlay == null) return;
+
     _overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        width: 220,
-        child: CompositedTransformFollower(
-          link: _layerLink,
-          showWhenUnlinked: false,
-          offset: const Offset(0, 58),
+      builder: (context) => CompositedTransformFollower(
+        link: _layerLink,
+        showWhenUnlinked: false,
+        offset: const Offset(0, 58),
+        child: Align(
+          alignment: Alignment.topLeft,
           child: Material(
             color: Colors.transparent,
-            child: _buildSuggestionsList(),
+            child: SizedBox(
+              width: 220,
+              child: _buildSuggestionsList(),
+            ),
           ),
         ),
       ),
     );
 
-    Overlay.of(context).insert(_overlayEntry!);
+    overlay.insert(_overlayEntry!);
   }
 
   void _removeOverlay() {

@@ -11,6 +11,7 @@ import '../utils/constants.dart';
 import '../widgets/gradient_background.dart';
 import '../widgets/sault_app_bar.dart';
 import '../widgets/sault_brand.dart';
+import '../widgets/sault_dialog.dart';
 
 class SeedPhraseDetailView extends StatefulWidget {
   const SeedPhraseDetailView({super.key});
@@ -25,9 +26,11 @@ class _SeedPhraseDetailViewState extends State<SeedPhraseDetailView> {
   @override
   Widget build(BuildContext context) {
     final Secret secret = ModalRoute.of(context)!.settings.arguments as Secret;
-    final List<String> seedWords =
-        secret.type == SecretType.seedPhrase ? secret.content.split(' ') : <String>[secret.content];
-    final String formattedDate = DateFormat('MMM d, yyyy').format(secret.createdAt);
+    final List<String> seedWords = secret.type == SecretType.seedPhrase
+        ? secret.content.split(' ')
+        : <String>[secret.content];
+    final String formattedDate =
+        DateFormat('MMM d, yyyy').format(secret.createdAt);
 
     return Scaffold(
       backgroundColor: AppColors.backgroundDark,
@@ -42,44 +45,29 @@ class _SeedPhraseDetailViewState extends State<SeedPhraseDetailView> {
               color: AppColors.textMuted,
             ),
             onPressed: () async {
-              final bool? confirm = await showDialog<bool>(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: Text(
-                    'Delete secret?',
-                    style: GoogleFonts.spaceGrotesk(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w700,
-                    ),
+              final SaultProvider vaultProvider =
+                  Provider.of<SaultProvider>(context, listen: false);
+              final NavigatorState navigator = Navigator.of(context);
+              final bool? confirm = await showSaultDialog<bool>(
+                context,
+                title: 'Delete secret?',
+                message: 'This action cannot be undone.',
+                icon: PhosphorIconsBold.trash,
+                tone: SaultDialogTone.danger,
+                actions: const <SaultDialogAction<bool>>[
+                  SaultDialogAction<bool>(label: 'Cancel', value: false),
+                  SaultDialogAction<bool>(
+                    label: 'Delete',
+                    value: true,
+                    isDestructive: true,
                   ),
-                  content: Text(
-                    'This action cannot be undone.',
-                    style: GoogleFonts.notoSans(color: AppColors.textSecondary),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: Text(
-                        'Cancel',
-                        style: GoogleFonts.spaceGrotesk(color: AppColors.textSecondary),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      child: Text(
-                        'Delete',
-                        style: GoogleFonts.spaceGrotesk(color: AppColors.dangerColor),
-                      ),
-                    ),
-                  ],
-                ),
+                ],
               );
 
-              if (confirm == true && mounted) {
-                await Provider.of<SaultProvider>(context, listen: false).deleteSecret(secret.id);
-                if (mounted) {
-                  Navigator.pop(context);
-                }
+              if (confirm == true) {
+                await vaultProvider.deleteSecret(secret.id);
+                if (!context.mounted) return;
+                navigator.pop();
               }
             },
           ),
@@ -109,7 +97,8 @@ class _SeedPhraseDetailViewState extends State<SeedPhraseDetailView> {
                           borderRadius: BorderRadius.circular(20),
                           color: AppColors.primaryColor.withValues(alpha: 0.10),
                           border: Border.all(
-                            color: AppColors.primaryColor.withValues(alpha: 0.22),
+                            color:
+                                AppColors.primaryColor.withValues(alpha: 0.22),
                           ),
                         ),
                         child: Icon(
@@ -137,7 +126,9 @@ class _SeedPhraseDetailViewState extends State<SeedPhraseDetailView> {
                         children: [
                           _MetaPill(
                             icon: PhosphorIconsBold.globe,
-                            label: secret.network.isEmpty ? 'Private vault' : secret.network,
+                            label: secret.network.isEmpty
+                                ? 'Private vault'
+                                : secret.network,
                           ),
                           _MetaPill(
                             icon: PhosphorIconsBold.calendarBlank,
@@ -186,7 +177,8 @@ class _SeedPhraseDetailViewState extends State<SeedPhraseDetailView> {
                               ? GridView.builder(
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
-                                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
                                     crossAxisCount: 2,
                                     crossAxisSpacing: 12,
                                     mainAxisSpacing: 12,
@@ -195,11 +187,14 @@ class _SeedPhraseDetailViewState extends State<SeedPhraseDetailView> {
                                   itemCount: seedWords.length,
                                   itemBuilder: (context, index) {
                                     return Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 14),
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: 0.03),
+                                        color: Colors.white
+                                            .withValues(alpha: 0.03),
                                         borderRadius: BorderRadius.circular(18),
-                                        border: Border.all(color: AppColors.softBorderColor),
+                                        border: Border.all(
+                                            color: AppColors.softBorderColor),
                                       ),
                                       child: Row(
                                         children: [
@@ -214,7 +209,9 @@ class _SeedPhraseDetailViewState extends State<SeedPhraseDetailView> {
                                           const SizedBox(width: 12),
                                           Expanded(
                                             child: Text(
-                                              _isVisible ? seedWords[index] : '••••••••',
+                                              _isVisible
+                                                  ? seedWords[index]
+                                                  : '••••••••',
                                               overflow: TextOverflow.ellipsis,
                                               style: GoogleFonts.spaceGrotesk(
                                                 color: AppColors.textPrimary,
@@ -229,7 +226,9 @@ class _SeedPhraseDetailViewState extends State<SeedPhraseDetailView> {
                                   },
                                 )
                               : Text(
-                                  _isVisible ? secret.content : '••••••••••••••••••••••••',
+                                  _isVisible
+                                      ? secret.content
+                                      : '••••••••••••••••••••••••',
                                   textAlign: TextAlign.center,
                                   style: GoogleFonts.jetBrainsMono(
                                     color: AppColors.textPrimary,
@@ -240,12 +239,14 @@ class _SeedPhraseDetailViewState extends State<SeedPhraseDetailView> {
                         ),
                         if (!_isVisible)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 18, vertical: 12),
                             decoration: BoxDecoration(
                               color: Colors.black.withValues(alpha: 0.38),
                               borderRadius: BorderRadius.circular(24),
                               border: Border.all(
-                                color: AppColors.primaryColor.withValues(alpha: 0.20),
+                                color: AppColors.primaryColor
+                                    .withValues(alpha: 0.20),
                               ),
                             ),
                             child: Row(
@@ -298,8 +299,12 @@ class _SeedPhraseDetailViewState extends State<SeedPhraseDetailView> {
                     setState(() => _isVisible = !_isVisible);
                   },
                   style: FilledButton.styleFrom(
-                    backgroundColor: _isVisible ? AppColors.surfaceHighlight : AppColors.primaryColor,
-                    foregroundColor: _isVisible ? AppColors.textPrimary : AppColors.backgroundDark,
+                    backgroundColor: _isVisible
+                        ? AppColors.surfaceHighlight
+                        : AppColors.primaryColor,
+                    foregroundColor: _isVisible
+                        ? AppColors.textPrimary
+                        : AppColors.backgroundDark,
                     padding: const EdgeInsets.symmetric(vertical: 18),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(22),

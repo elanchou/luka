@@ -5,18 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "luka",
+            "name": "sault",
             "request": "launch",
             "type": "dart"
         },
         {
-            "name": "luka (profile mode)",
+            "name": "sault (profile mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
         },
         {
-            "name": "luka (release mode)",
+            "name": "sault (release mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"
