@@ -23,7 +23,7 @@ platform :ios do
   end
 
   def prepare_ios_build
-    sh("cd ../.. && flutter build ios --release --no-codesign")
+    sh(%q(zsh -lc 'cd .. && flutter build ios --release --no-codesign'))
   end
 
   def build_release_ipa
